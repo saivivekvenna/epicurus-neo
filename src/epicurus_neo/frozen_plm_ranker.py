@@ -32,6 +32,16 @@ DEFAULT_BASE_FEATURES = (
     "retrieval_biochemical_topk_positive_similarity_mean",
     "retrieval_biochemical_topk_negative_similarity_mean",
     "retrieval_biochemical_topk_positive_fraction",
+    "recognition_hla_max_similarity",
+    "recognition_hla_topk_similarity_mean",
+    "recognition_hla_max_weighted_similarity",
+    "recognition_pathogen_max_similarity",
+    "recognition_pathogen_topk_similarity_mean",
+    "recognition_pathogen_max_weighted_similarity",
+    "recognition_human_max_similarity",
+    "recognition_human_topk_similarity_mean",
+    "recognition_human_max_weighted_similarity",
+    "recognition_pathogen_minus_human_similarity",
 )
 
 

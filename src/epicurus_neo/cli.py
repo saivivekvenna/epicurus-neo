@@ -385,6 +385,28 @@ def cmd_frozen_plm_rank(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_normalize_vdjdb(args: argparse.Namespace) -> int:
+    from epicurus_neo.external_recognition import normalize_vdjdb_file
+
+    output = normalize_vdjdb_file(args.input, args.output, min_score=args.min_score)
+    print(output)
+    return 0
+
+
+def cmd_external_recognition_features(args: argparse.Namespace) -> int:
+    from epicurus_neo.external_recognition import add_external_recognition_features_file
+
+    output = add_external_recognition_features_file(
+        args.input,
+        args.reference,
+        args.embedding_cache,
+        args.output,
+        top_k=args.top_k,
+    )
+    print(output)
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -667,6 +689,20 @@ def build_parser() -> argparse.ArgumentParser:
     frozen_plm_rank.add_argument("--group-col", default="hla_allele")
     frozen_plm_rank.add_argument("-k", type=int, default=20)
     frozen_plm_rank.set_defaults(func=cmd_frozen_plm_rank)
+
+    normalize_vdjdb = sub.add_parser("normalize-vdjdb")
+    normalize_vdjdb.add_argument("--input", required=True)
+    normalize_vdjdb.add_argument("--output", required=True)
+    normalize_vdjdb.add_argument("--min-score", type=int, default=0)
+    normalize_vdjdb.set_defaults(func=cmd_normalize_vdjdb)
+
+    external_recognition = sub.add_parser("add-external-recognition-features")
+    external_recognition.add_argument("--input", required=True)
+    external_recognition.add_argument("--reference", required=True)
+    external_recognition.add_argument("--embedding-cache", required=True)
+    external_recognition.add_argument("--output", required=True)
+    external_recognition.add_argument("--top-k", type=int, default=5)
+    external_recognition.set_defaults(func=cmd_external_recognition_features)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)
