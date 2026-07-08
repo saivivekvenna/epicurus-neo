@@ -756,3 +756,47 @@ from 36 to 46, but it still did not transfer the validation 50% threshold to the
 locked test split. This reinforces the primary metric choice: for the hackathon
 submission, optimize fixed `mean_hits@20` / `precision@20`, and treat thresholded
 selection only as a confidence annotation unless the rules allow abstention.
+
+## Iteration 018: Recover Gartner Screened Negatives
+
+Dataset:
+
+- Gartner/NCI long-peptide files already present under `data/raw/gartner_nci/`
+- Normalizer fix:
+  - `CD8` / `1` -> positive
+  - `0` / `-` -> negative
+  - `unscreened` -> unknown
+- Regenerated processed files:
+  - `NmersBalancedForExpression.normalized.csv`: 139 positives, 4,765 negatives
+  - `NmersTrainingSet.normalized.csv`: 139 positives, 9,404 negatives, 21,344
+    unknowns
+  - `NmersTestingSet.normalized.csv`: 46 positives, 3,722 negatives, 5,014
+    unknowns
+
+Hypothesis:
+
+```text
+The current Gartner normalizer was discarding thousands of screened
+non-reactive candidates as unknowns. Recovering those explicit negatives should
+give the supervised ranker a better recognition boundary and improve fixed
+top-20 performance.
+```
+
+Gartner patient-level result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_hits20_score` | 1.3846 | 0.0692 | 0.8173 | 0.5208 | 0.5176 |
+| `baseline_gartner_nmer_score` | 1.3077 | 0.0654 | 0.7596 | 0.4608 | 0.4340 |
+| `baseline_mhcflurry_score` | 0.9231 | 0.0462 | 0.5256 | 0.2361 | 0.1896 |
+| `baseline_netmhcpan_el_score` | 0.8077 | 0.0404 | 0.4647 | 0.2595 | 0.2139 |
+
+Decision:
+
+Accepted as a necessary data-quality fix, but rejected as a standalone path to
+the 50% fixed top-20 target. Recovering explicit negatives makes the Gartner
+benchmark more honest and keeps Epicurus ahead of available Gartner baselines,
+but the absolute precision remains low. This strengthens the next-build
+priority: ingest more validated screening datasets and add new signal families,
+especially patient/context features, rather than relying on relabeling or
+threshold calibration alone.

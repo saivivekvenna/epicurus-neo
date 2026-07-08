@@ -30,6 +30,16 @@ Minimum columns:
 - `label_weight`
 - `assay_type`
 
+## Dataset-Specific Label Notes
+
+- Gartner/NCI `Screening Status` is normalized as:
+  - `CD8` / `1` -> `positive`
+  - `0` / `-` -> `negative`
+  - `unscreened` -> `unknown`
+- The `-` value is handled only in the Gartner normalizer because other public
+  files may use dash-like placeholders for missing values rather than screened
+  non-reactivity.
+
 Optional feature columns are allowed and should be prefixed by feature family:
 
 - `binding_*`
@@ -40,4 +50,3 @@ Optional feature columns are allowed and should be prefixed by feature family:
 - `epitope_neighbor_*`
 - `mutation_*`
 - `model_*`
-
