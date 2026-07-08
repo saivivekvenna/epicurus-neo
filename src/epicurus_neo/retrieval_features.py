@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -88,6 +89,20 @@ def _ensure_canonical_minimum(frame: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _fold_key(row: pd.Series) -> str:
+    parts = [
+        str(row.get("candidate_id", "")),
+        str(row.get("hla_allele", "")),
+        str(row.get("mutant_peptide", "")),
+    ]
+    return "|".join(parts)
+
+
+def _stable_fold(row: pd.Series, n_folds: int) -> int:
+    digest = hashlib.sha256(_fold_key(row).encode("utf-8")).hexdigest()
+    return int(digest[:12], 16) % n_folds
+
+
 def _retrieval_summary(prefix: str, pos_sims: list[float], neg_sims: list[float], top_k: int) -> dict[str, float]:
     all_pairs = [(similarity, "positive") for similarity in pos_sims]
     all_pairs.extend((similarity, "negative") for similarity in neg_sims)
@@ -166,6 +181,51 @@ def add_retrieval_features(
     return out
 
 
+def add_crossfit_retrieval_features(
+    frame: pd.DataFrame,
+    *,
+    top_k: int = 5,
+    n_folds: int = 5,
+    fold_col: str = "retrieval_fold",
+) -> pd.DataFrame:
+    """Add retrieval features using out-of-fold labeled references.
+
+    This is for training rows. Each row retrieves only from rows assigned to
+    other deterministic folds, avoiding direct label memorization while keeping
+    the same feature schema as `add_retrieval_features`.
+    """
+    if n_folds < 2:
+        raise ValueError("n_folds must be at least 2 for crossfit retrieval features")
+
+    base = add_normalized_columns(_ensure_canonical_minimum(frame))
+    if fold_col in base.columns:
+        folds = pd.to_numeric(base[fold_col], errors="coerce").fillna(0).astype(int) % n_folds
+    else:
+        folds = base.apply(lambda row: _stable_fold(row, n_folds), axis=1)
+
+    pieces: list[pd.DataFrame] = []
+    for fold_id in range(n_folds):
+        query = base[folds == fold_id]
+        if query.empty:
+            continue
+        reference = base[folds != fold_id]
+        scored = add_retrieval_features(
+            query,
+            reference,
+            top_k=top_k,
+            exclude_self=True,
+        )
+        scored[fold_col] = fold_id
+        pieces.append(scored)
+
+    if not pieces:
+        out = base.copy()
+        out[fold_col] = folds
+        return out
+    out = pd.concat(pieces, axis=0).sort_index()
+    return out
+
+
 def add_retrieval_features_file(
     input_path: str | Path,
     reference_path: str | Path,
@@ -176,6 +236,27 @@ def add_retrieval_features_file(
     frame = pd.read_csv(input_path)
     reference = pd.read_csv(reference_path)
     out = add_retrieval_features(frame, reference, top_k=top_k)
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(output, index=False)
+    return output
+
+
+def add_crossfit_retrieval_features_file(
+    input_path: str | Path,
+    output_path: str | Path,
+    *,
+    top_k: int = 5,
+    n_folds: int = 5,
+    fold_col: str = "retrieval_fold",
+) -> Path:
+    frame = pd.read_csv(input_path)
+    out = add_crossfit_retrieval_features(
+        frame,
+        top_k=top_k,
+        n_folds=n_folds,
+        fold_col=fold_col,
+    )
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(output, index=False)

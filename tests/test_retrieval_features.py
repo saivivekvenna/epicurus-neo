@@ -1,7 +1,8 @@
 import pandas as pd
 
-from epicurus_neo.cli import build_parser, cmd_retrieval_features
+from epicurus_neo.cli import build_parser, cmd_crossfit_retrieval_features, cmd_retrieval_features
 from epicurus_neo.retrieval_features import (
+    add_crossfit_retrieval_features,
     add_retrieval_features,
     peptide_biochemical_similarity,
     peptide_similarity,
@@ -63,6 +64,29 @@ def test_add_retrieval_features_excludes_self_candidate():
     assert out.loc[0, "retrieval_reference_count"] == 0.0
 
 
+def test_add_crossfit_retrieval_features_uses_other_fold_references_only():
+    frame = pd.DataFrame(
+        {
+            "candidate_id": ["q", "same_fold_pos", "other_fold_pos", "other_fold_neg"],
+            "hla_allele": ["HLA-A*02:01"] * 4,
+            "mutant_peptide": ["AAAA", "AAAA", "AAAT", "CCCC"],
+            "label": ["negative", "positive", "positive", "negative"],
+            "retrieval_fold": [0, 0, 1, 1],
+        }
+    )
+
+    out = add_crossfit_retrieval_features(
+        frame,
+        top_k=2,
+        n_folds=2,
+        fold_col="retrieval_fold",
+    )
+
+    query = out[out["candidate_id"] == "q"].iloc[0]
+    assert query["retrieval_max_positive_similarity"] == 0.75
+    assert query["retrieval_reference_count"] == 2.0
+
+
 def test_retrieval_features_cli_writes_output(tmp_path):
     query = tmp_path / "query.csv"
     reference = tmp_path / "reference.csv"
@@ -97,4 +121,33 @@ def test_retrieval_features_cli_writes_output(tmp_path):
         ]
     )
     assert cmd_retrieval_features(args) == 0
+    assert "retrieval_max_positive_similarity" in pd.read_csv(output).columns
+
+
+def test_crossfit_retrieval_features_cli_writes_output(tmp_path):
+    input_path = tmp_path / "input.csv"
+    output = tmp_path / "out.csv"
+    pd.DataFrame(
+        {
+            "candidate_id": ["q", "pos"],
+            "hla_allele": ["HLA-A*02:01", "HLA-A*02:01"],
+            "mutant_peptide": ["AAAA", "AAAT"],
+            "label": ["negative", "positive"],
+            "retrieval_fold": [0, 1],
+        }
+    ).to_csv(input_path, index=False)
+
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "add-crossfit-retrieval-features",
+            "--input",
+            str(input_path),
+            "--output",
+            str(output),
+            "--n-folds",
+            "2",
+        ]
+    )
+    assert cmd_crossfit_retrieval_features(args) == 0
     assert "retrieval_max_positive_similarity" in pd.read_csv(output).columns

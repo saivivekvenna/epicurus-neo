@@ -245,6 +245,20 @@ def cmd_retrieval_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_crossfit_retrieval_features(args: argparse.Namespace) -> int:
+    from epicurus_neo.retrieval_features import add_crossfit_retrieval_features_file
+
+    output = add_crossfit_retrieval_features_file(
+        args.input,
+        args.output,
+        top_k=args.top_k,
+        n_folds=args.n_folds,
+        fold_col=args.fold_col,
+    )
+    print(output)
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -461,6 +475,14 @@ def build_parser() -> argparse.ArgumentParser:
     retrieval.add_argument("--output", required=True)
     retrieval.add_argument("--top-k", type=int, default=5)
     retrieval.set_defaults(func=cmd_retrieval_features)
+
+    crossfit_retrieval = sub.add_parser("add-crossfit-retrieval-features")
+    crossfit_retrieval.add_argument("--input", required=True)
+    crossfit_retrieval.add_argument("--output", required=True)
+    crossfit_retrieval.add_argument("--top-k", type=int, default=5)
+    crossfit_retrieval.add_argument("--n-folds", type=int, default=5)
+    crossfit_retrieval.add_argument("--fold-col", default="retrieval_fold")
+    crossfit_retrieval.set_defaults(func=cmd_crossfit_retrieval_features)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)
