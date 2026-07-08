@@ -89,3 +89,41 @@ External status check:
 This TESLA result is a failure baseline, not an accepted tuning target. It shows
 that Gartner source features do not transfer to TESLA without real presentation
 or peptide-immunogenicity features.
+
+## Iteration 003: Optional MHCflurry Presentation Features
+
+Dataset:
+
+- TESLA normalized peptide/HLA labels
+- 714 peptide-HLA rows
+- 33 positives, 681 negatives
+
+Hypothesis:
+
+```text
+For datasets that include peptide and HLA but lack source-specific model scores,
+local MHCflurry class-I presentation predictions provide a real biophysical
+baseline and feature source.
+```
+
+Added:
+
+- optional `mhcflurry` dependency extra
+- `epicurus add-mhcflurry-features`
+- `mhcflurry_affinity`
+- `mhcflurry_processing_score`
+- `mhcflurry_presentation_score`
+- `mhcflurry_presentation_percentile`
+
+TESLA status:
+
+| Score | hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `mhcflurry_presentation_score` | 6 | 0.3000 | 0.1818 | 0.2286 | 0.1429 |
+| Gartner-trained `epicurus_score` without MHCflurry | 0 | 0.0000 | 0.0000 | 0.0000 | 0.0417 |
+
+Decision:
+
+Accepted as a necessary external presentation feature path. This is not yet a
+full TESLA-winning ranker, but it moves TESLA from zero top-20 hits to six using
+a reproducible local predictor.

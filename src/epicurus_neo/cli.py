@@ -196,6 +196,14 @@ def cmd_research_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_mhcflurry_features(args: argparse.Namespace) -> int:
+    from epicurus_neo.mhcflurry_features import add_mhcflurry_predictions_file
+
+    output = add_mhcflurry_predictions_file(args.input, args.output)
+    print(output)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="epicurus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -289,6 +297,11 @@ def build_parser() -> argparse.ArgumentParser:
     research.add_argument("--max-examples", type=int, default=20)
     research.add_argument("--output-dir", required=True)
     research.set_defaults(func=cmd_research_report)
+
+    mhcflurry = sub.add_parser("add-mhcflurry-features")
+    mhcflurry.add_argument("--input", required=True)
+    mhcflurry.add_argument("--output", required=True)
+    mhcflurry.set_defaults(func=cmd_mhcflurry_features)
 
     return parser
 

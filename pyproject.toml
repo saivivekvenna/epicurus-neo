@@ -21,6 +21,9 @@ gpu = [
   "xgboost>=2.0",
   "lightgbm>=4.0",
 ]
+mhc = [
+  "mhcflurry>=2.2.1",
+]
 
 [project.scripts]
 epicurus = "epicurus_neo.cli:main"
