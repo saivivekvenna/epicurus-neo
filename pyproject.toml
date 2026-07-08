@@ -1,0 +1,40 @@
+[project]
+name = "epicurus-neo"
+version = "0.1.0"
+description = "Leakage-controlled neoantigen top-k ranking benchmark and training harness"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "scikit-learn>=1.4",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
+gpu = [
+  "xgboost>=2.0",
+  "lightgbm>=4.0",
+]
+
+[project.scripts]
+epicurus = "epicurus_neo.cli:main"
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
