@@ -670,3 +670,44 @@ current `min_positive=1` nDCG selector remains the top-20 headline because
 hits/precision/recall are the primary hackathon submission constraints. The
 sweep does show that evidence-gating HLA-specific choices is a useful control
 against validation overfitting.
+
+## Iteration 016: Precision-Target Abstention
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iterations 008-015
+- Validation threshold calibrated to target at least 50% precision
+- `min_selected=20` on validation, so the threshold must support at least a
+  vaccine-sized candidate set before being accepted
+- Applied threshold to the locked test split without using test labels during
+  calibration
+
+Hypothesis:
+
+```text
+If the model cannot honestly make 20 high-confidence calls, it should abstain
+instead of filling all slots. A validation-calibrated threshold may identify a
+smaller candidate core with precision closer to the desired 50% hit-rate target.
+```
+
+BigMHC `im_test` threshold results:
+
+| Score used for threshold | validation selected | validation precision | test selected | test hits | test precision | test recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `retrieval_topk_positive_fraction` | 59 | 0.5932 | 102 | 36 | 0.3529 | 0.1818 |
+| `mhcflurry_processing_score` | 76 | 0.5000 | 70 | 18 | 0.2571 | 0.0909 |
+| `mhcflurry_presentation_score` | 142 | 0.5000 | 95 | 23 | 0.2421 | 0.1162 |
+| `retrieval_positive_minus_negative_similarity` | 90 | 0.5889 | 100 | 18 | 0.1800 | 0.0909 |
+| `retrieval_max_positive_similarity` | 122 | 0.5410 | 60 | 8 | 0.1333 | 0.0404 |
+| `retrieval_biochemical_max_positive_similarity` | 107 | 0.5047 | 57 | 7 | 0.1228 | 0.0354 |
+| `retrieval_biochemical_topk_positive_similarity_mean` | 108 | 0.5000 | 57 | 6 | 0.1053 | 0.0303 |
+
+Decision:
+
+Rejected as a route to a 50% held-out hit rate. The abstaining threshold can
+raise precision above the current top-20 average (`retrieval_topk_positive_fraction`
+reaches 35.3% on test), but validation-calibrated 50% thresholds do not transfer
+to the locked BigMHC split. This is strong evidence that a 50% true-positive
+rate cannot be claimed from score thresholding alone; reaching that target will
+require either materially better patient-specific signal, stronger external
+training data, or a much smaller/stricter nomination budget.
