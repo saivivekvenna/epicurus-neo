@@ -81,5 +81,25 @@ data/raw/tesla/mmc5.xlsx
 - Data: https://data.mendeley.com/datasets/dvmz6pkzvb/4
 - Code: https://github.com/KarchinLab/bigmhc
 
-Prioritize `datasets.zip` if downloading BigMHC.
+Direct downloads:
 
+- `datasets.zip`, 144.27 MB  
+  https://data.mendeley.com/public-files/datasets/dvmz6pkzvb/files/1da0314f-692d-4c39-b81f-fa2a7dba86bf/file_downloaded
+- `manafest.csv`, 34.59 KB  
+  https://data.mendeley.com/public-files/datasets/dvmz6pkzvb/files/6de56487-7b7e-459e-8aee-c80475face9d/file_downloaded
+
+Suggested paths:
+
+```text
+data/raw/bigmhc/datasets.zip
+data/raw/bigmhc/manafest.csv
+```
+
+Normalize the immunogenicity splits:
+
+```bash
+epicurus normalize --kind bigmhc --input data/raw/bigmhc/datasets.zip --zip-member im_train.csv --output data/processed/bigmhc_im_train.normalized.csv
+epicurus normalize --kind bigmhc --input data/raw/bigmhc/datasets.zip --zip-member im_val.csv --output data/processed/bigmhc_im_val.normalized.csv
+epicurus normalize --kind bigmhc --input data/raw/bigmhc/datasets.zip --zip-member im_test.csv --output data/processed/bigmhc_im_test.normalized.csv
+epicurus normalize --kind bigmhc --input data/raw/bigmhc/manafest.csv --output data/processed/bigmhc_manafest.normalized.csv
+```

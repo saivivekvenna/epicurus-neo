@@ -176,3 +176,52 @@ Accepted as the first transferable TESLA improvement. The next iteration should
 focus on the 24 TESLA positives still missed by top 20, ideally adding
 foreignness or known-epitope-neighborhood signals rather than increasing
 TESLA-specific composition tuning.
+
+## Iteration 005: BigMHC Immunogenicity External Benchmark
+
+Dataset:
+
+- `data/raw/bigmhc/datasets.zip`
+- `im_train.csv`: 6,185 rows, 1,407 positives, 4,778 negatives
+- `im_val.csv`: 688 rows, 173 positives, 515 negatives
+- `im_test.csv`: 937 rows, 198 positives, 739 negatives
+- Evaluation group: `hla_allele`
+- Metric: mean hits@20 / precision@20 / recall@20 across 54 HLA groups
+
+Purpose:
+
+```text
+Add an independent hard-part benchmark where the test set includes published
+scores from BigMHC and other presentation/immunogenicity tools. This gives us a
+fair target beyond Gartner and TESLA: beat the best existing score column on the
+same rows without training or tuning on im_test labels.
+```
+
+Published-score baselines on `im_test.csv`:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `TransPHLA` | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
+| `MHCnuggets-2.4.0` | 2.4074 | 0.2691 | 0.5259 | 0.3927 | 0.3785 |
+| `HLAthena_Scores` | 2.3889 | 0.2682 | 0.4946 | 0.3818 | 0.3699 |
+| `netmhcpan_41_score` | 2.3519 | 0.2663 | 0.5100 | 0.4001 | 0.4015 |
+| `mhcflurry_20_score` | 2.3519 | 0.2663 | 0.4981 | 0.4018 | 0.3881 |
+| `bigmhc_el_score` | 2.3519 | 0.2663 | 0.4917 | 0.3916 | 0.3800 |
+| `prime_20_score` | 2.3333 | 0.2654 | 0.5221 | 0.4019 | 0.3787 |
+| `bigmhc_elim_score` | 2.3333 | 0.2654 | 0.5133 | 0.3915 | 0.3819 |
+| `bigmhc_im_score` | 2.3148 | 0.2645 | 0.5041 | 0.3856 | 0.3778 |
+
+Epicurus sequence-only check:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_score`, trained on `im_train + im_val` only | 2.2963 | 0.2635 | 0.5080 | 0.3679 | 0.3426 |
+
+Decision:
+
+Accepted as a fair quantitative target, not as an Epicurus win. The target for
+the next modeling iteration is to exceed `TransPHLA` on mean hits@20 (>2.4259)
+and exceed the strongest published recall@20 (`MHCnuggets-2.4.0`, 0.5259)
+without using `im_test` labels for model selection. Sequence-only learning is
+not enough; next work should add train-side presentation predictions, epitope
+retrieval density, and foreignness/self-similarity features.
