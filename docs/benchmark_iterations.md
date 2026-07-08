@@ -276,3 +276,54 @@ not yet a complete win over every metric: `MHCnuggets-2.4.0` still has better
 recall@20. The next iteration should preserve the retrieval hits gain while
 recovering recall, likely through a score that balances positive-neighborhood
 similarity with a recall-oriented negative-neighborhood or presentation term.
+
+## Iteration 007: Biochemical Retrieval Similarity
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iteration 006
+- Validation queries: `im_val` against `im_train`
+- Locked test queries: `im_test` against `im_train + im_val`
+
+Hypothesis:
+
+```text
+Exact residue identity may be too brittle for T-cell recognition. Conservative
+substitutions should count partially, so biochemical peptide-neighborhood
+features may improve recall without losing the retrieval hits@20 gain.
+```
+
+Added:
+
+- `retrieval_biochemical_max_positive_similarity`
+- `retrieval_biochemical_max_negative_similarity`
+- `retrieval_biochemical_positive_minus_negative_similarity`
+- `retrieval_biochemical_topk_positive_similarity_mean`
+- `retrieval_biochemical_topk_negative_similarity_mean`
+- `retrieval_biochemical_topk_positive_fraction`
+
+Validation result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `retrieval_positive_minus_negative_similarity` | 1.7455 | 0.3043 | 0.5307 | 0.4420 | 0.4286 |
+| `retrieval_max_positive_similarity` | 1.7273 | 0.3034 | 0.5257 | 0.4444 | 0.4394 |
+| `retrieval_biochemical_topk_positive_similarity_mean` | 1.6545 | 0.2997 | 0.5228 | 0.4499 | 0.4658 |
+| `retrieval_biochemical_max_positive_similarity` | 1.6182 | 0.2979 | 0.5170 | 0.4261 | 0.4271 |
+
+Locked BigMHC `im_test` check:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `retrieval_max_positive_similarity` | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `retrieval_biochemical_positive_minus_negative_similarity` | 2.5000 | 0.2737 | 0.5066 | 0.3899 | 0.3557 |
+| `retrieval_biochemical_topk_positive_similarity_mean` | 2.3704 | 0.2672 | 0.5147 | 0.4039 | 0.4015 |
+| `retrieval_biochemical_max_positive_similarity` | 2.3148 | 0.2645 | 0.5052 | 0.4058 | 0.3963 |
+
+Decision:
+
+Rejected as the default ranking signal. The biochemical features are retained as
+model inputs because they expose a different neighborhood view, but validation
+does not support replacing exact positive-neighborhood similarity. The next
+iteration should focus on score selection/calibration rather than making peptide
+similarity softer.
