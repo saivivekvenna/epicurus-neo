@@ -102,6 +102,12 @@ CHARGE = {
     "H": 0.5,
 }
 
+AMINO_ACIDS = tuple("ACDEFGHIKLMNPQRSTVWY")
+AROMATIC = {"F", "W", "Y"}
+POLAR = {"S", "T", "N", "Q", "C", "Y"}
+ACIDIC = {"D", "E"}
+BASIC = {"K", "R", "H"}
+
 
 def anchor_positions(length: int) -> set[int]:
     """Return simple class-I anchor positions using zero-based indices."""
@@ -163,9 +169,58 @@ def add_contrastive_features(frame: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def peptide_sequence_features(peptide: object) -> dict[str, float]:
+    sequence = normalize_peptide(peptide)
+    if not sequence:
+        result = {
+            "seq_len": float("nan"),
+            "seq_hydrophobicity_mean": float("nan"),
+            "seq_charge_sum": float("nan"),
+            "seq_aromatic_fraction": float("nan"),
+            "seq_polar_fraction": float("nan"),
+            "seq_acidic_fraction": float("nan"),
+            "seq_basic_fraction": float("nan"),
+            "seq_cysteine_fraction": float("nan"),
+            "seq_proline_fraction": float("nan"),
+            "seq_glycine_fraction": float("nan"),
+        }
+        result.update({f"seq_aa_frac_{aa}": float("nan") for aa in AMINO_ACIDS})
+        return result
+
+    length = len(sequence)
+    result = {
+        "seq_len": float(length),
+        "seq_hydrophobicity_mean": float(
+            sum(HYDROPHOBICITY.get(aa, 0.0) for aa in sequence) / length
+        ),
+        "seq_charge_sum": float(sum(CHARGE.get(aa, 0.0) for aa in sequence)),
+        "seq_aromatic_fraction": float(sum(aa in AROMATIC for aa in sequence) / length),
+        "seq_polar_fraction": float(sum(aa in POLAR for aa in sequence) / length),
+        "seq_acidic_fraction": float(sum(aa in ACIDIC for aa in sequence) / length),
+        "seq_basic_fraction": float(sum(aa in BASIC for aa in sequence) / length),
+        "seq_cysteine_fraction": float(sequence.count("C") / length),
+        "seq_proline_fraction": float(sequence.count("P") / length),
+        "seq_glycine_fraction": float(sequence.count("G") / length),
+    }
+    result.update({f"seq_aa_frac_{aa}": float(sequence.count(aa) / length) for aa in AMINO_ACIDS})
+    return result
+
+
+def add_sequence_features(frame: pd.DataFrame) -> pd.DataFrame:
+    if "mutant_peptide" not in frame.columns:
+        return frame.copy()
+    out = frame.copy()
+    features = [peptide_sequence_features(peptide) for peptide in out["mutant_peptide"]]
+    feature_frame = pd.DataFrame(features, index=out.index)
+    for column in feature_frame.columns:
+        if column not in out.columns:
+            out[column] = feature_frame[column]
+    return out
+
+
 def add_baseline_scores(frame: pd.DataFrame) -> pd.DataFrame:
     """Add deterministic baseline rank scores when source feature columns exist."""
-    out = add_contrastive_features(frame)
+    out = add_sequence_features(add_contrastive_features(frame))
 
     if "binding_affinity_nm" in out.columns:
         out["baseline_binding_score"] = out["binding_affinity_nm"].map(safe_log_inverse)

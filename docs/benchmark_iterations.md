@@ -45,3 +45,47 @@ TESLA or future patient cases. Next iterations should test whether the same
 conservative blending principle transfers when Gartner-specific `Nmer score` is
 absent.
 
+## Iteration 002: Generic Sequence Features
+
+Dataset:
+
+- Same Gartner/NCI Nmers test-set patient-level CV as Iteration 001
+
+Hypothesis:
+
+```text
+Peptide sequence composition features should help the learned ranker and allow
+cross-dataset inference when source-specific features such as Gartner Nmer score
+are absent.
+```
+
+Added features:
+
+- peptide length
+- amino-acid fractions for all 20 standard amino acids
+- hydrophobicity mean
+- charge sum
+- aromatic, polar, acidic, basic fractions
+- cysteine, proline, glycine fractions
+
+Gartner CV result:
+
+| Score | mean hits@20 before | mean hits@20 after | recall@20 after | nDCG@20 after |
+| --- | ---: | ---: | ---: | ---: |
+| `epicurus_score` | 1.1538 | 1.2308 | 0.7692 | 0.3912 |
+| `epicurus_hits20_score` | 1.3846 | 1.3846 | 0.8173 | 0.5208 |
+
+Decision:
+
+Accepted because it improves the learned ranker and is needed for datasets that
+lack source-specific model scores.
+
+External status check:
+
+- Train: Gartner/NCI Nmers test set
+- Test: TESLA normalized peptide/HLA labels
+- Result: current model gets 0/33 TESLA positives into top 20
+
+This TESLA result is a failure baseline, not an accepted tuning target. It shows
+that Gartner source features do not transfer to TESLA without real presentation
+or peptide-immunogenicity features.

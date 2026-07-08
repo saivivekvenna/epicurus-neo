@@ -62,6 +62,14 @@ def test_fit_ranker_scores_candidates():
     assert scored["epicurus_score"].between(0, 1).all()
 
 
+def test_ranker_predict_scores_tolerates_missing_test_features():
+    train = pd.DataFrame(_toy_rows("p1", "s1", 1) + _toy_rows("p2", "s2", 2))
+    test = pd.DataFrame(_toy_rows("p3", "s3", 3)).drop(columns=["Nmer score"])
+    model = fit_ranker(add_baseline_scores(train))
+    scored = model.predict_scores(add_baseline_scores(test))
+    assert scored["epicurus_score"].between(0, 1).all()
+
+
 def test_train_and_evaluate_blocks_exact_leakage():
     train = pd.DataFrame(_toy_rows("p1", "s1", 1))
     test = pd.DataFrame(_toy_rows("p1", "s1", 1))

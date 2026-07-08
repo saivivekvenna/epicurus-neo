@@ -1,6 +1,12 @@
 import pandas as pd
 
-from epicurus_neo.features import add_contrastive_features, anchor_positions, mutation_deltas
+from epicurus_neo.features import (
+    add_contrastive_features,
+    add_sequence_features,
+    anchor_positions,
+    mutation_deltas,
+    peptide_sequence_features,
+)
 from epicurus_neo.portfolio import PortfolioConstraints, select_portfolio
 
 
@@ -27,6 +33,20 @@ def test_add_contrastive_features():
     assert "mutation_hydrophobicity_delta" in out.columns
 
 
+def test_peptide_sequence_features():
+    features = peptide_sequence_features("ACDF")
+    assert features["seq_len"] == 4.0
+    assert features["seq_aa_frac_A"] == 0.25
+    assert features["seq_aromatic_fraction"] == 0.25
+
+
+def test_add_sequence_features():
+    frame = pd.DataFrame({"mutant_peptide": ["ACDF"]})
+    out = add_sequence_features(frame)
+    assert out.loc[0, "seq_len"] == 4.0
+    assert "seq_hydrophobicity_mean" in out.columns
+
+
 def test_select_portfolio_respects_diversity_limits():
     frame = pd.DataFrame(
         {
@@ -41,4 +61,3 @@ def test_select_portfolio_respects_diversity_limits():
         constraints=PortfolioConstraints(k=3, max_per_hla=1, max_per_gene=1),
     )
     assert selected["candidate_id"].tolist() == ["a", "c"]
-

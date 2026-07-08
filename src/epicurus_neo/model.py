@@ -30,7 +30,7 @@ class FittedEpicurusRanker:
     dud_model: Any
 
     def predict_scores(self, frame: pd.DataFrame) -> pd.DataFrame:
-        x = frame.loc[:, list(self.feature_columns)]
+        x = frame.reindex(columns=list(self.feature_columns))
         immunogenicity_prob = self.immunogenicity_model.predict_proba(x)[:, 1]
         dud_prob = self.dud_model.predict_proba(x)[:, 1]
 
@@ -109,4 +109,3 @@ def fit_ranker(
         immunogenicity_model=immunogenicity_model,
         dud_model=dud_model,
     )
-
