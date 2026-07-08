@@ -327,3 +327,43 @@ model inputs because they expose a different neighborhood view, but validation
 does not support replacing exact positive-neighborhood similarity. The next
 iteration should focus on score selection/calibration rather than making peptide
 similarity softer.
+
+## Iteration 008: Validation-Selected Score Family
+
+Dataset:
+
+- Validation: BigMHC `im_val`
+- Locked test: BigMHC `im_test`
+- Selection unit: `hla_allele`
+- Candidate score families: exact retrieval, biochemical retrieval, MHCflurry
+  presentation/processing, and `epicurus_transfer_score`
+
+Hypothesis:
+
+```text
+Different HLA alleles may favor different evidence types. Choose the best score
+family per HLA allele on validation labels, with a global validation winner as
+fallback, then apply that selection to the locked test set.
+```
+
+Validation-selected default:
+
+```text
+retrieval_positive_minus_negative_similarity
+```
+
+BigMHC `im_test` result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_selected_score` | 2.5370 | 0.2756 | 0.5159 | 0.3870 | 0.3710 |
+| `epicurus_retrieval_score` | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `TransPHLA` | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
+| `MHCnuggets-2.4.0` | 2.4074 | 0.2691 | 0.5259 | 0.3927 | 0.3785 |
+
+Decision:
+
+Accepted as the current best BigMHC hits@20/precision@20 result. It improves
+the hits target further using validation-only selection, but still does not beat
+the best recall@20. The next hard problem remains recall recovery without
+sacrificing top-20 precision.
