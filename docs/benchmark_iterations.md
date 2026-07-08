@@ -572,3 +572,54 @@ auditable and prevents intentionally selecting validation hit-losing blends, but
 it still does not transfer into a better held-out top-20 operating point than
 the validation-selected nDCG score selector. Keep the guarded selector as
 infrastructure for future datasets, not as the current BigMHC headline.
+
+## Iteration 014: Crossfit Retrieval Stacker
+
+Dataset:
+
+- BigMHC `im_train`, `im_val`, and locked `im_test`
+- Training retrieval features:
+  - `im_train`: 5-fold out-of-fold retrieval features for validation tuning
+  - `im_train + im_val`: 5-fold out-of-fold retrieval features for final test
+    training
+- Validation/test retrieval features:
+  - `im_val` retrieves only from `im_train`
+  - `im_test` retrieves only from `im_train + im_val`
+- Stacker: existing `HistGradientBoostingClassifier` ranker over presentation,
+  sequence, and retrieval features
+- Artifact columns (`rand`, `retrieval_fold`) are excluded from model features
+
+Hypothesis:
+
+```text
+The selector wins are driven by retrieval-neighborhood signal. A learned stacker
+trained on leakage-safe out-of-fold retrieval features may learn when retrieval,
+presentation, and biochemical-neighborhood features should dominate instead of
+choosing one score family per HLA.
+```
+
+Validation read:
+
+On `im_val`, the corrected stacker matched retrieval on hits@20/precision@20 and
+improved nDCG over retrieval, but still trailed presentation-style scores on MRR.
+That was enough signal to run the locked test check, but not enough to promote it
+without test evidence.
+
+BigMHC `im_test` result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_score` (crossfit retrieval stacker) | 2.3519 | 0.2663 | 0.5102 | 0.3712 | 0.3364 |
+| `epicurus_retrieval_score` | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `epicurus_selected_score` | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `TransPHLA` | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
+| `MHCnuggets-2.4.0` | 2.4074 | 0.2691 | 0.5259 | 0.3927 | 0.3785 |
+| `netmhcpan_41_score` | 2.3519 | 0.2663 | 0.5100 | 0.4001 | 0.4015 |
+
+Decision:
+
+Rejected as a ranking method, accepted as infrastructure. The crossfit retrieval
+feature path gives the learned stacker a leakage-safer training view of the
+retrieval signal, but the gradient-boosted probability model does not transfer
+to the locked BigMHC test set. The current evidence continues to favor
+validation-selected score policies over direct supervised stacking.
