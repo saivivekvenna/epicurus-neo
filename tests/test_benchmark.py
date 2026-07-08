@@ -1,0 +1,69 @@
+import pandas as pd
+import pytest
+
+from epicurus_neo.benchmark import train_and_evaluate
+from epicurus_neo.features import add_baseline_scores, infer_numeric_feature_columns
+from epicurus_neo.model import fit_ranker
+
+
+def _toy_rows(patient: str, study: str, offset: int) -> list[dict]:
+    rows = []
+    for idx in range(12):
+        positive = idx in {2, 7}
+        rows.append(
+            {
+                "candidate_id": f"{patient}-{idx}",
+                "source_dataset": "toy",
+                "study_id": study,
+                "patient_id": patient,
+                "hla_allele": "HLA-A*02:01",
+                "mutant_peptide": f"PEPTIDE{offset}{idx}",
+                "wildtype_peptide": f"SELTIDE{offset}{idx}",
+                "label": "positive" if positive else "negative",
+                "label_weight": 1.0,
+                "assay_type": "synthetic",
+                "binding_affinity_nm": 20.0 + idx,
+                "presentation_score": 0.95 if positive else 0.2 + idx * 0.01,
+                "expression_tpm": 50.0 if positive else 5.0,
+                "foreignness_score": 0.8 if positive else 0.1,
+                "mutation_tcr_face": 1 if positive else 0,
+            }
+        )
+    return rows
+
+
+def test_add_baseline_scores_and_feature_inference():
+    frame = pd.DataFrame(_toy_rows("p1", "s1", 1))
+    scored = add_baseline_scores(frame)
+    assert "baseline_binding_score" in scored.columns
+    assert "baseline_pvac_style_score" in scored.columns
+    features = infer_numeric_feature_columns(scored)
+    assert "presentation_score" in features
+    assert "label_weight" not in features
+
+
+def test_fit_ranker_scores_candidates():
+    train = pd.DataFrame(_toy_rows("p1", "s1", 1) + _toy_rows("p2", "s2", 2))
+    test = pd.DataFrame(_toy_rows("p3", "s3", 3))
+    model = fit_ranker(add_baseline_scores(train))
+    scored = model.predict_scores(add_baseline_scores(test))
+    assert "epicurus_score" in scored.columns
+    assert scored["epicurus_score"].between(0, 1).all()
+
+
+def test_train_and_evaluate_blocks_exact_leakage():
+    train = pd.DataFrame(_toy_rows("p1", "s1", 1))
+    test = pd.DataFrame(_toy_rows("p1", "s1", 1))
+    with pytest.raises(ValueError, match="leakage"):
+        train_and_evaluate(train, test)
+
+
+def test_train_and_evaluate_reports_ranker_and_baselines():
+    train = pd.DataFrame(_toy_rows("p1", "s1", 1) + _toy_rows("p2", "s2", 2))
+    test = pd.DataFrame(_toy_rows("p3", "s3", 3) + _toy_rows("p4", "s4", 4))
+    result = train_and_evaluate(train, test, k=5)
+    score_cols = {item.score_col for item in result.benchmark_results}
+    assert "epicurus_score" in score_cols
+    assert "baseline_pvac_style_score" in score_cols
+    assert result.feature_columns
+
