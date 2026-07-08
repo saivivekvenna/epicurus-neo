@@ -497,3 +497,38 @@ published MRR baseline and the retrieval-only MRR while also improving nDCG.
 It does not replace the nDCG score-selector headline because it sacrifices
 hits@20 and precision@20, which remain the primary hackathon submission
 constraint.
+
+## Iteration 012: Dense Rank-Blend Grid
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iteration 011
+- Same candidate score families
+- Blend search expanded from 0.25/0.50/0.75 pairwise weights to a denser
+  validation grid: 0.10, 0.20, ..., 0.90
+
+Hypothesis:
+
+```text
+The coarse pairwise blend grid may be missing a better validation-transfer
+tradeoff. A denser grid could recover the headline selector's top-20 strength
+while preserving some of the rank-blend MRR gain.
+```
+
+Best BigMHC `im_test` dense-grid results:
+
+| Score | objective | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_blend_score` | nDCG dense | 2.5000 | 0.2737 | 0.5189 | 0.4004 | 0.3924 |
+| `epicurus_blend_score` | balanced dense | 2.4815 | 0.2728 | 0.5177 | 0.4050 | 0.3891 |
+| `epicurus_blend_score` | MRR dense | 2.4815 | 0.2728 | 0.5177 | 0.4050 | 0.3891 |
+| `epicurus_blend_score` | hits dense | 2.4630 | 0.2719 | 0.5004 | 0.3848 | 0.3846 |
+| `epicurus_selected_score` | nDCG selector | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `epicurus_blend_score` | coarse nDCG blend | 2.3889 | 0.2682 | 0.5134 | 0.4082 | 0.4160 |
+
+Decision:
+
+Rejected. The denser grid improves over several published top-20 baselines, but
+it does not beat the nDCG selector on the primary top-20 metrics and it loses
+the coarse nDCG blend's MRR advantage. This is a useful overfitting warning:
+more validation search capacity is not automatically better transfer.
