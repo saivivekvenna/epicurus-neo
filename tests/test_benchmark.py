@@ -44,6 +44,7 @@ def _toy_rows(patient: str, study: str, offset: int) -> list[dict]:
 
 def test_add_baseline_scores_and_feature_inference():
     frame = pd.DataFrame(_toy_rows("p1", "s1", 1))
+    frame["all_null_numeric"] = pd.NA
     scored = add_baseline_scores(frame)
     assert "baseline_binding_score" in scored.columns
     assert "baseline_pvac_style_score" in scored.columns
@@ -51,6 +52,7 @@ def test_add_baseline_scores_and_feature_inference():
     assert "baseline_netmhcpan_el_score" in scored.columns
     features = infer_numeric_feature_columns(scored)
     assert "presentation_score" in features
+    assert "all_null_numeric" not in features
     assert "label_weight" not in features
     assert "Screening Status" not in features
 

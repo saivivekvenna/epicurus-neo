@@ -49,7 +49,9 @@ def infer_numeric_feature_columns(frame: pd.DataFrame) -> list[str]:
     for column in frame.columns:
         if column in NON_FEATURE_COLUMNS:
             continue
-        if pd.api.types.is_numeric_dtype(frame[column]):
+        if pd.api.types.is_numeric_dtype(frame[column]) and pd.to_numeric(
+            frame[column], errors="coerce"
+        ).notna().any():
             columns.append(column)
     return sorted(columns)
 
