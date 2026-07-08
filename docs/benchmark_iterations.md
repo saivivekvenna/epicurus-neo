@@ -889,3 +889,63 @@ does not improve the primary fixed top-20 hit metric, and the all-feature
 selector overfits validation choices enough to reduce nDCG/MRR. The next PLM
 attempt should not just swap similarity columns; it should use stronger
 embeddings or fine-tuned/listwise fusion with validation safeguards.
+
+## Iteration 021: Fixed-20 Gate-Targeted Policies
+
+Acceptance gate:
+
+- Beat `mean_hits@20 > 2.5556` or `precision@20 > 0.2765`
+- Keep `recall@20 >= 0.5259`
+- Keep `nDCG@20 >= 0.4057`
+- Use only train/validation labels for feature engineering, model selection,
+  calibration, thresholding, and policy choice
+
+Experiments:
+
+1. **All-feature hits-first selector**
+   - Candidate scores: exact retrieval, biochemical retrieval, motif retrieval,
+     PLM retrieval, MHCflurry presentation, and MHCflurry processing
+   - Objective: validation `hits`
+   - Evidence thresholds: `min_positive` in `{1, 2, 3, 5, 10, 20}`
+2. **Diversity-aware fixed-20 reranker**
+   - Base score: validation-selected current headline policy
+   - Greedy top-20 reranking penalizes biochemical similarity to already
+     selected peptides
+   - Diversity lambda selected on validation only
+3. **High-confidence-core then fill**
+   - Promote candidates that clear a validation-selected confidence threshold,
+     then fill remaining top-20 slots with the current headline score
+   - Confidence signals: retrieval, motif, PLM, and MHCflurry columns
+4. **Supervised train+validation ranker**
+   - Train on `im_train+im_val` with existing out-of-fold retrieval features
+   - Evaluate once on locked `im_test`
+   - Manual leakage check: `shared_mutant_hla` was empty. The generic leakage
+     guard reports shared pseudo-patients because BigMHC encodes HLA as
+     `patient_id`, and shared empty wildtype keys because these peptides do not
+     have wildtype sequences; those are not exact mutant-peptide leakage.
+
+Results:
+
+| Policy | Selection basis | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR | Accept? |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Current headline | validation nDCG selector | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 | current |
+| All-feature hits selector, best `min_positive=1` | validation hits | 2.5370 | 0.2756 | 0.5159 | 0.3779 | 0.3571 | no |
+| Diversity-aware reranker | validation hits/nDCG; selected `lambda=0` | 2.5556 | 0.2765 | 0.5334 | 0.3988 | 0.3747 | no |
+| Confidence-core then fill | validation hits; `retrieval_plm_topk_positive_fraction >= 1.0` | 2.5185 | 0.2746 | 0.5316 | 0.4036 | 0.3694 | no |
+| Supervised train+val `epicurus_retrieval_score` | train+validation labels | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 | no |
+| Supervised train+val `epicurus_pairwise_score` | train+validation labels | 2.4815 | 0.2728 | 0.5069 | 0.3589 | 0.3139 | no |
+
+Decision:
+
+Rejected as headline replacements. The all-feature hits selector and
+confidence-core policy optimized the right primary metric on validation but did
+not transfer to locked `im_test`. Diversity selection did not help even on
+validation (`lambda=0` was selected), so there is no evidence that correlated
+top-20 bets are the current limiter. The supervised train+validation ranker also
+failed to beat the current validation-selected retrieval policy.
+
+The current headline remains the locked BigMHC fixed top-20 result. The next
+highest-leverage direction is not another validation selector over the same
+columns; it is either stronger representation learning (larger or fine-tuned
+PLM embeddings with guarded validation) or more harmonized immunogenicity
+screening data with explicit tested negatives.
