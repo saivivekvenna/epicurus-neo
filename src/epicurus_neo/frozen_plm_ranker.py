@@ -132,22 +132,33 @@ def build_frozen_plm_features(
         columns=[f"plm_embedding_{idx:03d}" for idx in range(dimension)],
     )
 
+    extra_columns: dict[str, pd.Series] = {}
     for column in base_features:
         if column in frame.columns:
-            features[column] = pd.to_numeric(frame[column], errors="coerce")
+            extra_columns[column] = pd.to_numeric(frame[column], errors="coerce")
 
     if "mhcflurry_affinity" in frame.columns:
         affinity = pd.to_numeric(frame["mhcflurry_affinity"], errors="coerce")
-        features["mhcflurry_affinity_inverse_score"] = -np.log10(affinity.where(affinity > 0))
+        extra_columns["mhcflurry_affinity_inverse_score"] = -np.log10(
+            affinity.where(affinity > 0)
+        )
     if "mhcflurry_presentation_percentile" in frame.columns:
         percentile = pd.to_numeric(frame["mhcflurry_presentation_percentile"], errors="coerce")
-        features["mhcflurry_presentation_percentile_inverse_score"] = -percentile
+        extra_columns["mhcflurry_presentation_percentile_inverse_score"] = -percentile
 
     normalized_alleles = frame["hla_allele"].map(normalize_hla)
+    allele_columns: dict[str, pd.Series] = {}
     for allele in allele_vocabulary:
         safe_name = allele.replace("*", "_").replace(":", "_").replace("-", "_")
-        features[f"hla_{safe_name}"] = (normalized_alleles == allele).astype(np.float32)
-    return features
+        allele_columns[f"hla_{safe_name}"] = (normalized_alleles == allele).astype(np.float32)
+    return pd.concat(
+        [
+            features,
+            pd.DataFrame(extra_columns, index=frame.index),
+            pd.DataFrame(allele_columns, index=frame.index),
+        ],
+        axis=1,
+    )
 
 
 def _sorted_rank_data(
