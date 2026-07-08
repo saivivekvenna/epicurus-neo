@@ -85,7 +85,10 @@ def cmd_compare_metrics(args: argparse.Namespace) -> int:
 
 
 def cmd_precision_filter(args: argparse.Namespace) -> int:
-    from epicurus_neo.precision_filter import apply_precision_threshold_files
+    from epicurus_neo.precision_filter import (
+        GroupedPrecisionThreshold,
+        apply_precision_threshold_files,
+    )
 
     output, threshold, target_summary = apply_precision_threshold_files(
         args.validation,
@@ -94,10 +97,28 @@ def cmd_precision_filter(args: argparse.Namespace) -> int:
         score_col=args.score_col,
         target_precision=args.target_precision,
         min_selected=args.min_selected,
+        group_col=args.group_col,
+        min_group_positives=args.min_group_positives,
+        min_group_selected=args.min_group_selected,
     )
+    if isinstance(threshold, GroupedPrecisionThreshold):
+        threshold_payload = {
+            "score_col": threshold.score_col,
+            "group_col": threshold.group_col,
+            "default_threshold": threshold.default_threshold.__dict__,
+            "group_thresholds": {
+                group: group_threshold.__dict__
+                for group, group_threshold in threshold.group_thresholds.items()
+            },
+            "target_precision": threshold.target_precision,
+            "min_group_positives": threshold.min_group_positives,
+            "min_group_selected": threshold.min_group_selected,
+        }
+    else:
+        threshold_payload = threshold.__dict__
     payload = {
         "output": str(output),
-        "threshold": threshold.__dict__,
+        "threshold": threshold_payload,
         "target_summary": target_summary,
     }
     if args.report_output:
@@ -433,6 +454,9 @@ def build_parser() -> argparse.ArgumentParser:
     precision_filter.add_argument("--score-col", required=True)
     precision_filter.add_argument("--target-precision", type=float, default=0.5)
     precision_filter.add_argument("--min-selected", type=int, default=1)
+    precision_filter.add_argument("--group-col")
+    precision_filter.add_argument("--min-group-positives", type=int, default=2)
+    precision_filter.add_argument("--min-group-selected", type=int, default=1)
     precision_filter.set_defaults(func=cmd_precision_filter)
 
     leakage = sub.add_parser("detect-leakage")
