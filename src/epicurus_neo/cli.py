@@ -10,6 +10,7 @@ from epicurus_neo.benchmark import train_and_evaluate
 from epicurus_neo.data_manifest import load_dataset_manifest
 from epicurus_neo.leakage import detect_exact_leakage
 from epicurus_neo.metrics import group_metrics, summarize_group_metrics
+from epicurus_neo.portfolio import PortfolioConstraints, select_portfolio
 from epicurus_neo.schema import validate_schema
 from epicurus_neo.splits import assign_holdout_split
 
@@ -86,6 +87,22 @@ def cmd_make_holdout_split(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_select_portfolio(args: argparse.Namespace) -> int:
+    frame = _load_table(Path(args.table))
+    selected = select_portfolio(
+        frame,
+        score_col=args.score_col,
+        constraints=PortfolioConstraints(
+            k=args.k,
+            max_per_hla=args.max_per_hla,
+            max_per_gene=args.max_per_gene,
+            min_score=args.min_score,
+        ),
+    )
+    selected.to_csv(args.output, index=False)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="epicurus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -125,6 +142,16 @@ def build_parser() -> argparse.ArgumentParser:
     holdout.add_argument("--holdout", action="append", required=True)
     holdout.add_argument("--output", required=True)
     holdout.set_defaults(func=cmd_make_holdout_split)
+
+    portfolio = sub.add_parser("select-portfolio")
+    portfolio.add_argument("table")
+    portfolio.add_argument("--score-col", default="epicurus_score")
+    portfolio.add_argument("-k", type=int, default=20)
+    portfolio.add_argument("--max-per-hla", type=int)
+    portfolio.add_argument("--max-per-gene", type=int)
+    portfolio.add_argument("--min-score", type=float)
+    portfolio.add_argument("--output", required=True)
+    portfolio.set_defaults(func=cmd_select_portfolio)
 
     return parser
 

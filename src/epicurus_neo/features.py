@@ -5,6 +5,8 @@ import math
 import numpy as np
 import pandas as pd
 
+from epicurus_neo.schema import normalize_peptide
+
 
 NON_FEATURE_COLUMNS = {
     "candidate_id",
@@ -55,9 +57,101 @@ def zscore(series: pd.Series) -> pd.Series:
     return (values - values.mean(skipna=True)) / std
 
 
+HYDROPHOBICITY = {
+    "A": 1.8,
+    "C": 2.5,
+    "D": -3.5,
+    "E": -3.5,
+    "F": 2.8,
+    "G": -0.4,
+    "H": -3.2,
+    "I": 4.5,
+    "K": -3.9,
+    "L": 3.8,
+    "M": 1.9,
+    "N": -3.5,
+    "P": -1.6,
+    "Q": -3.5,
+    "R": -4.5,
+    "S": -0.8,
+    "T": -0.7,
+    "V": 4.2,
+    "W": -0.9,
+    "Y": -1.3,
+}
+
+CHARGE = {
+    "D": -1,
+    "E": -1,
+    "K": 1,
+    "R": 1,
+    "H": 0.5,
+}
+
+
+def anchor_positions(length: int) -> set[int]:
+    """Return simple class-I anchor positions using zero-based indices."""
+    if length < 2:
+        return set()
+    return {1, length - 1}
+
+
+def mutation_deltas(mutant: object, wildtype: object) -> dict[str, float]:
+    mutant_peptide = normalize_peptide(mutant)
+    wildtype_peptide = normalize_peptide(wildtype)
+    if not mutant_peptide or not wildtype_peptide or len(mutant_peptide) != len(wildtype_peptide):
+        return {
+            "mutation_count": float("nan"),
+            "mutation_anchor_count": float("nan"),
+            "mutation_tcr_face_count": float("nan"),
+            "mutation_hydrophobicity_delta": float("nan"),
+            "mutation_charge_delta": float("nan"),
+        }
+
+    anchors = anchor_positions(len(mutant_peptide))
+    changed_positions = [
+        idx
+        for idx, (mut_aa, wt_aa) in enumerate(zip(mutant_peptide, wildtype_peptide, strict=True))
+        if mut_aa != wt_aa
+    ]
+    hydrophobicity_delta = sum(
+        HYDROPHOBICITY.get(mutant_peptide[idx], 0.0) - HYDROPHOBICITY.get(wildtype_peptide[idx], 0.0)
+        for idx in changed_positions
+    )
+    charge_delta = sum(
+        CHARGE.get(mutant_peptide[idx], 0.0) - CHARGE.get(wildtype_peptide[idx], 0.0)
+        for idx in changed_positions
+    )
+
+    return {
+        "mutation_count": float(len(changed_positions)),
+        "mutation_anchor_count": float(sum(1 for idx in changed_positions if idx in anchors)),
+        "mutation_tcr_face_count": float(sum(1 for idx in changed_positions if idx not in anchors)),
+        "mutation_hydrophobicity_delta": float(hydrophobicity_delta),
+        "mutation_charge_delta": float(charge_delta),
+    }
+
+
+def add_contrastive_features(frame: pd.DataFrame) -> pd.DataFrame:
+    """Add mutant-vs-wildtype features tied to recognition plausibility."""
+    if "mutant_peptide" not in frame.columns or "wildtype_peptide" not in frame.columns:
+        return frame.copy()
+
+    out = frame.copy()
+    deltas = [
+        mutation_deltas(mutant, wildtype)
+        for mutant, wildtype in zip(out["mutant_peptide"], out["wildtype_peptide"], strict=True)
+    ]
+    delta_frame = pd.DataFrame(deltas, index=out.index)
+    for column in delta_frame.columns:
+        if column not in out.columns:
+            out[column] = delta_frame[column]
+    return out
+
+
 def add_baseline_scores(frame: pd.DataFrame) -> pd.DataFrame:
     """Add deterministic baseline rank scores when source feature columns exist."""
-    out = frame.copy()
+    out = add_contrastive_features(frame)
 
     if "binding_affinity_nm" in out.columns:
         out["baseline_binding_score"] = out["binding_affinity_nm"].map(safe_log_inverse)
@@ -90,4 +184,3 @@ def add_baseline_scores(frame: pd.DataFrame) -> pd.DataFrame:
         out["baseline_pvac_style_score"] = sum(components) / len(components)
 
     return out
-
