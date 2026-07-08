@@ -1129,3 +1129,74 @@ the next PLM experiment should not merely increase model size. It should add
 orthogonal supervision: screened external negatives, mutant/wild-type paired
 representations, or contrastive fine-tuning with study- and HLA-grouped
 validation.
+
+## Iteration 025: External TCR-Recognition Neighborhoods
+
+Acceptance gate:
+
+- Beat `mean_hits@20 > 2.5556` or `precision@20 > 0.2765`
+- Keep `recall@20 >= 0.5259`
+- Keep `nDCG@20 >= 0.4057`
+- Construct external features without BigMHC labels
+- Use only validation labels for threshold, ranker, and policy selection
+
+External reference:
+
+- VDJdb release `2026-06-11-ZENODO`
+- Source:
+  [antigenomics/vdjdb-db](https://github.com/antigenomics/vdjdb-db/releases/tag/2026-06-11-ZENODO)
+- Filters:
+  - human TCR records
+  - MHC class I
+  - canonical 8-14mer peptides
+- Reference policies:
+  - all curated records: 1,972 peptide-HLA-origin rows
+  - higher-confidence records (`vdjdb.score >= 1`): 512 rows
+
+Features:
+
+- Rebuilt ESM2 8M embeddings using residue-only mean pooling, excluding special
+  tokens.
+- Added raw and globally centered cosine neighborhoods for:
+  - HLA-matched recognized epitopes
+  - pathogen-derived recognized epitopes
+  - human-derived recognized epitopes
+- Added top-k means, evidence/support-weighted maxima, and
+  pathogen-minus-human contrasts.
+- No BigMHC label was used to construct any VDJdb feature.
+
+Validation experiments:
+
+| Policy | Reference | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| External-feature XGBRanker | all records | 1.7818 | 0.3061 | 0.5275 | 0.4919 | 0.5014 |
+| External-feature XGBRanker | score >= 1 | 1.7818 | 0.3061 | 0.5291 | 0.4835 | 0.4929 |
+| Frozen headline fallback | score >= 1 | 1.8364 | 0.3088 | 0.5402 | 0.4994 | 0.5121 |
+| Headline + sparse recognition residual | score >= 1 | 1.8364 | 0.3088 | 0.5402 | 0.5225 | 0.5455 |
+
+The sparse residual kept the exact current headline score as the default and
+allowed only five HLA groups to switch to an external-recognition feature.
+Validation hits, precision, and recall were unchanged while nDCG and MRR
+improved.
+
+Locked results:
+
+| Policy | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR | Accept? |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Current headline | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 | current |
+| Broad VDJdb recognition selector | 2.5185 | 0.2746 | 0.5315 | 0.4194 | 0.4128 | no |
+| Sparse headline residual | 2.5370 | 0.2756 | 0.5159 | 0.3938 | 0.3890 | no |
+
+Decision:
+
+Rejected as a headline replacement. The broad selector produced a meaningful
+held-out nDCG and MRR gain and kept recall above the gate, but it lost primary
+hits and precision. The stricter five-HLA residual preserved validation hits
+while improving validation ordering, but that gain did not transfer and its
+held-out recall/nDCG fell below the gate.
+
+The result weakens the hypothesis that generic population-level recognized
+epitope proximity is enough. The next recognition experiment needs tighter
+task alignment: tumor neoantigen positives and screened negatives, paired
+mutant/wild-type tolerance features, or TCR-contact-position representations
+rather than whole-peptide mean embeddings.
