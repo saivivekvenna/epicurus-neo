@@ -289,6 +289,97 @@ def add_retrieval_features(
     return out
 
 
+def add_multik_retrieval_features(
+    frame: pd.DataFrame,
+    reference: pd.DataFrame,
+    *,
+    top_ks: tuple[int, ...] = (1, 3, 5, 10, 20),
+    exclude_self: bool = True,
+) -> pd.DataFrame:
+    """Add retrieval features for multiple neighborhood sizes in one pass."""
+    if not top_ks:
+        raise ValueError("top_ks must contain at least one value")
+    if any(top_k < 1 for top_k in top_ks):
+        raise ValueError("all top_ks must be at least 1")
+
+    out = add_normalized_columns(_ensure_canonical_minimum(frame))
+    ref = add_normalized_columns(_ensure_canonical_minimum(reference))
+    ref = ref[ref["label"].isin(["positive", "negative"])].copy()
+    if ref.empty:
+        return out
+
+    rows: list[dict[str, float]] = []
+    for _, row in out.iterrows():
+        subset = _reference_subset(ref, str(row["hla_allele_norm"]))
+        if exclude_self and "candidate_id" in row and "candidate_id" in subset.columns:
+            subset = subset[subset["candidate_id"].astype(str) != str(row["candidate_id"])]
+
+        peptide = str(row["mutant_peptide_norm"])
+        exact_pos_sims: list[float] = []
+        exact_neg_sims: list[float] = []
+        biochemical_pos_sims: list[float] = []
+        biochemical_neg_sims: list[float] = []
+        motif_pos_sims: list[float] = []
+        motif_neg_sims: list[float] = []
+        positive_embeddings: list[np.ndarray] = []
+        negative_embeddings: list[np.ndarray] = []
+        query_embedding = peptide_motif_embedding(peptide)
+
+        for _, ref_row in subset.iterrows():
+            ref_peptide = str(ref_row["mutant_peptide_norm"])
+            exact_similarity = peptide_similarity(peptide, ref_peptide)
+            biochemical_similarity = peptide_biochemical_similarity(peptide, ref_peptide)
+            ref_embedding = peptide_motif_embedding(ref_peptide)
+            motif_similarity = embedding_cosine_similarity(query_embedding, ref_embedding)
+            if pd.isna(exact_similarity):
+                continue
+            label = str(ref_row["label"])
+            if label == "positive":
+                exact_pos_sims.append(exact_similarity)
+                biochemical_pos_sims.append(biochemical_similarity)
+                motif_pos_sims.append(motif_similarity)
+                positive_embeddings.append(ref_embedding)
+            elif label == "negative":
+                exact_neg_sims.append(exact_similarity)
+                biochemical_neg_sims.append(biochemical_similarity)
+                motif_neg_sims.append(motif_similarity)
+                negative_embeddings.append(ref_embedding)
+
+        summary: dict[str, float] = {"retrieval_multik_reference_count": float(len(subset))}
+        for top_k in sorted(set(top_ks)):
+            summary.update(_retrieval_summary(f"retrieval_k{top_k}", exact_pos_sims, exact_neg_sims, top_k))
+            summary.update(
+                _retrieval_summary(
+                    f"retrieval_biochemical_k{top_k}",
+                    biochemical_pos_sims,
+                    biochemical_neg_sims,
+                    top_k,
+                )
+            )
+            summary.update(
+                _retrieval_summary(
+                    f"retrieval_motif_k{top_k}",
+                    motif_pos_sims,
+                    motif_neg_sims,
+                    top_k,
+                )
+            )
+        summary.update(
+            _prototype_similarity_summary(
+                "retrieval_motif_multik",
+                query_embedding,
+                positive_embeddings,
+                negative_embeddings,
+            )
+        )
+        rows.append(summary)
+
+    feature_frame = pd.DataFrame(rows, index=out.index)
+    for column in feature_frame.columns:
+        out[column] = feature_frame[column]
+    return out
+
+
 def add_crossfit_retrieval_features(
     frame: pd.DataFrame,
     *,
@@ -365,6 +456,22 @@ def add_crossfit_retrieval_features_file(
         n_folds=n_folds,
         fold_col=fold_col,
     )
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(output, index=False)
+    return output
+
+
+def add_multik_retrieval_features_file(
+    input_path: str | Path,
+    reference_path: str | Path,
+    output_path: str | Path,
+    *,
+    top_ks: tuple[int, ...] = (1, 3, 5, 10, 20),
+) -> Path:
+    frame = pd.read_csv(input_path)
+    reference = pd.read_csv(reference_path)
+    out = add_multik_retrieval_features(frame, reference, top_ks=top_ks)
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(output, index=False)

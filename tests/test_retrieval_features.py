@@ -1,8 +1,15 @@
+import pytest
 import pandas as pd
 
-from epicurus_neo.cli import build_parser, cmd_crossfit_retrieval_features, cmd_retrieval_features
+from epicurus_neo.cli import (
+    build_parser,
+    cmd_crossfit_retrieval_features,
+    cmd_multik_retrieval_features,
+    cmd_retrieval_features,
+)
 from epicurus_neo.retrieval_features import (
     add_crossfit_retrieval_features,
+    add_multik_retrieval_features,
     add_retrieval_features,
     embedding_cosine_similarity,
     peptide_biochemical_similarity,
@@ -77,6 +84,38 @@ def test_add_retrieval_features_excludes_self_candidate():
 
     assert pd.isna(out.loc[0, "retrieval_max_positive_similarity"])
     assert out.loc[0, "retrieval_reference_count"] == 0.0
+
+
+def test_add_multik_retrieval_features_writes_neighborhood_columns():
+    frame = pd.DataFrame(
+        {
+            "candidate_id": ["query"],
+            "hla_allele": ["HLA-A*02:01"],
+            "mutant_peptide": ["AAAA"],
+            "label": ["unknown"],
+        }
+    )
+    reference = pd.DataFrame(
+        {
+            "candidate_id": ["pos", "neg"],
+            "hla_allele": ["HLA-A*02:01", "HLA-A*02:01"],
+            "mutant_peptide": ["AAAT", "CCCC"],
+            "label": ["positive", "negative"],
+        }
+    )
+
+    out = add_multik_retrieval_features(frame, reference, top_ks=(1, 2))
+
+    assert out.loc[0, "retrieval_k1_max_positive_similarity"] == 0.75
+    assert out.loc[0, "retrieval_k2_topk_positive_fraction"] == 0.5
+    assert "retrieval_motif_multik_positive_prototype_similarity" in out.columns
+
+
+def test_add_multik_retrieval_features_rejects_bad_top_k():
+    with pytest.raises(ValueError, match="top_ks"):
+        add_multik_retrieval_features(pd.DataFrame(), pd.DataFrame(), top_ks=())
+    with pytest.raises(ValueError, match="at least 1"):
+        add_multik_retrieval_features(pd.DataFrame(), pd.DataFrame(), top_ks=(0,))
 
 
 def test_add_crossfit_retrieval_features_uses_other_fold_references_only():
@@ -166,3 +205,42 @@ def test_crossfit_retrieval_features_cli_writes_output(tmp_path):
     )
     assert cmd_crossfit_retrieval_features(args) == 0
     assert "retrieval_max_positive_similarity" in pd.read_csv(output).columns
+
+
+def test_multik_retrieval_features_cli_writes_output(tmp_path):
+    query = tmp_path / "query.csv"
+    reference = tmp_path / "reference.csv"
+    output = tmp_path / "out.csv"
+    pd.DataFrame(
+        {
+            "candidate_id": ["query"],
+            "hla_allele": ["HLA-A*02:01"],
+            "mutant_peptide": ["AAAA"],
+            "label": ["unknown"],
+        }
+    ).to_csv(query, index=False)
+    pd.DataFrame(
+        {
+            "candidate_id": ["pos"],
+            "hla_allele": ["HLA-A*02:01"],
+            "mutant_peptide": ["AAAT"],
+            "label": ["positive"],
+        }
+    ).to_csv(reference, index=False)
+
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "add-multik-retrieval-features",
+            "--input",
+            str(query),
+            "--reference",
+            str(reference),
+            "--output",
+            str(output),
+            "--top-k",
+            "1",
+        ]
+    )
+    assert cmd_multik_retrieval_features(args) == 0
+    assert "retrieval_k1_max_positive_similarity" in pd.read_csv(output).columns

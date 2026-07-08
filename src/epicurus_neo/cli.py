@@ -303,6 +303,19 @@ def cmd_retrieval_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_multik_retrieval_features(args: argparse.Namespace) -> int:
+    from epicurus_neo.retrieval_features import add_multik_retrieval_features_file
+
+    output = add_multik_retrieval_features_file(
+        args.input,
+        args.reference,
+        args.output,
+        top_ks=tuple(args.top_k or [1, 3, 5, 10, 20]),
+    )
+    print(output)
+    return 0
+
+
 def cmd_crossfit_retrieval_features(args: argparse.Namespace) -> int:
     from epicurus_neo.retrieval_features import add_crossfit_retrieval_features_file
 
@@ -570,6 +583,13 @@ def build_parser() -> argparse.ArgumentParser:
     retrieval.add_argument("--output", required=True)
     retrieval.add_argument("--top-k", type=int, default=5)
     retrieval.set_defaults(func=cmd_retrieval_features)
+
+    multik_retrieval = sub.add_parser("add-multik-retrieval-features")
+    multik_retrieval.add_argument("--input", required=True)
+    multik_retrieval.add_argument("--reference", required=True)
+    multik_retrieval.add_argument("--output", required=True)
+    multik_retrieval.add_argument("--top-k", action="append", type=int)
+    multik_retrieval.set_defaults(func=cmd_multik_retrieval_features)
 
     crossfit_retrieval = sub.add_parser("add-crossfit-retrieval-features")
     crossfit_retrieval.add_argument("--input", required=True)
