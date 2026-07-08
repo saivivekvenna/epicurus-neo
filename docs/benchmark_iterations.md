@@ -800,3 +800,46 @@ but the absolute precision remains low. This strengthens the next-build
 priority: ingest more validated screening datasets and add new signal families,
 especially patient/context features, rather than relying on relabeling or
 threshold calibration alone.
+
+## Iteration 019: UQ, Motif Retrieval, and Pairwise Ranking
+
+Dataset:
+
+- Gartner official train/test split with exact overlaps purged
+- BigMHC validation/test with regenerated retrieval features
+
+Experiments:
+
+1. **Bootstrap uncertainty ranker**
+   - Added ensemble mean/std scores and `epicurus_lower_confidence_score`
+   - Swept uncertainty penalties `0`, `0.5`, `1`, and `2`
+2. **Motif/prototype retrieval**
+   - Added deterministic peptide motif embeddings:
+     amino-acid composition, terminal residues, T-cell-face composition, length,
+     and biochemical summaries
+   - Added motif nearest-neighbor and positive/negative prototype similarities
+3. **Pairwise ranking score**
+   - Trained positive-vs-negative within-group pairwise comparisons so the model
+     optimizes ordering pressure rather than calibrated classification
+
+Results:
+
+| Experiment | Dataset | Best score | mean hits@20 | precision@20 | nDCG@20 | MRR |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| UQ lower confidence | Gartner | `epicurus_lower_confidence_score`, penalty 2 | 1.3846 | 0.0692 | 0.4056 | 0.3159 |
+| Existing hits score | Gartner | `epicurus_hits20_score` | 1.3846 | 0.0692 | 0.5208 | 0.5176 |
+| Pairwise ranker | Gartner | `epicurus_pairwise_score` | 0.9231 | 0.0462 | 0.2009 | 0.1521 |
+| Motif selector | BigMHC | `epicurus_selected_score` | 2.5556 | 0.2765 | 0.3930 | 0.3562 |
+| Current headline | BigMHC | `epicurus_selected_score` | 2.5556 | 0.2765 | 0.4057 | 0.3849 |
+| Motif blend | BigMHC | `epicurus_blend_score` | 2.4815 | 0.2728 | 0.3714 | 0.3303 |
+
+Decision:
+
+Rejected as SOTA improvements. All three ideas are useful infrastructure, and
+motif retrieval is competitive enough to keep as an available feature family,
+but none improves the locked headline. The result is informative: the current
+BigMHC SOTA-like point is not limited by a missing simple sequence-neighborhood
+feature or by a naive rank-loss swap. The next plausible SOTA attempt needs a
+materially stronger external signal, most likely real protein-language-model
+embeddings or additional harmonized immunogenicity screens, rather than another
+small handcrafted retrieval variant.
