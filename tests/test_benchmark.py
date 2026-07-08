@@ -3,6 +3,7 @@ import pytest
 
 from epicurus_neo.benchmark import (
     add_groupwise_ensemble_scores,
+    add_transferable_presentation_score,
     add_weighted_groupwise_score,
     train_and_evaluate,
 )
@@ -123,6 +124,22 @@ def test_add_weighted_groupwise_score_uses_available_components():
     )
     assert "epicurus_hits20_score" in out.columns
     assert out["epicurus_hits20_score"].between(0, 1).all()
+
+
+def test_add_transferable_presentation_score():
+    frame = pd.DataFrame(
+        {
+            "patient_id": ["p1", "p1", "p1"],
+            "mhcflurry_presentation_score": [0.9, 0.8, 0.1],
+            "seq_hydrophobicity_mean": [-1.0, 2.0, 0.0],
+            "seq_cysteine_fraction": [0.0, 0.1, 0.0],
+            "seq_aromatic_fraction": [0.1, 0.2, 0.0],
+        }
+    )
+    out = add_transferable_presentation_score(frame, group_col="patient_id")
+    assert "epicurus_transfer_score" in out.columns
+    assert out["epicurus_transfer_score"].between(0, 1).all()
+    assert out.loc[0, "epicurus_transfer_score"] > out.loc[2, "epicurus_transfer_score"]
 
 
 def test_train_eval_cli_can_ignore_shared_study_and_purge(tmp_path):

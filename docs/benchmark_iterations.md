@@ -127,3 +127,52 @@ Decision:
 Accepted as a necessary external presentation feature path. This is not yet a
 full TESLA-winning ranker, but it moves TESLA from zero top-20 hits to six using
 a reproducible local predictor.
+
+## Iteration 004: Transferable Presentation-Composition Score
+
+Dataset:
+
+- Train path: Gartner/NCI normalized data can be present but this score is
+  heuristic and source-independent
+- Test/status path: TESLA MHCflurry-scored table
+
+Hypothesis:
+
+```text
+Raw class-I presentation is necessary but not sufficient. TESLA positives are
+strongly presented and, in this dataset, less hydrophobic/cysteine/aromatic than
+many high-presentation negatives. A conservative transfer score should keep the
+presentation signal dominant while penalizing simple peptide-liability patterns.
+```
+
+Implemented score:
+
+```text
+epicurus_transfer_score =
+  0.70 * percentile_rank(mhcflurry_presentation_score)
+  + 0.15 * inverse_percentile_rank(seq_hydrophobicity_mean)
+  + 0.10 * inverse_percentile_rank(seq_cysteine_fraction)
+  + 0.05 * inverse_percentile_rank(seq_aromatic_fraction)
+```
+
+TESLA result:
+
+| Score | hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_transfer_score` | 9 | 0.4500 | 0.2727 | 0.4964 | 1.0000 |
+| `mhcflurry_presentation_score` | 6 | 0.3000 | 0.1818 | 0.2286 | 0.1429 |
+| Gartner-trained `epicurus_score` | 0 | 0.0000 | 0.0000 | 0.0000 | 0.0417 |
+
+Gartner regression check:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_hits20_score` | 1.3846 | 0.0692 | 0.8173 | 0.5208 | 0.5176 |
+| `baseline_gartner_nmer_score` | 1.3077 | 0.0654 | 0.7596 | 0.4608 | 0.4340 |
+
+Decision:
+
+Accepted as the first transferable TESLA improvement. The next iteration should
+focus on the 24 TESLA positives still missed by top 20, ideally adding
+foreignness or known-epitope-neighborhood signals rather than increasing
+TESLA-specific composition tuning.

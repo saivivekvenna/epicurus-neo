@@ -65,6 +65,44 @@ def add_weighted_groupwise_score(
     return out
 
 
+def add_transferable_presentation_score(
+    frame: pd.DataFrame,
+    *,
+    group_col: str,
+    output_col: str = "epicurus_transfer_score",
+) -> pd.DataFrame:
+    """Add a peptide/HLA transfer score that does not rely on source-specific predictors."""
+    required = {
+        "mhcflurry_presentation_score",
+        "seq_hydrophobicity_mean",
+        "seq_cysteine_fraction",
+        "seq_aromatic_fraction",
+    }
+    if not required.issubset(frame.columns):
+        return frame.copy()
+
+    out = frame.copy()
+    presentation = out.groupby(group_col)["mhcflurry_presentation_score"].rank(
+        method="average", pct=True
+    )
+    hydrophilic = 1.0 - out.groupby(group_col)["seq_hydrophobicity_mean"].rank(
+        method="average", pct=True
+    )
+    low_cysteine = 1.0 - out.groupby(group_col)["seq_cysteine_fraction"].rank(
+        method="average", pct=True
+    )
+    low_aromatic = 1.0 - out.groupby(group_col)["seq_aromatic_fraction"].rank(
+        method="average", pct=True
+    )
+    out[output_col] = (
+        0.70 * presentation
+        + 0.15 * hydrophilic
+        + 0.10 * low_cysteine
+        + 0.05 * low_aromatic
+    )
+    return out
+
+
 def evaluate_score_columns(
     frame: pd.DataFrame,
     *,
@@ -126,8 +164,10 @@ def train_and_evaluate(
         },
         output_col="epicurus_hits20_score",
     )
+    scored_test = add_transferable_presentation_score(scored_test, group_col=group_col)
 
     score_columns = [
+        "epicurus_transfer_score",
         "epicurus_hits20_score",
         "epicurus_blend_score",
         "epicurus_score",
