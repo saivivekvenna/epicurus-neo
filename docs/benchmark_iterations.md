@@ -843,3 +843,49 @@ feature or by a naive rank-loss swap. The next plausible SOTA attempt needs a
 materially stronger external signal, most likely real protein-language-model
 embeddings or additional harmonized immunogenicity screens, rather than another
 small handcrafted retrieval variant.
+
+## Iteration 020: ESM2-Tiny PLM Retrieval
+
+Dataset:
+
+- BigMHC `im_val` and `im_test`
+- Model: `facebook/esm2_t6_8M_UR50D`
+- Device: Apple MPS available; ESM2-tiny embedding generation completed locally
+- Feature family:
+  - PLM nearest positive/negative cosine similarities
+  - PLM top-k positive fraction
+  - PLM positive/negative prototype similarities
+
+Hypothesis:
+
+```text
+Handcrafted motif retrieval may be too weak. A pretrained protein language
+model should provide smoother peptide neighborhoods and capture biochemical
+regularities not represented by exact or handcrafted similarity.
+```
+
+Direct BigMHC `im_test` PLM retrieval results:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `retrieval_plm_max_positive_similarity` | 2.4259 | 0.2700 | 0.5056 | 0.3923 | 0.3808 |
+| `retrieval_plm_positive_minus_negative_similarity` | 2.4259 | 0.2700 | 0.5007 | 0.3864 | 0.3896 |
+| `retrieval_plm_positive_minus_negative_prototype_similarity` | 2.3889 | 0.2682 | 0.5152 | 0.3835 | 0.3576 |
+| `retrieval_plm_topk_positive_fraction` | 2.3519 | 0.2663 | 0.5049 | 0.3764 | 0.3698 |
+
+Selector results:
+
+| Selector | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| PLM + presentation selector | 2.4815 | 0.2728 | 0.5245 | 0.4054 | 0.3948 |
+| all retrieval families selector | 2.5556 | 0.2765 | 0.5332 | 0.3956 | 0.3655 |
+| current headline selector | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+
+Decision:
+
+Rejected as the new headline, accepted as reusable infrastructure. ESM2-tiny
+PLM retrieval is competitive and improves MRR in the PLM-only selector, but it
+does not improve the primary fixed top-20 hit metric, and the all-feature
+selector overfits validation choices enough to reduce nDCG/MRR. The next PLM
+attempt should not just swap similarity columns; it should use stronger
+embeddings or fine-tuned/listwise fusion with validation safeguards.
