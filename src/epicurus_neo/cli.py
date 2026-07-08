@@ -245,6 +245,31 @@ def cmd_retrieval_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_apply_score_selector(args: argparse.Namespace) -> int:
+    from epicurus_neo.score_selection import apply_score_selection_files
+
+    output, selection = apply_score_selection_files(
+        args.validation,
+        args.target,
+        args.output,
+        group_col=args.group_col,
+        score_columns=args.score_col,
+        k=args.k,
+        min_positive=args.min_positive,
+    )
+    payload = {
+        "output": str(output),
+        "default_score_col": selection.default_score_col,
+        "group_score_cols": selection.group_score_cols,
+        "validation_summary": selection.validation_summary,
+    }
+    if args.selection_output:
+        Path(args.selection_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.selection_output).write_text(json.dumps(payload, indent=2) + "\n")
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="epicurus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -359,6 +384,17 @@ def build_parser() -> argparse.ArgumentParser:
     retrieval.add_argument("--output", required=True)
     retrieval.add_argument("--top-k", type=int, default=5)
     retrieval.set_defaults(func=cmd_retrieval_features)
+
+    selector = sub.add_parser("apply-score-selector")
+    selector.add_argument("--validation", required=True)
+    selector.add_argument("--target", required=True)
+    selector.add_argument("--output", required=True)
+    selector.add_argument("--selection-output")
+    selector.add_argument("--group-col", default="patient_id")
+    selector.add_argument("--score-col", action="append", required=True)
+    selector.add_argument("-k", type=int, default=20)
+    selector.add_argument("--min-positive", type=int, default=1)
+    selector.set_defaults(func=cmd_apply_score_selector)
 
     return parser
 

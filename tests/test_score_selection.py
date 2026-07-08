@@ -1,5 +1,6 @@
 import pandas as pd
 
+from epicurus_neo.cli import build_parser, cmd_apply_score_selector
 from epicurus_neo.score_selection import apply_score_selection, select_score_columns_by_group
 
 
@@ -73,3 +74,52 @@ def test_select_score_columns_uses_default_when_group_has_too_few_positives():
     )
 
     assert selection.group_score_cols["B"] == selection.default_score_col
+
+
+def test_apply_score_selector_cli_writes_outputs(tmp_path):
+    validation = tmp_path / "validation.csv"
+    target = tmp_path / "target.csv"
+    output = tmp_path / "scored.csv"
+    selection_output = tmp_path / "selection.json"
+    pd.DataFrame(
+        {
+            "hla_allele": ["A", "A"],
+            "label": ["positive", "negative"],
+            "score_a": [0.9, 0.1],
+            "score_b": [0.1, 0.9],
+        }
+    ).to_csv(validation, index=False)
+    pd.DataFrame(
+        {
+            "hla_allele": ["A"],
+            "score_a": [0.4],
+            "score_b": [0.6],
+        }
+    ).to_csv(target, index=False)
+
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "apply-score-selector",
+            "--validation",
+            str(validation),
+            "--target",
+            str(target),
+            "--output",
+            str(output),
+            "--selection-output",
+            str(selection_output),
+            "--group-col",
+            "hla_allele",
+            "--score-col",
+            "score_a",
+            "--score-col",
+            "score_b",
+            "-k",
+            "1",
+        ]
+    )
+
+    assert cmd_apply_score_selector(args) == 0
+    assert "epicurus_selected_score" in pd.read_csv(output).columns
+    assert "score_a" in selection_output.read_text()
