@@ -397,6 +397,7 @@ BigMHC `im_test` result:
 | Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `epicurus_selected_score` (`objective=ndcg`) | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `epicurus_selected_score` (`objective=mrr`) | 2.5185 | 0.2746 | 0.5308 | 0.4088 | 0.3880 |
 | `epicurus_selected_score` (`objective=hits`) | 2.5370 | 0.2756 | 0.5159 | 0.3870 | 0.3710 |
 | `epicurus_retrieval_score` | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
 | `TransPHLA` | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
@@ -406,8 +407,10 @@ BigMHC `im_test` result:
 
 Decision:
 
-Accepted as the new BigMHC headline result. It beats the published BigMHC
-comparison columns on mean hits@20, precision@20, recall@20, and nDCG@20 using
-validation-only score-family selection. It does not beat the best MRR observed
-among all available scores, so the next iteration should focus on early-first
-ranking without giving up the top-20 gains.
+Accepted as the new BigMHC headline result. The nDCG objective gives the best
+hits@20/precision@20 operating point, while the MRR objective gives the best
+observed Epicurus recall@n and nDCG@n operating point. Both beat the published
+BigMHC comparison columns on mean hits@20, precision@20, recall@20, and nDCG@20
+using validation-only score-family selection. Neither beats the best MRR
+observed among all available scores, so the next iteration should focus on
+early-first ranking without giving up the top-20 gains.
