@@ -1067,3 +1067,65 @@ direction remains stronger out-of-distribution signal rather than more
 validation selection over BigMHC-native columns: larger/fine-tuned PLM
 embeddings, external screened negatives, or a proper listwise ranker trained on
 additional harmonized immunogenicity data.
+
+## Iteration 024: Frozen PLM Learning-to-Rank
+
+Acceptance gate:
+
+- Beat `mean_hits@20 > 2.5556` or `precision@20 > 0.2765`
+- Keep `recall@20 >= 0.5259`
+- Keep `nDCG@20 >= 0.4057`
+- Use only train/validation labels for encoder and ranker selection
+
+Experiment:
+
+1. Generated normalized mean-pooled peptide embeddings with two frozen ESM-2
+   encoders:
+   - `facebook/esm2_t6_8M_UR50D`
+   - `facebook/esm2_t12_35M_UR50D`
+2. Combined the embeddings with:
+   - MHCflurry presentation and processing features
+   - mutation-position and physicochemical features
+   - leakage-controlled exact and biochemical retrieval features
+   - train-derived HLA one-hot features
+3. Trained grouped `XGBRanker` models over a validation-only grid:
+   - objectives: `rank:ndcg`, `rank:pairwise`
+   - depths: `2`, `3`, `4`
+   - learning-rate/tree pairs: `(0.03, 300)`, `(0.06, 180)`
+4. Selected the encoder and ranker lexicographically by validation hits,
+   precision, recall, nDCG, and MRR.
+5. Refit the frozen selection on BigMHC `im_train+im_val`, then evaluated it
+   once on locked `im_test`.
+
+Validation selection:
+
+| Encoder | Selected configuration | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| ESM2 8M | nDCG, 300 trees, depth 2 | 1.7455 | 0.3043 | 0.5271 | 0.4876 | 0.5021 |
+| ESM2 35M | pairwise, 180 trees, depth 2 | 1.7273 | 0.3034 | 0.5234 | 0.4783 | 0.4970 |
+
+Locked result:
+
+| Policy | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR | Accept? |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Current headline | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 | current |
+| Frozen ESM2 8M + XGBRanker | 2.4259 | 0.2700 | 0.5247 | 0.4017 | 0.3883 | no |
+
+Residual check:
+
+The frozen PLM score was also rank-blended with the current headline score
+using weights from `0.025` through `1.0`. This check used validation labels
+only. The unmodified headline score remained best on validation hits at
+`1.8364`; no positive PLM weight improved that primary metric. The residual
+variant was therefore rejected before another locked-test evaluation.
+
+Decision:
+
+Rejected as a headline replacement. The smaller encoder generalized better
+than the larger encoder during validation, but direct frozen peptide
+embeddings plus a tree ranker did not add enough recognition signal to beat the
+current retrieval/presentation policy. The infrastructure remains useful, but
+the next PLM experiment should not merely increase model size. It should add
+orthogonal supervision: screened external negatives, mutant/wild-type paired
+representations, or contrastive fine-tuning with study- and HLA-grouped
+validation.
