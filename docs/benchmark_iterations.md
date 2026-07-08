@@ -623,3 +623,50 @@ feature path gives the learned stacker a leakage-safer training view of the
 retrieval signal, but the gradient-boosted probability model does not transfer
 to the locked BigMHC test set. The current evidence continues to favor
 validation-selected score policies over direct supervised stacking.
+
+## Iteration 015: Minimum-Positive Evidence Selector
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iterations 008-014
+- Same candidate score families as the nDCG selector:
+  - exact retrieval
+  - biochemical retrieval
+  - MHCflurry presentation/processing
+  - `epicurus_transfer_score`
+- Selection objective: validation `nDCG@20`
+- Sweep: require at least 2, 3, 5, or 10 validation positives before trusting an
+  HLA-specific score-family choice; otherwise use the global validation winner
+
+Hypothesis:
+
+```text
+Per-HLA validation selection may overfit low-evidence HLA groups. Raising the
+minimum-positive threshold should reduce noisy HLA-specific choices and may
+improve held-out transfer, especially nDCG/MRR, even if it gives up some
+score-family specialization.
+```
+
+BigMHC `im_test` result:
+
+| Score | min positives | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_selected_score` | 1 | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `epicurus_selected_score` | 2 | 2.5000 | 0.2737 | 0.5278 | 0.4104 | 0.3947 |
+| `epicurus_selected_score` | 3 | 2.4630 | 0.2719 | 0.5031 | 0.4057 | 0.3986 |
+| `epicurus_selected_score` | 5 | 2.4630 | 0.2719 | 0.5031 | 0.4057 | 0.3986 |
+| `epicurus_selected_score` | 10 | 2.4074 | 0.2691 | 0.5003 | 0.4069 | 0.4109 |
+| `epicurus_retrieval_score` | single score | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `TransPHLA` | published | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
+| `MHCnuggets-2.4.0` | published | 2.4074 | 0.2691 | 0.5259 | 0.3927 | 0.3785 |
+| `netmhcpan_41_score` | published | 2.3519 | 0.2663 | 0.5100 | 0.4001 | 0.4015 |
+
+Decision:
+
+Accepted as a secondary operating point, not the headline. `min_positive=2`
+improves held-out nDCG over the current headline and keeps recall above the
+published comparison columns, but it gives up hits@20 and precision@20. The
+current `min_positive=1` nDCG selector remains the top-20 headline because
+hits/precision/recall are the primary hackathon submission constraints. The
+sweep does show that evidence-gating HLA-specific choices is a useful control
+against validation overfitting.
