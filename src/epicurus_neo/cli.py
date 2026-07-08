@@ -360,6 +360,31 @@ def cmd_build_plm_embedding_cache(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_frozen_plm_rank(args: argparse.Namespace) -> int:
+    from epicurus_neo.frozen_plm_ranker import run_frozen_plm_ranker_files
+
+    scored_output, selection_output, selection = run_frozen_plm_ranker_files(
+        args.train,
+        args.validation,
+        args.train_validation,
+        args.target,
+        args.embedding_cache,
+        args.output,
+        args.selection_output,
+        group_col=args.group_col,
+        k=args.k,
+    )
+    payload = {
+        "output": str(scored_output),
+        "selection_output": str(selection_output),
+        "model_name": selection.model_name,
+        "config": selection.config.__dict__,
+        "validation_summary": selection.validation_summary,
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -630,6 +655,18 @@ def build_parser() -> argparse.ArgumentParser:
     plm_cache.add_argument("--batch-size", type=int, default=64)
     plm_cache.add_argument("--device")
     plm_cache.set_defaults(func=cmd_build_plm_embedding_cache)
+
+    frozen_plm_rank = sub.add_parser("frozen-plm-rank")
+    frozen_plm_rank.add_argument("--train", required=True)
+    frozen_plm_rank.add_argument("--validation", required=True)
+    frozen_plm_rank.add_argument("--train-validation", required=True)
+    frozen_plm_rank.add_argument("--target", required=True)
+    frozen_plm_rank.add_argument("--embedding-cache", required=True)
+    frozen_plm_rank.add_argument("--output", required=True)
+    frozen_plm_rank.add_argument("--selection-output", required=True)
+    frozen_plm_rank.add_argument("--group-col", default="hla_allele")
+    frozen_plm_rank.add_argument("-k", type=int, default=20)
+    frozen_plm_rank.set_defaults(func=cmd_frozen_plm_rank)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)
