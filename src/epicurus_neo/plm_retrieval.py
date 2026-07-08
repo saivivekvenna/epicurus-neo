@@ -63,6 +63,62 @@ def compute_plm_embeddings(
     return embeddings
 
 
+def save_plm_embedding_cache(
+    embeddings: dict[str, np.ndarray],
+    output_path: str | Path,
+    *,
+    model_name: str,
+) -> Path:
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    peptides = sorted(embeddings)
+    matrix = (
+        np.stack([embeddings[peptide] for peptide in peptides])
+        if peptides
+        else np.empty((0, 0), dtype=np.float32)
+    )
+    np.savez_compressed(
+        output,
+        peptides=np.asarray(peptides),
+        embeddings=matrix.astype(np.float32),
+        model_name=np.asarray(model_name),
+    )
+    return output
+
+
+def load_plm_embedding_cache(path: str | Path) -> tuple[dict[str, np.ndarray], str]:
+    with np.load(path, allow_pickle=False) as payload:
+        peptides = payload["peptides"].astype(str).tolist()
+        matrix = payload["embeddings"]
+        model_name = str(payload["model_name"].item())
+    embeddings = {
+        peptide: vector.astype(np.float32, copy=False)
+        for peptide, vector in zip(peptides, matrix, strict=True)
+    }
+    return embeddings, model_name
+
+
+def build_plm_embedding_cache(
+    input_paths: list[str | Path],
+    output_path: str | Path,
+    *,
+    model_name: str = "facebook/esm2_t6_8M_UR50D",
+    batch_size: int = 64,
+    device: str | None = None,
+) -> Path:
+    peptides: list[str] = []
+    for input_path in input_paths:
+        frame = pd.read_csv(input_path, usecols=["mutant_peptide"])
+        peptides.extend(frame["mutant_peptide"].astype(str).tolist())
+    embeddings = compute_plm_embeddings(
+        peptides,
+        model_name=model_name,
+        batch_size=batch_size,
+        device=device,
+    )
+    return save_plm_embedding_cache(embeddings, output_path, model_name=model_name)
+
+
 def add_embedding_retrieval_features(
     frame: pd.DataFrame,
     reference: pd.DataFrame,

@@ -346,6 +346,20 @@ def cmd_plm_retrieval_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_build_plm_embedding_cache(args: argparse.Namespace) -> int:
+    from epicurus_neo.plm_retrieval import build_plm_embedding_cache
+
+    output = build_plm_embedding_cache(
+        args.input,
+        args.output,
+        model_name=args.model_name,
+        batch_size=args.batch_size,
+        device=args.device,
+    )
+    print(output)
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -608,6 +622,14 @@ def build_parser() -> argparse.ArgumentParser:
     plm_retrieval.add_argument("--device")
     plm_retrieval.add_argument("--top-k", type=int, default=5)
     plm_retrieval.set_defaults(func=cmd_plm_retrieval_features)
+
+    plm_cache = sub.add_parser("build-plm-embedding-cache")
+    plm_cache.add_argument("--input", action="append", required=True)
+    plm_cache.add_argument("--output", required=True)
+    plm_cache.add_argument("--model-name", default="facebook/esm2_t6_8M_UR50D")
+    plm_cache.add_argument("--batch-size", type=int, default=64)
+    plm_cache.add_argument("--device")
+    plm_cache.set_defaults(func=cmd_build_plm_embedding_cache)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)
