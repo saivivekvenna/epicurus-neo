@@ -711,3 +711,48 @@ to the locked BigMHC split. This is strong evidence that a 50% true-positive
 rate cannot be claimed from score thresholding alone; reaching that target will
 require either materially better patient-specific signal, stronger external
 training data, or a much smaller/stricter nomination budget.
+
+## Iteration 017: HLA-Grouped Precision Thresholds
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iteration 016
+- Validation threshold still targets at least 50% precision with
+  `min_selected=20`
+- Thresholds are calibrated per `hla_allele` when the validation group has
+  enough positive evidence; otherwise the global threshold is used
+- Tested score columns:
+  - `retrieval_topk_positive_fraction`
+  - `retrieval_biochemical_topk_positive_fraction`
+  - `mhcflurry_processing_score`
+  - `mhcflurry_presentation_score`
+  - `retrieval_positive_minus_negative_similarity`
+
+Hypothesis:
+
+```text
+The global precision threshold may fail because different HLA alleles have
+different score calibration curves. Per-HLA calibration, with a global fallback
+for low-evidence alleles, may transfer a 50% high-confidence-core target better
+than one global cutoff.
+```
+
+Best BigMHC `im_test` threshold results:
+
+| Score used for threshold | min group positives | group thresholds | test selected | test hits | test precision | test recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `retrieval_topk_positive_fraction` | 5 | 6 | 124 | 46 | 0.3710 | 0.2323 |
+| `retrieval_topk_positive_fraction` | 10 | 2 | 102 | 36 | 0.3529 | 0.1818 |
+| `retrieval_topk_positive_fraction` | 2 | 10 | 137 | 48 | 0.3504 | 0.2424 |
+| `retrieval_biochemical_topk_positive_fraction` | 5 | 7 | 150 | 52 | 0.3467 | 0.2626 |
+| `mhcflurry_processing_score` | 10 | 3 | 70 | 18 | 0.2571 | 0.0909 |
+
+Decision:
+
+Rejected as a direct route to 50% held-out precision, but accepted as a useful
+risk-control improvement over the global high-confidence-core gate. Group-aware
+calibration lifted the best precision from 35.3% to 37.1% and increased hits
+from 36 to 46, but it still did not transfer the validation 50% threshold to the
+locked test split. This reinforces the primary metric choice: for the hackathon
+submission, optimize fixed `mean_hits@20` / `precision@20`, and treat thresholded
+selection only as a confidence annotation unless the rules allow abstention.
