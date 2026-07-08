@@ -7,7 +7,7 @@ from epicurus_neo.benchmark import (
     add_weighted_groupwise_score,
     train_and_evaluate,
 )
-from epicurus_neo.cli import build_parser, cmd_train_eval
+from epicurus_neo.cli import build_parser, cmd_score_report, cmd_train_eval
 from epicurus_neo.features import add_baseline_scores, infer_numeric_feature_columns
 from epicurus_neo.model import fit_ranker
 
@@ -167,3 +167,34 @@ def test_train_eval_cli_can_ignore_shared_study_and_purge(tmp_path):
     )
     assert cmd_train_eval(args) == 0
     assert scored_path.exists()
+
+
+def test_score_report_cli_writes_multiple_scores(tmp_path):
+    table = pd.DataFrame(
+        {
+            "patient_id": ["p1", "p1", "p1"],
+            "label": ["positive", "negative", "positive"],
+            "score_a": [0.9, 0.1, 0.8],
+            "score_b": [0.1, 0.9, 0.8],
+        }
+    )
+    table_path = tmp_path / "scores.csv"
+    output_path = tmp_path / "report.json"
+    table.to_csv(table_path, index=False)
+
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "score-report",
+            str(table_path),
+            "--score-col",
+            "score_a",
+            "--score-col",
+            "score_b",
+            "--output",
+            str(output_path),
+        ]
+    )
+    assert cmd_score_report(args) == 0
+    assert output_path.exists()
+    assert "score_a" in output_path.read_text()

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from epicurus_neo.benchmark import train_and_evaluate
+from epicurus_neo.benchmark import evaluate_score_columns, train_and_evaluate
 from epicurus_neo.auto_research import build_failure_report, write_research_artifacts
 from epicurus_neo.data_manifest import load_dataset_manifest
 from epicurus_neo.download import dataset_file_plans, download_file
@@ -44,6 +44,31 @@ def cmd_metrics(args: argparse.Namespace) -> int:
     frame = _load_table(Path(args.table))
     per_group = group_metrics(frame, group_col=args.group_col, score_col=args.score_col, k=args.k)
     print(json.dumps(summarize_group_metrics(per_group), indent=2))
+    return 0
+
+
+def cmd_score_report(args: argparse.Namespace) -> int:
+    frame = _load_table(Path(args.table))
+    results = [
+        {"score_col": item.score_col, "summary": item.summary}
+        for item in evaluate_score_columns(
+            frame,
+            group_col=args.group_col,
+            score_columns=args.score_col,
+            k=args.k,
+        )
+    ]
+    payload = {
+        "table": args.table,
+        "group_col": args.group_col,
+        "k": args.k,
+        "benchmarks": results,
+    }
+    text = json.dumps(payload, indent=2)
+    if args.output:
+        Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.output).write_text(text + "\n")
+    print(text)
     return 0
 
 
@@ -221,6 +246,14 @@ def build_parser() -> argparse.ArgumentParser:
     metrics.add_argument("--score-col", required=True)
     metrics.add_argument("-k", type=int, default=20)
     metrics.set_defaults(func=cmd_metrics)
+
+    score_report = sub.add_parser("score-report")
+    score_report.add_argument("table")
+    score_report.add_argument("--group-col", default="patient_id")
+    score_report.add_argument("--score-col", action="append", required=True)
+    score_report.add_argument("-k", type=int, default=20)
+    score_report.add_argument("--output")
+    score_report.set_defaults(func=cmd_score_report)
 
     leakage = sub.add_parser("detect-leakage")
     leakage.add_argument("--train", required=True)
