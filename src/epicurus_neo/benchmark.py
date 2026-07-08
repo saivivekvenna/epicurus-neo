@@ -103,6 +103,18 @@ def add_transferable_presentation_score(
     return out
 
 
+def add_retrieval_score(
+    frame: pd.DataFrame,
+    *,
+    output_col: str = "epicurus_retrieval_score",
+) -> pd.DataFrame:
+    if "retrieval_max_positive_similarity" not in frame.columns:
+        return frame.copy()
+    out = frame.copy()
+    out[output_col] = pd.to_numeric(out["retrieval_max_positive_similarity"], errors="coerce")
+    return out
+
+
 def evaluate_score_columns(
     frame: pd.DataFrame,
     *,
@@ -165,8 +177,10 @@ def train_and_evaluate(
         output_col="epicurus_hits20_score",
     )
     scored_test = add_transferable_presentation_score(scored_test, group_col=group_col)
+    scored_test = add_retrieval_score(scored_test)
 
     score_columns = [
+        "epicurus_retrieval_score",
         "epicurus_transfer_score",
         "epicurus_hits20_score",
         "epicurus_blend_score",

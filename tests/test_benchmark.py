@@ -3,6 +3,7 @@ import pytest
 
 from epicurus_neo.benchmark import (
     add_groupwise_ensemble_scores,
+    add_retrieval_score,
     add_transferable_presentation_score,
     add_weighted_groupwise_score,
     train_and_evaluate,
@@ -140,6 +141,12 @@ def test_add_transferable_presentation_score():
     assert "epicurus_transfer_score" in out.columns
     assert out["epicurus_transfer_score"].between(0, 1).all()
     assert out.loc[0, "epicurus_transfer_score"] > out.loc[2, "epicurus_transfer_score"]
+
+
+def test_add_retrieval_score_uses_positive_similarity():
+    frame = pd.DataFrame({"retrieval_max_positive_similarity": [0.2, 0.9]})
+    out = add_retrieval_score(frame)
+    assert out["epicurus_retrieval_score"].tolist() == [0.2, 0.9]
 
 
 def test_train_eval_cli_can_ignore_shared_study_and_purge(tmp_path):
