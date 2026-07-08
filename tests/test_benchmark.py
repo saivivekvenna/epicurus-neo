@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from epicurus_neo.benchmark import train_and_evaluate
+from epicurus_neo.benchmark import add_groupwise_ensemble_scores, train_and_evaluate
+from epicurus_neo.cli import build_parser, cmd_train_eval
 from epicurus_neo.features import add_baseline_scores, infer_numeric_feature_columns
 from epicurus_neo.model import fit_ranker
 
@@ -27,6 +28,9 @@ def _toy_rows(patient: str, study: str, offset: int) -> list[dict]:
                 "expression_tpm": 50.0 if positive else 5.0,
                 "foreignness_score": 0.8 if positive else 0.1,
                 "mutation_tcr_face": 1 if positive else 0,
+                "Screening Status": 1 if positive else 0,
+                "Nmer score": 0.9 if positive else 0.1,
+                "Top netMHCpan4.0 EL ranked minimal": 0.1 if positive else 2.0,
             }
         )
     return rows
@@ -37,9 +41,12 @@ def test_add_baseline_scores_and_feature_inference():
     scored = add_baseline_scores(frame)
     assert "baseline_binding_score" in scored.columns
     assert "baseline_pvac_style_score" in scored.columns
+    assert "baseline_gartner_nmer_score" in scored.columns
+    assert "baseline_netmhcpan_el_score" in scored.columns
     features = infer_numeric_feature_columns(scored)
     assert "presentation_score" in features
     assert "label_weight" not in features
+    assert "Screening Status" not in features
 
 
 def test_fit_ranker_scores_candidates():
@@ -63,7 +70,52 @@ def test_train_and_evaluate_reports_ranker_and_baselines():
     test = pd.DataFrame(_toy_rows("p3", "s3", 3) + _toy_rows("p4", "s4", 4))
     result = train_and_evaluate(train, test, k=5)
     score_cols = {item.score_col for item in result.benchmark_results}
+    assert "epicurus_blend_score" in score_cols
     assert "epicurus_score" in score_cols
+    assert "baseline_gartner_nmer_score" in score_cols
     assert "baseline_pvac_style_score" in score_cols
     assert result.feature_columns
 
+
+def test_add_groupwise_ensemble_scores_rank_normalizes_components():
+    frame = pd.DataFrame(
+        {
+            "patient_id": ["p1", "p1", "p1"],
+            "a": [0.1, 0.2, 0.3],
+            "b": [3.0, 2.0, 1.0],
+        }
+    )
+    out = add_groupwise_ensemble_scores(
+        frame,
+        group_col="patient_id",
+        component_cols=["a", "b"],
+    )
+    assert "epicurus_blend_score" in out.columns
+    assert out["epicurus_blend_score"].between(0, 1).all()
+
+
+def test_train_eval_cli_can_ignore_shared_study_and_purge(tmp_path):
+    train = pd.DataFrame(_toy_rows("p1", "s1", 1) + _toy_rows("p2", "s1", 2))
+    test = pd.DataFrame(_toy_rows("p3", "s1", 2))
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    scored_path = tmp_path / "scored.csv"
+    train.to_csv(train_path, index=False)
+    test.to_csv(test_path, index=False)
+
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "train-eval",
+            "--train",
+            str(train_path),
+            "--test",
+            str(test_path),
+            "--ignore-shared-study",
+            "--purge-exact-overlaps",
+            "--write-scored",
+            str(scored_path),
+        ]
+    )
+    assert cmd_train_eval(args) == 0
+    assert scored_path.exists()

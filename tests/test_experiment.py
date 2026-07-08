@@ -42,8 +42,23 @@ def test_grouped_cross_validate_runs_leave_study_out():
     assert "epicurus_score" in summary["aggregate"]
 
 
-def test_grouped_cross_validate_blocks_leaky_patient_fold():
+def test_grouped_cross_validate_allows_same_study_patient_holdout():
     frame = pd.DataFrame(_rows("s1", "p1", 1) + _rows("s1", "p2", 2))
     folds = grouped_cross_validate(frame, group_col="patient_id", k=5)
+    assert all(fold.status == "ok" for fold in folds)
+
+
+def test_grouped_cross_validate_blocks_exact_peptide_leakage():
+    frame = pd.DataFrame(_rows("s1", "p1", 1) + _rows("s1", "p2", 1))
+    folds = grouped_cross_validate(frame, group_col="patient_id", k=5, purge_exact_overlaps=False)
     assert any(fold.status == "leakage_blocked" for fold in folds)
 
+
+def test_grouped_cross_validate_purges_exact_peptide_leakage():
+    frame = pd.DataFrame(
+        _rows("s1", "p1", 1)
+        + _rows("s1", "p2", 1)
+        + _rows("s1", "p3", 3)
+    )
+    folds = grouped_cross_validate(frame, group_col="patient_id", k=5)
+    assert all(fold.status == "ok" for fold in folds)

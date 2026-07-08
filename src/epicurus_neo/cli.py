@@ -11,7 +11,7 @@ from epicurus_neo.auto_research import build_failure_report, write_research_arti
 from epicurus_neo.data_manifest import load_dataset_manifest
 from epicurus_neo.download import dataset_file_plans, download_file
 from epicurus_neo.experiment import grouped_cross_validate, summarize_cross_validation
-from epicurus_neo.leakage import detect_exact_leakage
+from epicurus_neo.leakage import detect_exact_leakage, purge_train_overlaps
 from epicurus_neo.metrics import group_metrics, summarize_group_metrics
 from epicurus_neo.normalize import (
     normalize_candidate_table,
@@ -57,12 +57,15 @@ def cmd_leakage(args: argparse.Namespace) -> int:
 def cmd_train_eval(args: argparse.Namespace) -> int:
     train = _load_table(Path(args.train))
     test = _load_table(Path(args.test))
+    if args.purge_exact_overlaps:
+        train = purge_train_overlaps(train, test)
     result = train_and_evaluate(
         train,
         test,
         group_col=args.group_col,
         k=args.k,
         allow_exact_leakage=args.allow_exact_leakage,
+        include_shared_studies_as_leakage=not args.ignore_shared_study,
     )
     payload = {
         "feature_columns": result.feature_columns,
@@ -156,6 +159,7 @@ def cmd_group_cv(args: argparse.Namespace) -> int:
         metric_group_col=args.metric_group_col,
         k=args.k,
         max_splits=args.max_splits,
+        purge_exact_overlaps=not args.no_purge_exact_overlaps,
     )
     payload = {
         "summary": summarize_cross_validation(folds),
@@ -218,6 +222,8 @@ def build_parser() -> argparse.ArgumentParser:
     train_eval.add_argument("--group-col", default="patient_id")
     train_eval.add_argument("-k", type=int, default=20)
     train_eval.add_argument("--allow-exact-leakage", action="store_true")
+    train_eval.add_argument("--ignore-shared-study", action="store_true")
+    train_eval.add_argument("--purge-exact-overlaps", action="store_true")
     train_eval.add_argument("--write-scored")
     train_eval.set_defaults(func=cmd_train_eval)
 
@@ -272,6 +278,7 @@ def build_parser() -> argparse.ArgumentParser:
     group_cv.add_argument("--metric-group-col", default="patient_id")
     group_cv.add_argument("-k", type=int, default=20)
     group_cv.add_argument("--max-splits", type=int)
+    group_cv.add_argument("--no-purge-exact-overlaps", action="store_true")
     group_cv.set_defaults(func=cmd_group_cv)
 
     research = sub.add_parser("research-report")

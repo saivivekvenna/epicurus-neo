@@ -1,6 +1,6 @@
 import pandas as pd
 
-from epicurus_neo.leakage import detect_exact_leakage
+from epicurus_neo.leakage import detect_exact_leakage, purge_train_overlaps
 from epicurus_neo.schema import add_normalized_columns, supervised_rows, validate_schema
 
 
@@ -43,3 +43,9 @@ def test_detect_exact_leakage():
     assert "AAAA|HLA-A*02:01" in report.shared_mutant_hla
     assert "p1" in report.shared_patients
 
+
+def test_purge_train_overlaps_removes_exact_peptide_keys():
+    train = _frame().iloc[:2].copy()
+    test = _frame().iloc[1:].copy()
+    purged = purge_train_overlaps(train, test)
+    assert purged["candidate_id"].tolist() == ["a"]

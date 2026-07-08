@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from epicurus_neo.benchmark import BenchmarkResult, train_and_evaluate
+from epicurus_neo.leakage import detect_exact_leakage, purge_train_overlaps
 from epicurus_neo.splits import leave_group_out_splits
 
 
@@ -26,12 +27,21 @@ def grouped_cross_validate(
     feature_columns: list[str] | None = None,
     k: int = 20,
     max_splits: int | None = None,
+    purge_exact_overlaps: bool = True,
 ) -> list[FoldResult]:
     """Run leave-group-out evaluation while blocking exact leakage."""
     folds: list[FoldResult] = []
+    include_shared_studies = group_col == "study_id"
     for split in leave_group_out_splits(frame, group_col=group_col, max_splits=max_splits):
         test_groups = tuple(sorted(split.test[group_col].dropna().astype(str).unique()))
-        if split.train.empty or split.test.empty:
+        train = split.train
+        if purge_exact_overlaps:
+            train = purge_train_overlaps(train, split.test)
+            split_leakage = detect_exact_leakage(train, split.test)
+        else:
+            split_leakage = split.leakage
+
+        if train.empty or split.test.empty:
             folds.append(
                 FoldResult(
                     name=split.name,
@@ -43,7 +53,7 @@ def grouped_cross_validate(
                 )
             )
             continue
-        if split.leakage.has_leakage:
+        if split_leakage.has_blocking_leakage(include_shared_studies=include_shared_studies):
             folds.append(
                 FoldResult(
                     name=split.name,
@@ -51,17 +61,18 @@ def grouped_cross_validate(
                     test_groups=test_groups,
                     feature_columns=(),
                     benchmark_results=(),
-                    reason=str(split.leakage),
+                    reason=str(split_leakage),
                 )
             )
             continue
 
         result = train_and_evaluate(
-            split.train,
+            train,
             split.test,
             group_col=metric_group_col,
             feature_columns=feature_columns,
             k=k,
+            include_shared_studies_as_leakage=include_shared_studies,
         )
         folds.append(
             FoldResult(
@@ -98,4 +109,3 @@ def summarize_cross_validation(folds: list[FoldResult]) -> dict[str, object]:
         "leakage_blocked_folds": len(blocked),
         "aggregate": aggregate,
     }
-

@@ -25,6 +25,20 @@ NON_FEATURE_COLUMNS = {
     "label_weight",
     "assay_type",
     "split",
+    "ID",
+    "Patient",
+    "patient",
+    "Response",
+    "response",
+    "Response Type",
+    "response_type",
+    "Screening Status",
+    "target_value",
+    "immunogenicity",
+    "Immunogenicity",
+    "reactivity",
+    "Reactivity",
+    "TIL Reactivity",
 }
 
 
@@ -182,5 +196,16 @@ def add_baseline_scores(frame: pd.DataFrame) -> pd.DataFrame:
 
     if components:
         out["baseline_pvac_style_score"] = sum(components) / len(components)
+
+    if "Nmer score" in out.columns:
+        out["baseline_gartner_nmer_score"] = pd.to_numeric(out["Nmer score"], errors="coerce")
+    if "Top netMHCpan4.0 EL ranked minimal" in out.columns:
+        out["baseline_netmhcpan_el_score"] = -pd.to_numeric(
+            out["Top netMHCpan4.0 EL ranked minimal"], errors="coerce"
+        )
+    if "Top MHCflurry ranked minimal" in out.columns:
+        out["baseline_mhcflurry_score"] = -pd.to_numeric(
+            out["Top MHCflurry ranked minimal"], errors="coerce"
+        )
 
     return out
