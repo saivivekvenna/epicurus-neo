@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from epicurus_neo.benchmark import train_and_evaluate
+from epicurus_neo.auto_research import build_failure_report, write_research_artifacts
 from epicurus_neo.data_manifest import load_dataset_manifest
 from epicurus_neo.download import dataset_file_plans, download_file
 from epicurus_neo.experiment import grouped_cross_validate, summarize_cross_validation
@@ -173,6 +174,20 @@ def cmd_group_cv(args: argparse.Namespace) -> int:
     return 0 if all(fold.status != "leakage_blocked" for fold in folds) else 1
 
 
+def cmd_research_report(args: argparse.Namespace) -> int:
+    scored = _load_table(Path(args.scored))
+    report = build_failure_report(
+        scored,
+        group_col=args.group_col,
+        score_col=args.score_col,
+        k=args.k,
+        max_examples=args.max_examples,
+    )
+    report_path, prompt_path = write_research_artifacts(report, output_dir=args.output_dir)
+    print(json.dumps({"report": str(report_path), "prompt": str(prompt_path)}, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="epicurus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -250,6 +265,15 @@ def build_parser() -> argparse.ArgumentParser:
     group_cv.add_argument("-k", type=int, default=20)
     group_cv.add_argument("--max-splits", type=int)
     group_cv.set_defaults(func=cmd_group_cv)
+
+    research = sub.add_parser("research-report")
+    research.add_argument("--scored", required=True)
+    research.add_argument("--group-col", default="patient_id")
+    research.add_argument("--score-col", default="epicurus_score")
+    research.add_argument("-k", type=int, default=20)
+    research.add_argument("--max-examples", type=int, default=20)
+    research.add_argument("--output-dir", required=True)
+    research.set_defaults(func=cmd_research_report)
 
     return parser
 
