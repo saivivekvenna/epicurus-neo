@@ -44,6 +44,27 @@ def add_groupwise_ensemble_scores(
     return out
 
 
+def add_weighted_groupwise_score(
+    frame: pd.DataFrame,
+    *,
+    group_col: str,
+    weights: dict[str, float],
+    output_col: str,
+) -> pd.DataFrame:
+    out = frame.copy()
+    usable = {col: weight for col, weight in weights.items() if col in out.columns and weight > 0}
+    if not usable:
+        return out
+
+    total = sum(usable.values())
+    score = 0.0
+    for col, weight in usable.items():
+        percentile_rank = out.groupby(group_col)[col].rank(method="average", pct=True)
+        score = score + (weight / total) * percentile_rank
+    out[output_col] = score
+    return out
+
+
 def evaluate_score_columns(
     frame: pd.DataFrame,
     *,
@@ -96,8 +117,18 @@ def train_and_evaluate(
             "baseline_mhcflurry_score",
         ],
     )
+    scored_test = add_weighted_groupwise_score(
+        scored_test,
+        group_col=group_col,
+        weights={
+            "baseline_gartner_nmer_score": 0.9,
+            "baseline_netmhcpan_el_score": 0.1,
+        },
+        output_col="epicurus_hits20_score",
+    )
 
     score_columns = [
+        "epicurus_hits20_score",
         "epicurus_blend_score",
         "epicurus_score",
         "epicurus_immunogenicity_prob",

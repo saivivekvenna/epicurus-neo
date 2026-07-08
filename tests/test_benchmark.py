@@ -1,7 +1,11 @@
 import pandas as pd
 import pytest
 
-from epicurus_neo.benchmark import add_groupwise_ensemble_scores, train_and_evaluate
+from epicurus_neo.benchmark import (
+    add_groupwise_ensemble_scores,
+    add_weighted_groupwise_score,
+    train_and_evaluate,
+)
 from epicurus_neo.cli import build_parser, cmd_train_eval
 from epicurus_neo.features import add_baseline_scores, infer_numeric_feature_columns
 from epicurus_neo.model import fit_ranker
@@ -70,6 +74,7 @@ def test_train_and_evaluate_reports_ranker_and_baselines():
     test = pd.DataFrame(_toy_rows("p3", "s3", 3) + _toy_rows("p4", "s4", 4))
     result = train_and_evaluate(train, test, k=5)
     score_cols = {item.score_col for item in result.benchmark_results}
+    assert "epicurus_hits20_score" in score_cols
     assert "epicurus_blend_score" in score_cols
     assert "epicurus_score" in score_cols
     assert "baseline_gartner_nmer_score" in score_cols
@@ -92,6 +97,24 @@ def test_add_groupwise_ensemble_scores_rank_normalizes_components():
     )
     assert "epicurus_blend_score" in out.columns
     assert out["epicurus_blend_score"].between(0, 1).all()
+
+
+def test_add_weighted_groupwise_score_uses_available_components():
+    frame = pd.DataFrame(
+        {
+            "patient_id": ["p1", "p1", "p1"],
+            "baseline_gartner_nmer_score": [0.1, 0.2, 0.3],
+            "baseline_netmhcpan_el_score": [3.0, 2.0, 1.0],
+        }
+    )
+    out = add_weighted_groupwise_score(
+        frame,
+        group_col="patient_id",
+        weights={"baseline_gartner_nmer_score": 0.9, "baseline_netmhcpan_el_score": 0.1},
+        output_col="epicurus_hits20_score",
+    )
+    assert "epicurus_hits20_score" in out.columns
+    assert out["epicurus_hits20_score"].between(0, 1).all()
 
 
 def test_train_eval_cli_can_ignore_shared_study_and_purge(tmp_path):

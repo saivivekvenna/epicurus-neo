@@ -90,3 +90,6 @@ benchmark commands.
 See [docs/download_checklist.md](docs/download_checklist.md) for exact source
 links and [docs/auto_research.md](docs/auto_research.md) for the LLM-guided
 experiment loop.
+
+Current benchmark iterations are tracked in
+[docs/benchmark_iterations.md](docs/benchmark_iterations.md).
