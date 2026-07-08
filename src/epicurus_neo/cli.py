@@ -317,6 +317,22 @@ def cmd_crossfit_retrieval_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_plm_retrieval_features(args: argparse.Namespace) -> int:
+    from epicurus_neo.plm_retrieval import add_plm_retrieval_features_file
+
+    output = add_plm_retrieval_features_file(
+        args.input,
+        args.reference,
+        args.output,
+        model_name=args.model_name,
+        batch_size=args.batch_size,
+        device=args.device,
+        top_k=args.top_k,
+    )
+    print(output)
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -562,6 +578,16 @@ def build_parser() -> argparse.ArgumentParser:
     crossfit_retrieval.add_argument("--n-folds", type=int, default=5)
     crossfit_retrieval.add_argument("--fold-col", default="retrieval_fold")
     crossfit_retrieval.set_defaults(func=cmd_crossfit_retrieval_features)
+
+    plm_retrieval = sub.add_parser("add-plm-retrieval-features")
+    plm_retrieval.add_argument("--input", required=True)
+    plm_retrieval.add_argument("--reference", required=True)
+    plm_retrieval.add_argument("--output", required=True)
+    plm_retrieval.add_argument("--model-name", default="facebook/esm2_t6_8M_UR50D")
+    plm_retrieval.add_argument("--batch-size", type=int, default=64)
+    plm_retrieval.add_argument("--device")
+    plm_retrieval.add_argument("--top-k", type=int, default=5)
+    plm_retrieval.set_defaults(func=cmd_plm_retrieval_features)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)

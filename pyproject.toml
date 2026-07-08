@@ -21,6 +21,11 @@ gpu = [
   "xgboost>=2.0",
   "lightgbm>=4.0",
 ]
+plm = [
+  "torch>=2.2",
+  "transformers>=4.44",
+  "safetensors>=0.4",
+]
 mhc = [
   "mhcflurry>=2.2.1",
 ]
