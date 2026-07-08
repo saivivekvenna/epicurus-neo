@@ -51,6 +51,28 @@ def test_select_blends_by_group_can_choose_pairwise_blend():
     assert selection.group_weights["A"] == {"score_a": 0.5, "score_b": 0.5}
 
 
+def test_select_blends_by_group_accepts_custom_pair_weights():
+    validation = pd.DataFrame(
+        {
+            "hla_allele": ["A"] * 5,
+            "label": ["positive", "negative", "positive", "negative", "negative"],
+            "score_a": [0.9, 0.8, 0.1, 0.2, 0.0],
+            "score_b": [0.2, 0.0, 0.9, 0.8, 0.1],
+        }
+    )
+
+    selection = select_blends_by_group(
+        validation,
+        group_col="hla_allele",
+        score_columns=["score_a", "score_b"],
+        k=2,
+        objective="hits",
+        pair_weights=(0.4,),
+    )
+
+    assert selection.group_weights["A"] == {"score_a": 0.4, "score_b": 0.6}
+
+
 def test_apply_blend_selection_tracks_blend_source():
     validation = pd.DataFrame(
         {
@@ -121,6 +143,8 @@ def test_apply_blend_selector_cli_writes_outputs(tmp_path):
             "score_a",
             "--score-col",
             "score_b",
+            "--pair-weight",
+            "0.4",
             "-k",
             "2",
             "--objective",
@@ -130,4 +154,6 @@ def test_apply_blend_selector_cli_writes_outputs(tmp_path):
 
     assert cmd_apply_blend_selector(args) == 0
     assert "epicurus_blend_score" in pd.read_csv(output).columns
-    assert "default_blend_name" in selection_output.read_text()
+    selection_text = selection_output.read_text()
+    assert "default_blend_name" in selection_text
+    assert "0.4" in selection_text

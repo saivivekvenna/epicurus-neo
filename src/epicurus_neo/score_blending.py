@@ -25,10 +25,14 @@ def _available_score_columns(frame: pd.DataFrame, score_columns: list[str]) -> l
     return [col for col in score_columns if col in frame.columns]
 
 
-def _candidate_weight_sets(score_columns: list[str]) -> list[dict[str, float]]:
+def _candidate_weight_sets(
+    score_columns: list[str],
+    *,
+    pair_weights: tuple[float, ...] = (0.25, 0.5, 0.75),
+) -> list[dict[str, float]]:
     weights: list[dict[str, float]] = [{col: 1.0} for col in score_columns]
     for left, right in combinations(score_columns, 2):
-        for left_weight in (0.25, 0.5, 0.75):
+        for left_weight in pair_weights:
             weights.append({left: left_weight, right: 1.0 - left_weight})
     return weights
 
@@ -63,6 +67,7 @@ def best_blend(
     score_columns: list[str],
     k: int = 20,
     objective: str = "hits",
+    pair_weights: tuple[float, ...] = (0.25, 0.5, 0.75),
 ) -> tuple[dict[str, float], dict[str, float]]:
     available = _available_score_columns(frame, score_columns)
     if not available:
@@ -71,7 +76,7 @@ def best_blend(
     best_weights: dict[str, float] = {}
     best_summary: dict[str, float] = {}
     best_key: tuple[float, float, float, float] | None = None
-    for weights in _candidate_weight_sets(available):
+    for weights in _candidate_weight_sets(available, pair_weights=pair_weights):
         scored = add_rank_blend_score(
             frame,
             group_col=group_col,
@@ -101,6 +106,7 @@ def select_blends_by_group(
     k: int = 20,
     min_positive: int = 1,
     objective: str = "hits",
+    pair_weights: tuple[float, ...] = (0.25, 0.5, 0.75),
 ) -> BlendSelection:
     default_weights, default_summary = best_blend(
         validation,
@@ -108,6 +114,7 @@ def select_blends_by_group(
         score_columns=score_columns,
         k=k,
         objective=objective,
+        pair_weights=pair_weights,
     )
     group_weights: dict[str, dict[str, float]] = {}
     validation_summary: dict[str, dict[str, float]] = {"__default__": default_summary}
@@ -122,6 +129,7 @@ def select_blends_by_group(
             score_columns=score_columns,
             k=k,
             objective=objective,
+            pair_weights=pair_weights,
         )
         group_weights[str(group_value)] = weights
         validation_summary[str(group_value)] = summary
@@ -167,6 +175,7 @@ def apply_blend_selection_files(
     k: int = 20,
     min_positive: int = 1,
     objective: str = "hits",
+    pair_weights: tuple[float, ...] = (0.25, 0.5, 0.75),
 ) -> tuple[Path, BlendSelection]:
     validation = pd.read_csv(validation_path)
     target = pd.read_csv(target_path)
@@ -177,6 +186,7 @@ def apply_blend_selection_files(
         k=k,
         min_positive=min_positive,
         objective=objective,
+        pair_weights=pair_weights,
     )
     out = apply_blend_selection(target, selection, group_col=group_col)
     output = Path(output_path)

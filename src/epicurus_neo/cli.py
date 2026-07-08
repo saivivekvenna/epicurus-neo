@@ -274,6 +274,11 @@ def cmd_apply_score_selector(args: argparse.Namespace) -> int:
 def cmd_apply_blend_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_blending import apply_blend_selection_files, blend_name
 
+    pair_weights = tuple(args.pair_weight) if args.pair_weight else (0.25, 0.5, 0.75)
+    for weight in pair_weights:
+        if weight <= 0.0 or weight >= 1.0:
+            raise ValueError("--pair-weight values must be between 0 and 1")
+
     output, selection = apply_blend_selection_files(
         args.validation,
         args.target,
@@ -283,9 +288,11 @@ def cmd_apply_blend_selector(args: argparse.Namespace) -> int:
         k=args.k,
         min_positive=args.min_positive,
         objective=args.objective,
+        pair_weights=pair_weights,
     )
     payload = {
         "output": str(output),
+        "pair_weights": list(pair_weights),
         "default_blend": selection.default_weights,
         "default_blend_name": blend_name(selection.default_weights),
         "group_blends": selection.group_weights,
@@ -436,6 +443,7 @@ def build_parser() -> argparse.ArgumentParser:
     blend_selector.add_argument("--selection-output")
     blend_selector.add_argument("--group-col", default="patient_id")
     blend_selector.add_argument("--score-col", action="append", required=True)
+    blend_selector.add_argument("--pair-weight", action="append", type=float)
     blend_selector.add_argument("-k", type=int, default=20)
     blend_selector.add_argument("--min-positive", type=int, default=1)
     blend_selector.add_argument(
