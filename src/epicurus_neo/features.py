@@ -35,6 +35,8 @@ NON_FEATURE_COLUMNS = {
     "Screening Status",
     "target_value",
     "tgt",
+    "rand",
+    "retrieval_fold",
     "immunogenicity",
     "Immunogenicity",
     "reactivity",

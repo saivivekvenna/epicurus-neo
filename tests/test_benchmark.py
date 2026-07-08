@@ -55,6 +55,8 @@ def test_add_baseline_scores_and_feature_inference():
     assert "all_null_numeric" not in features
     assert "label_weight" not in features
     assert "Screening Status" not in features
+    assert "rand" not in features
+    assert "retrieval_fold" not in features
 
 
 def test_fit_ranker_scores_candidates():
