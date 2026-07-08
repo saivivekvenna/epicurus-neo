@@ -532,3 +532,43 @@ Rejected. The denser grid improves over several published top-20 baselines, but
 it does not beat the nDCG selector on the primary top-20 metrics and it loses
 the coarse nDCG blend's MRR advantage. This is a useful overfitting warning:
 more validation search capacity is not automatically better transfer.
+
+## Iteration 013: Guarded Rank-Blend Selector
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iterations 011-012
+- Same candidate score families
+- Guarded policy:
+  - choose the best single score family on validation as the baseline
+  - search single-score and pairwise rank blends
+  - accept a blend only if it does not fall below the baseline on a validation
+    guard metric, then optimize a secondary objective
+
+Hypothesis:
+
+```text
+The previous rank blends improved early-hit ranking but sometimes gave up too
+many top-20 hits. A validation guard on hits or recall should preserve the
+current selector's primary top-20 behavior while allowing MRR-oriented blends
+only where validation says they are not costly.
+```
+
+BigMHC `im_test` guarded results:
+
+| Score | policy | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_blend_score` | baseline nDCG, optimize MRR, guard hits | 2.4259 | 0.2700 | 0.5159 | 0.4098 | 0.4006 |
+| `epicurus_blend_score` | baseline nDCG, optimize MRR, guard recall | 2.4259 | 0.2700 | 0.5159 | 0.4098 | 0.4006 |
+| `epicurus_blend_score` | baseline nDCG, optimize balanced, guard hits | 2.4444 | 0.2709 | 0.5171 | 0.4006 | 0.3830 |
+| `epicurus_blend_score` | dense grid, baseline nDCG, optimize MRR, guard hits | 2.4815 | 0.2728 | 0.5177 | 0.4050 | 0.3891 |
+| `epicurus_selected_score` | nDCG selector | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `epicurus_blend_score` | coarse nDCG blend | 2.3889 | 0.2682 | 0.5134 | 0.4082 | 0.4160 |
+
+Decision:
+
+Rejected as a headline replacement. The guard makes the search policy more
+auditable and prevents intentionally selecting validation hit-losing blends, but
+it still does not transfer into a better held-out top-20 operating point than
+the validation-selected nDCG score selector. Keep the guarded selector as
+infrastructure for future datasets, not as the current BigMHC headline.
