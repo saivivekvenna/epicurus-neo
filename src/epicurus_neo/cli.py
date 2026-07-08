@@ -84,6 +84,29 @@ def cmd_compare_metrics(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_precision_filter(args: argparse.Namespace) -> int:
+    from epicurus_neo.precision_filter import apply_precision_threshold_files
+
+    output, threshold, target_summary = apply_precision_threshold_files(
+        args.validation,
+        args.target,
+        args.output,
+        score_col=args.score_col,
+        target_precision=args.target_precision,
+        min_selected=args.min_selected,
+    )
+    payload = {
+        "output": str(output),
+        "threshold": threshold.__dict__,
+        "target_summary": target_summary,
+    }
+    if args.report_output:
+        Path(args.report_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.report_output).write_text(json.dumps(payload, indent=2) + "\n")
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def cmd_leakage(args: argparse.Namespace) -> int:
     train = _load_table(Path(args.train))
     test = _load_table(Path(args.test))
@@ -401,6 +424,16 @@ def build_parser() -> argparse.ArgumentParser:
     compare_metrics.add_argument("--sort-by", default="mean_hits_at_k")
     compare_metrics.add_argument("--output")
     compare_metrics.set_defaults(func=cmd_compare_metrics)
+
+    precision_filter = sub.add_parser("precision-filter")
+    precision_filter.add_argument("--validation", required=True)
+    precision_filter.add_argument("--target", required=True)
+    precision_filter.add_argument("--output", required=True)
+    precision_filter.add_argument("--report-output")
+    precision_filter.add_argument("--score-col", required=True)
+    precision_filter.add_argument("--target-precision", type=float, default=0.5)
+    precision_filter.add_argument("--min-selected", type=int, default=1)
+    precision_filter.set_defaults(func=cmd_precision_filter)
 
     leakage = sub.add_parser("detect-leakage")
     leakage.add_argument("--train", required=True)
