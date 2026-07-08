@@ -1008,3 +1008,62 @@ The evidence now points away from additional selectors over the same score
 columns. The next highest-leverage path is to add materially new training signal:
 larger/fine-tuned PLM embeddings, external screened negative datasets, or a
 true listwise ranker trained on more than the BigMHC validation split.
+
+## Iteration 023: Multi-k Retrieval and Oriented MHCflurry Scores
+
+Acceptance gate:
+
+- Beat `mean_hits@20 > 2.5556` or `precision@20 > 0.2765`
+- Keep `recall@20 >= 0.5259`
+- Keep `nDCG@20 >= 0.4057`
+- Use only train/validation labels for policy selection
+
+Experiments:
+
+1. **Multi-k retrieval neighborhoods**
+   - Added reusable multi-k retrieval features for `k in {1, 3, 5, 10, 20}`
+   - Feature families:
+     - exact peptide similarity
+     - biochemical similarity
+     - motif/prototype similarity
+   - Validation reference: BigMHC `im_train`
+   - Locked test reference: BigMHC `im_train+im_val`
+   - Validation-selected objectives:
+     - hits
+     - nDCG
+     - balanced
+   - Evidence thresholds:
+     - `min_positive in {1, 2, 3, 5, 10}`
+2. **MHCflurry score orientation**
+   - Added inverse-oriented temporary score columns:
+     - `mhcflurry_affinity_inverse_score = -log10(affinity)`
+     - `mhcflurry_presentation_percentile_inverse_score = -percentile`
+   - Re-ran validation-selected policies with retrieval, motif, PLM,
+     presentation, processing, inverse affinity, and inverse percentile columns
+
+Results:
+
+| Policy | Selection basis | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR | Accept? |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Current headline | validation nDCG selector | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 | current |
+| Multi-k retrieval, best hits selector | hits, `min_positive=10` | 2.5000 | 0.2737 | 0.5081 | 0.3761 | 0.3473 | no |
+| Multi-k retrieval, best nDCG selector | nDCG, `min_positive=10` | 2.3889 | 0.2682 | 0.4996 | 0.4038 | 0.3955 | no |
+| Multi-k retrieval, best balanced selector | balanced, `min_positive=10` | 2.4074 | 0.2691 | 0.5202 | 0.4120 | 0.3950 | no |
+| Oriented scores, hits selector | hits, `min_positive=1` | 2.5370 | 0.2756 | 0.5159 | 0.3837 | 0.3747 | no |
+| Oriented scores, nDCG selector | nDCG, `min_positive=1` | 2.5556 | 0.2765 | 0.5332 | 0.4014 | 0.3830 | no |
+| Oriented scores, balanced selector | balanced, `min_positive=1` | 2.5185 | 0.2746 | 0.5308 | 0.4055 | 0.3917 | no |
+
+Decision:
+
+Rejected as a new headline. Multi-k retrieval did not improve held-out fixed
+top-20 hits, suggesting the current `k=5` retrieval neighborhood is not the
+main bottleneck. Correcting lower-is-better MHCflurry affinity/percentile into
+high-is-better score columns also failed the acceptance gate: the closest
+variant matched the primary hit/precision level but lost nDCG, while the
+balanced variant nearly matched the nDCG gate but lost primary hits.
+
+The reusable multi-k retrieval infrastructure is kept. The next highest-leverage
+direction remains stronger out-of-distribution signal rather than more
+validation selection over BigMHC-native columns: larger/fine-tuned PLM
+embeddings, external screened negatives, or a proper listwise ranker trained on
+additional harmonized immunogenicity data.
