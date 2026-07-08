@@ -949,3 +949,62 @@ highest-leverage direction is not another validation selector over the same
 columns; it is either stronger representation learning (larger or fine-tuned
 PLM embeddings with guarded validation) or more harmonized immunogenicity
 screening data with explicit tested negatives.
+
+## Iteration 022: Rank Aggregation and Bootstrap-Stable Selection
+
+Acceptance gate:
+
+- Beat `mean_hits@20 > 2.5556` or `precision@20 > 0.2765`
+- Keep `recall@20 >= 0.5259`
+- Keep `nDCG@20 >= 0.4057`
+- Use only train/validation labels for policy selection
+
+Experiments:
+
+1. **Validation-selected rank aggregation**
+   - Candidate scores: exact retrieval, biochemical retrieval, motif retrieval,
+     PLM retrieval, MHCflurry presentation, and MHCflurry processing.
+   - Generated 1,306 deterministic weight sets:
+     - single-score rank policies
+     - pair/triple/quartet/quintet policies over strong representative columns
+     - sparse Dirichlet-weighted rank mixtures with a fixed seed
+   - Selection keys tried from validation only:
+     - hits
+     - nDCG
+     - recall
+     - MRR
+     - balanced
+     - gated hits
+2. **Bootstrap-stable per-HLA score selection**
+   - Candidate scores restricted to the strongest retrieval/presentation
+     columns for runtime.
+   - For each HLA, bootstrapped validation rows and kept the HLA-specific score
+     only when it won a minimum fraction of bootstrap rounds; otherwise fell
+     back to the validation default.
+   - Stability grid:
+     - objective in `{hits, nDCG}`
+     - `min_positive` in `{1, 2, 5, 10}`
+     - stability in `{0.4, 0.6, 0.8}`
+
+Results:
+
+| Policy | Selection basis | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR | Accept? |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Current headline | validation nDCG selector | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 | current |
+| Rank aggregation, validation hits | 1,306 validation-selected weight sets | 2.4815 | 0.2728 | 0.5066 | 0.3889 | 0.3671 | no |
+| Rank aggregation, validation nDCG | 1,306 validation-selected weight sets | 2.3704 | 0.2672 | 0.5105 | 0.3924 | 0.3602 | no |
+| Rank aggregation, validation MRR/balanced | 1,306 validation-selected weight sets | 2.2778 | 0.2626 | 0.4921 | 0.3986 | 0.3841 | no |
+| Bootstrap-stable selector | hits, `min_positive=1`, stability `0.4` | 2.5556 | 0.2765 | 0.5281 | 0.4146 | 0.3978 | no |
+
+Decision:
+
+Rejected as a new headline. Bootstrap-stable selection is a useful secondary
+operating point because it preserves the current primary hit/precision level and
+improves nDCG/MRR, but the acceptance gate requires a strict improvement in
+`mean_hits@20` or `precision@20`, which it does not provide. Rank aggregation
+over the same feature families overfits validation and loses held-out hits.
+
+The evidence now points away from additional selectors over the same score
+columns. The next highest-leverage path is to add materially new training signal:
+larger/fine-tuned PLM embeddings, external screened negative datasets, or a
+true listwise ranker trained on more than the BigMHC validation split.
