@@ -148,6 +148,8 @@ def cmd_train_eval(args: argparse.Namespace) -> int:
         k=args.k,
         allow_exact_leakage=args.allow_exact_leakage,
         include_shared_studies_as_leakage=not args.ignore_shared_study,
+        uncertainty_ensemble_size=args.uncertainty_ensemble_size,
+        uncertainty_penalty=args.uncertainty_penalty,
     )
     payload = {
         "feature_columns": result.feature_columns,
@@ -472,6 +474,8 @@ def build_parser() -> argparse.ArgumentParser:
     train_eval.add_argument("--allow-exact-leakage", action="store_true")
     train_eval.add_argument("--ignore-shared-study", action="store_true")
     train_eval.add_argument("--purge-exact-overlaps", action="store_true")
+    train_eval.add_argument("--uncertainty-ensemble-size", type=int, default=1)
+    train_eval.add_argument("--uncertainty-penalty", type=float, default=1.0)
     train_eval.add_argument("--write-scored")
     train_eval.set_defaults(func=cmd_train_eval)
 

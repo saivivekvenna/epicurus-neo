@@ -68,6 +68,22 @@ def test_fit_ranker_scores_candidates():
     assert scored["epicurus_score"].between(0, 1).all()
 
 
+def test_fit_ranker_can_emit_uncertainty_scores():
+    train = pd.DataFrame(_toy_rows("p1", "s1", 1) + _toy_rows("p2", "s2", 2))
+    test = pd.DataFrame(_toy_rows("p3", "s3", 3))
+    model = fit_ranker(
+        add_baseline_scores(train),
+        uncertainty_ensemble_size=3,
+        uncertainty_penalty=1.0,
+    )
+    scored = model.predict_scores(add_baseline_scores(test))
+
+    assert "epicurus_score_std" in scored.columns
+    assert "epicurus_lower_confidence_score" in scored.columns
+    assert scored["epicurus_lower_confidence_score"].between(0, 1).all()
+    assert (scored["epicurus_lower_confidence_score"] <= scored["epicurus_score"]).all()
+
+
 def test_ranker_predict_scores_tolerates_missing_test_features():
     train = pd.DataFrame(_toy_rows("p1", "s1", 1) + _toy_rows("p2", "s2", 2))
     test = pd.DataFrame(_toy_rows("p3", "s3", 3)).drop(columns=["Nmer score"])
@@ -86,10 +102,11 @@ def test_train_and_evaluate_blocks_exact_leakage():
 def test_train_and_evaluate_reports_ranker_and_baselines():
     train = pd.DataFrame(_toy_rows("p1", "s1", 1) + _toy_rows("p2", "s2", 2))
     test = pd.DataFrame(_toy_rows("p3", "s3", 3) + _toy_rows("p4", "s4", 4))
-    result = train_and_evaluate(train, test, k=5)
+    result = train_and_evaluate(train, test, k=5, uncertainty_ensemble_size=3)
     score_cols = {item.score_col for item in result.benchmark_results}
     assert "epicurus_hits20_score" in score_cols
     assert "epicurus_blend_score" in score_cols
+    assert "epicurus_lower_confidence_score" in score_cols
     assert "epicurus_score" in score_cols
     assert "baseline_gartner_nmer_score" in score_cols
     assert "baseline_pvac_style_score" in score_cols
@@ -172,6 +189,8 @@ def test_train_eval_cli_can_ignore_shared_study_and_purge(tmp_path):
             str(test_path),
             "--ignore-shared-study",
             "--purge-exact-overlaps",
+            "--uncertainty-ensemble-size",
+            "2",
             "--write-scored",
             str(scored_path),
         ]

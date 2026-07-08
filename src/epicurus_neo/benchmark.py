@@ -145,6 +145,8 @@ def train_and_evaluate(
     k: int = 20,
     allow_exact_leakage: bool = False,
     include_shared_studies_as_leakage: bool = True,
+    uncertainty_ensemble_size: int = 1,
+    uncertainty_penalty: float = 1.0,
 ) -> TrainEvaluateResult:
     leakage = detect_exact_leakage(train, test)
     if (
@@ -155,7 +157,12 @@ def train_and_evaluate(
 
     train_features = add_baseline_scores(train)
     test_features = add_baseline_scores(test)
-    ranker: FittedEpicurusRanker = fit_ranker(train_features, feature_columns=feature_columns)
+    ranker: FittedEpicurusRanker = fit_ranker(
+        train_features,
+        feature_columns=feature_columns,
+        uncertainty_ensemble_size=uncertainty_ensemble_size,
+        uncertainty_penalty=uncertainty_penalty,
+    )
     scored_test = ranker.predict_scores(test_features)
     scored_test = add_groupwise_ensemble_scores(
         scored_test,
@@ -184,6 +191,7 @@ def train_and_evaluate(
         "epicurus_transfer_score",
         "epicurus_hits20_score",
         "epicurus_blend_score",
+        "epicurus_lower_confidence_score",
         "epicurus_score",
         "epicurus_immunogenicity_prob",
         "baseline_gartner_nmer_score",
