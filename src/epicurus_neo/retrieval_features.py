@@ -5,7 +5,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from epicurus_neo.features import CHARGE, HYDROPHOBICITY
 from epicurus_neo.schema import add_normalized_columns
+
+
+AA_GROUPS = [
+    set("AVLIM"),
+    set("FYW"),
+    set("STNQ"),
+    set("KRH"),
+    set("DE"),
+    set("CGP"),
+]
 
 
 def peptide_similarity(left: str, right: str) -> float:
@@ -26,6 +37,37 @@ def peptide_similarity(left: str, right: str) -> float:
     return best / len(longer)
 
 
+def residue_biochemical_similarity(left: str, right: str) -> float:
+    if left == right:
+        return 1.0
+    hydrophobicity_distance = abs(HYDROPHOBICITY.get(left, 0.0) - HYDROPHOBICITY.get(right, 0.0))
+    charge_distance = abs(CHARGE.get(left, 0.0) - CHARGE.get(right, 0.0))
+    same_group = any(left in group and right in group for group in AA_GROUPS)
+    score = 1.0 - 0.10 * hydrophobicity_distance - 0.25 * charge_distance
+    if same_group:
+        score += 0.15
+    return float(min(1.0, max(0.0, score)))
+
+
+def peptide_biochemical_similarity(left: str, right: str) -> float:
+    """Return length-aware peptide similarity with conservative substitutions."""
+    if not left or not right:
+        return float("nan")
+
+    def aligned_score(shorter: str, longer: str, offset: int) -> float:
+        total = sum(
+            residue_biochemical_similarity(a, b)
+            for a, b in zip(shorter, longer[offset : offset + len(shorter)], strict=True)
+        )
+        return total / len(longer)
+
+    if len(left) == len(right):
+        return aligned_score(left, right, 0)
+
+    shorter, longer = (left, right) if len(left) < len(right) else (right, left)
+    return max(aligned_score(shorter, longer, offset) for offset in range(len(longer) - len(shorter) + 1))
+
+
 def _topk_mean(values: list[float], k: int) -> float:
     clean = [value for value in values if not pd.isna(value)]
     if not clean:
@@ -44,6 +86,27 @@ def _ensure_canonical_minimum(frame: pd.DataFrame) -> pd.DataFrame:
         if column not in out.columns:
             out[column] = ""
     return out
+
+
+def _retrieval_summary(prefix: str, pos_sims: list[float], neg_sims: list[float], top_k: int) -> dict[str, float]:
+    all_pairs = [(similarity, "positive") for similarity in pos_sims]
+    all_pairs.extend((similarity, "negative") for similarity in neg_sims)
+    nearest = sorted(all_pairs, reverse=True)[:top_k]
+    nearest_pos_fraction = (
+        sum(1 for _, label in nearest if label == "positive") / len(nearest)
+        if nearest
+        else float("nan")
+    )
+    max_pos = max(pos_sims) if pos_sims else float("nan")
+    max_neg = max(neg_sims) if neg_sims else float("nan")
+    return {
+        f"{prefix}_max_positive_similarity": max_pos,
+        f"{prefix}_max_negative_similarity": max_neg,
+        f"{prefix}_positive_minus_negative_similarity": max_pos - max_neg,
+        f"{prefix}_topk_positive_similarity_mean": _topk_mean(pos_sims, top_k),
+        f"{prefix}_topk_negative_similarity_mean": _topk_mean(neg_sims, top_k),
+        f"{prefix}_topk_positive_fraction": nearest_pos_fraction,
+    }
 
 
 def add_retrieval_features(
@@ -67,39 +130,35 @@ def add_retrieval_features(
             subset = subset[subset["candidate_id"].astype(str) != str(row["candidate_id"])]
 
         peptide = str(row["mutant_peptide_norm"])
-        pos_sims: list[float] = []
-        neg_sims: list[float] = []
-        all_pairs: list[tuple[float, str]] = []
+        exact_pos_sims: list[float] = []
+        exact_neg_sims: list[float] = []
+        biochemical_pos_sims: list[float] = []
+        biochemical_neg_sims: list[float] = []
         for _, ref_row in subset.iterrows():
-            similarity = peptide_similarity(peptide, str(ref_row["mutant_peptide_norm"]))
-            if pd.isna(similarity):
+            ref_peptide = str(ref_row["mutant_peptide_norm"])
+            exact_similarity = peptide_similarity(peptide, ref_peptide)
+            biochemical_similarity = peptide_biochemical_similarity(peptide, ref_peptide)
+            if pd.isna(exact_similarity):
                 continue
             label = str(ref_row["label"])
-            all_pairs.append((similarity, label))
             if label == "positive":
-                pos_sims.append(similarity)
+                exact_pos_sims.append(exact_similarity)
+                biochemical_pos_sims.append(biochemical_similarity)
             elif label == "negative":
-                neg_sims.append(similarity)
+                exact_neg_sims.append(exact_similarity)
+                biochemical_neg_sims.append(biochemical_similarity)
 
-        nearest = sorted(all_pairs, reverse=True)[:top_k]
-        nearest_pos_fraction = (
-            sum(1 for _, label in nearest if label == "positive") / len(nearest)
-            if nearest
-            else float("nan")
+        summary = _retrieval_summary("retrieval", exact_pos_sims, exact_neg_sims, top_k)
+        summary.update(
+            _retrieval_summary(
+                "retrieval_biochemical",
+                biochemical_pos_sims,
+                biochemical_neg_sims,
+                top_k,
+            )
         )
-        max_pos = max(pos_sims) if pos_sims else float("nan")
-        max_neg = max(neg_sims) if neg_sims else float("nan")
-        rows.append(
-            {
-                "retrieval_max_positive_similarity": max_pos,
-                "retrieval_max_negative_similarity": max_neg,
-                "retrieval_positive_minus_negative_similarity": max_pos - max_neg,
-                "retrieval_topk_positive_similarity_mean": _topk_mean(pos_sims, top_k),
-                "retrieval_topk_negative_similarity_mean": _topk_mean(neg_sims, top_k),
-                "retrieval_topk_positive_fraction": nearest_pos_fraction,
-                "retrieval_reference_count": float(len(subset)),
-            }
-        )
+        summary["retrieval_reference_count"] = float(len(subset))
+        rows.append(summary)
 
     feature_frame = pd.DataFrame(rows, index=out.index)
     for column in feature_frame.columns:
