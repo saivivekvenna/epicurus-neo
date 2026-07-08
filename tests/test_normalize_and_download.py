@@ -1,4 +1,5 @@
 from pathlib import Path
+from zipfile import ZipFile
 
 import pandas as pd
 
@@ -78,3 +79,21 @@ def test_write_normalized(tmp_path: Path):
     assert path == out
     assert out.exists()
 
+
+def test_normalize_reads_zipped_single_table(tmp_path: Path):
+    table = tmp_path / "Neopep_data_org.txt"
+    archive = tmp_path / "Neopep_data_org.txt.zip"
+    pd.DataFrame(
+        {
+            "patient": ["p1"],
+            "dataset": ["NCI"],
+            "response_type": ["CD8"],
+            "mutant_seq": ["SILNFEKLA"],
+            "wt_seq": ["SIINFEKLT"],
+        }
+    ).to_csv(table, sep="\t", index=False)
+    with ZipFile(archive, "w") as zip_file:
+        zip_file.write(table, arcname="Neopep_data_org.txt")
+
+    normalized = normalize_neoranking_neopep(archive)
+    assert normalized.loc[0, "label"] == "positive"

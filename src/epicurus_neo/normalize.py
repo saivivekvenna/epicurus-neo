@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from zipfile import ZipFile
 
 import numpy as np
 import pandas as pd
@@ -49,6 +50,13 @@ GENE_COLS = ["gene", "Gene Name", "Gene", "gene_symbol"]
 def read_table(path: str | Path) -> pd.DataFrame:
     table_path = Path(path)
     suffix = table_path.suffix.lower()
+    if suffix == ".zip":
+        with ZipFile(table_path) as archive:
+            names = [name for name in archive.namelist() if not name.endswith("/")]
+            if len(names) != 1:
+                raise ValueError(f"Expected one table file in zip archive, found {names}")
+            with archive.open(names[0]) as handle:
+                return pd.read_csv(handle, sep=None, engine="python")
     if suffix == ".csv":
         return pd.read_csv(table_path)
     if suffix in {".tsv", ".txt"}:
@@ -208,4 +216,3 @@ def write_normalized(frame: pd.DataFrame, output_path: str | Path) -> Path:
     out.parent.mkdir(parents=True, exist_ok=True)
     frame.to_csv(out, index=False)
     return out
-
