@@ -1,0 +1,71 @@
+datasets:
+  neoranking:
+    name: NeoRanking / Immunity 2023
+    role: train_validation
+    locked_test: false
+    url: https://github.com/bassanilab/NeoRanking
+    direct_download: null
+    notes: >
+      Main harmonized training backbone. Use patient-level and study-level folds;
+      do not row-split for headline claims.
+
+  tesla:
+    name: TESLA / Wells et al. 2020
+    role: locked_test
+    locked_test: true
+    url: https://pubmed.ncbi.nlm.nih.gov/33038342/
+    direct_download: null
+    notes: >
+      Locked benchmark. Do not use for feature search, threshold tuning, model
+      selection, or LLM-guided hypothesis selection.
+
+  gartner_nci:
+    name: Gartner / NCI neoantigen ranking datasets
+    role: locked_or_secondary_test
+    locked_test: true
+    url: https://nih.figshare.com/collections/Datasets_for_Development_of_a_model_for_ranking_candidate_HLA_class_I_neoantigens_based_upon_datasets_of_known_neoepitopes_/4792338
+    direct_download: null
+    notes: >
+      Contains official train/test style resources for candidate neoantigen
+      ranking. Preserve official splits when available.
+
+  cedar:
+    name: CEDAR cancer epitope database
+    role: auxiliary_train_validation
+    locked_test: false
+    url: https://cedar.iedb.org/
+    direct_download: https://cedar.iedb.org/database_export_v3.php
+    notes: >
+      Use for extra assay labels and epitope-neighborhood retrieval. Requires
+      strict assay normalization and deduplication.
+
+  nepdb:
+    name: NEPdb
+    role: auxiliary_train_validation
+    locked_test: false
+    url: https://nep.whu.edu.cn/
+    direct_download: null
+    notes: >
+      Curated neoepitope database useful for tested negatives and external
+      validation after overlap checks.
+
+  dbpepneo2:
+    name: dbPepNeo2.0
+    role: auxiliary_retrieval_external_check
+    locked_test: false
+    url: https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2022.855976/full
+    direct_download: null
+    notes: >
+      Useful for known positive neoantigen and TCR links. High overlap risk; use
+      as retrieval features unless a strict holdout is built.
+
+  bigmhc:
+    name: BigMHC data
+    role: baseline_and_optional_train
+    locked_test: false
+    url: https://data.mendeley.com/datasets/dvmz6pkzvb/4
+    direct_download: null
+    notes: >
+      Use available BigMHC scores as baselines/features. Keep im_test locked if
+      used for external comparison.
+
