@@ -72,6 +72,18 @@ def cmd_score_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_compare_metrics(args: argparse.Namespace) -> int:
+    from epicurus_neo.metric_compare import compare_metric_reports, compare_metric_reports_file
+
+    if args.output:
+        output = compare_metric_reports_file(args.report, args.output, sort_by=args.sort_by)
+        print(output)
+    else:
+        frame = compare_metric_reports(args.report, sort_by=args.sort_by)
+        print(frame.to_csv(index=False))
+    return 0
+
+
 def cmd_leakage(args: argparse.Namespace) -> int:
     train = _load_table(Path(args.train))
     test = _load_table(Path(args.test))
@@ -383,6 +395,12 @@ def build_parser() -> argparse.ArgumentParser:
     score_report.add_argument("-k", type=int, default=20)
     score_report.add_argument("--output")
     score_report.set_defaults(func=cmd_score_report)
+
+    compare_metrics = sub.add_parser("compare-metrics")
+    compare_metrics.add_argument("report", nargs="+")
+    compare_metrics.add_argument("--sort-by", default="mean_hits_at_k")
+    compare_metrics.add_argument("--output")
+    compare_metrics.set_defaults(func=cmd_compare_metrics)
 
     leakage = sub.add_parser("detect-leakage")
     leakage.add_argument("--train", required=True)
