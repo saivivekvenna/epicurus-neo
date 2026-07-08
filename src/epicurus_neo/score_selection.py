@@ -24,6 +24,12 @@ def _score_key(
     *,
     objective: str,
 ) -> tuple[float, float, float, float]:
+    balanced_score = (
+        summary["mean_precision_at_k"]
+        + summary["mean_recall_at_k"]
+        + summary["mean_ndcg_at_k"]
+        + summary["mean_mrr"]
+    )
     keys = {
         "hits": (
             summary["mean_hits_at_k"],
@@ -48,6 +54,12 @@ def _score_key(
             summary["mean_hits_at_k"],
             summary["mean_recall_at_k"],
             summary["mean_ndcg_at_k"],
+        ),
+        "balanced": (
+            balanced_score,
+            summary["mean_hits_at_k"],
+            summary["mean_ndcg_at_k"],
+            summary["mean_mrr"],
         ),
     }
     if objective not in keys:

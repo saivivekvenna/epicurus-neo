@@ -54,6 +54,42 @@ def test_select_score_columns_can_prioritize_mrr():
     assert mrr_selection.group_score_cols["A"] == "score_mrr"
 
 
+def test_select_score_columns_can_balance_mrr_against_top_k_recovery():
+    validation = pd.DataFrame(
+        {
+            "hla_allele": ["A"] * 6,
+            "label": [
+                "positive",
+                "negative",
+                "negative",
+                "positive",
+                "positive",
+                "positive",
+            ],
+            "score_mrr": [0.95, 0.9, 0.8, 0.2, 0.1, 0.0],
+            "score_balanced": [0.9, 0.95, 0.1, 0.8, 0.7, 0.0],
+        }
+    )
+
+    mrr_selection = select_score_columns_by_group(
+        validation,
+        group_col="hla_allele",
+        score_columns=["score_mrr", "score_balanced"],
+        k=3,
+        objective="mrr",
+    )
+    balanced_selection = select_score_columns_by_group(
+        validation,
+        group_col="hla_allele",
+        score_columns=["score_mrr", "score_balanced"],
+        k=3,
+        objective="balanced",
+    )
+
+    assert mrr_selection.group_score_cols["A"] == "score_mrr"
+    assert balanced_selection.group_score_cols["A"] == "score_balanced"
+
+
 def test_apply_score_selection_tracks_score_source():
     validation = pd.DataFrame(
         {
