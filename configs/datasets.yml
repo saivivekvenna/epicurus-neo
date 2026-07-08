@@ -7,13 +7,13 @@ datasets:
     direct_download: null
     files:
       neopep_data_org:
-        url: https://figshare.com/s/147e67dde683fb769908?file=41359251
+        url: https://figshare.com/s/a000b0990465ab3e9d33
         filename: Neopep_data_org.txt.zip
         size: 160 MB
         license: GPL
         notes: Figshare may require browser/manual download because of WAF challenge.
       mutation_data_org:
-        url: https://figshare.com/s/2462b62bb6630fe2d257
+        url: https://figshare.com/s/3c27fa3b705a74bdfa10
         filename: Mutation_data_org.txt.zip
         size: 6.64 MB
         license: CC BY 4.0
@@ -51,6 +51,24 @@ datasets:
         size: 7.19 GB
         license: CC BY 4.0
         notes: Very large; do not download by default.
+      nmers_balanced:
+        url: https://ndownloader.figshare.com/files/26042741
+        filename: NmersBalancedForExpression.txt
+        size: 2.02 MB
+        license: CC BY 4.0
+        notes: Direct API-discovered download URL; avoids browser challenge page.
+      nmers_testing:
+        url: https://ndownloader.figshare.com/files/26040932
+        filename: NmersTestingSet.txt
+        size: 4.11 MB
+        license: CC BY 4.0
+        notes: Direct API-discovered download URL; contains 46 positives and 3722 tested negatives.
+      nmers_training:
+        url: https://ndownloader.figshare.com/files/26038703
+        filename: NmersTrainingSet.txt
+        size: 12.55 MB
+        license: CC BY 4.0
+        notes: Direct API-discovered download URL; mostly unscreened rows plus CD8 positives.
     notes: >
       Contains official train/test style resources for candidate neoantigen
       ranking. Preserve official splits when available.

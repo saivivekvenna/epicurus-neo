@@ -15,6 +15,7 @@ PEPTIDE_COLS = [
     "mutant_seq",
     "mut_seq",
     "mutant_peptide",
+    "Mut Epitope",
     "Mutant Minimal Peptide",
     "Mutant Mmp",
     "Mutated Minimal Peptide",
@@ -26,6 +27,7 @@ WILDTYPE_COLS = [
     "wt_seq",
     "wildtype_seq",
     "wildtype_peptide",
+    "Wt Epitope",
     "Wildtype Minimal Peptide",
     "Wildtype Mmp",
     "Wildtype Nmer",
@@ -42,9 +44,20 @@ HLA_COLS = [
     "mutant_best_allele",
 ]
 
-PATIENT_COLS = ["patient", "Patient", "patient_id", "Sample", "sample"]
+PATIENT_COLS = ["patient", "Patient", "patient_id", "Sample", "sample", "ID"]
 STUDY_COLS = ["dataset", "Dataset", "study_id", "Study"]
 GENE_COLS = ["gene", "Gene Name", "Gene", "gene_symbol"]
+
+
+def _read_delimited(handle: Any, *, suffix: str) -> pd.DataFrame:
+    if suffix in {".tsv", ".txt"}:
+        frame = pd.read_csv(handle, sep="\t")
+        if len(frame.columns) == 1 and "," in str(frame.columns[0]):
+            if hasattr(handle, "seek"):
+                handle.seek(0)
+            return pd.read_csv(handle)
+        return frame
+    return pd.read_csv(handle)
 
 
 def read_table(path: str | Path) -> pd.DataFrame:
@@ -56,11 +69,12 @@ def read_table(path: str | Path) -> pd.DataFrame:
             if len(names) != 1:
                 raise ValueError(f"Expected one table file in zip archive, found {names}")
             with archive.open(names[0]) as handle:
-                return pd.read_csv(handle, sep=None, engine="python")
+                inner_suffix = Path(names[0]).suffix.lower()
+                return _read_delimited(handle, suffix=inner_suffix)
     if suffix == ".csv":
         return pd.read_csv(table_path)
     if suffix in {".tsv", ".txt"}:
-        return pd.read_csv(table_path, sep=None, engine="python")
+        return _read_delimited(table_path, suffix=suffix)
     raise ValueError(f"Unsupported input table format: {table_path}")
 
 
@@ -97,6 +111,7 @@ def _label_column(frame: pd.DataFrame) -> pd.Series:
         "Response Type",
         "response",
         "Response",
+        "Screening Status",
         "immunogenicity",
         "Immunogenicity",
         "reactivity",
@@ -208,6 +223,40 @@ def normalize_gartner_table(path: str | Path) -> pd.DataFrame:
     for old, new in rename.items():
         if old in out.columns and new not in out.columns:
             out[new] = out[old]
+    return out
+
+
+def normalize_tesla_table(path: str | Path) -> pd.DataFrame:
+    table_path = Path(path)
+    if table_path.suffix.lower() in {".xlsx", ".xls"}:
+        frame = pd.read_excel(table_path)
+    else:
+        frame = read_table(table_path)
+
+    required = {"peptide", "target_value", "allele"}
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(f"TESLA table missing required columns: {sorted(missing)}")
+
+    labels = frame["target_value"].map(lambda value: "positive" if int(value) == 1 else "negative")
+    out = pd.DataFrame(
+        {
+            "candidate_id": [f"tesla:{idx}" for idx in range(len(frame))],
+            "source_dataset": "tesla",
+            "study_id": "tesla_wells_2020",
+            "patient_id": "tesla_unknown",
+            "hla_allele": frame["allele"].astype(str),
+            "mutant_peptide": frame["peptide"].astype(str),
+            "wildtype_peptide": "",
+            "label": labels,
+            "label_weight": 1.0,
+            "assay_type": "tesla_target_value",
+        }
+    )
+    out = add_normalized_columns(out)
+    report = validate_schema(out)
+    if not report.ok:
+        raise ValueError(f"Normalized TESLA table failed canonical schema validation: {report}")
     return out
 
 

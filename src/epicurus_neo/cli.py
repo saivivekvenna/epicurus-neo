@@ -106,6 +106,10 @@ def cmd_normalize(args: argparse.Namespace) -> int:
         normalized = normalize_neoranking_neopep(args.input)
     elif args.kind == "gartner":
         normalized = normalize_gartner_table(args.input)
+    elif args.kind == "tesla":
+        from epicurus_neo.normalize import normalize_tesla_table
+
+        normalized = normalize_tesla_table(args.input)
     else:
         normalized = normalize_candidate_table(
             _load_table(Path(args.input)),
@@ -234,7 +238,11 @@ def build_parser() -> argparse.ArgumentParser:
     download.set_defaults(func=cmd_download_file)
 
     normalize = sub.add_parser("normalize")
-    normalize.add_argument("--kind", choices=["generic", "neoranking-neopep", "gartner"], default="generic")
+    normalize.add_argument(
+        "--kind",
+        choices=["generic", "neoranking-neopep", "gartner", "tesla"],
+        default="generic",
+    )
     normalize.add_argument("--input", required=True)
     normalize.add_argument("--output", required=True)
     normalize.add_argument("--source-dataset", default="external")

@@ -7,6 +7,7 @@ from epicurus_neo.download import dataset_file_plans
 from epicurus_neo.normalize import (
     normalize_gartner_table,
     normalize_neoranking_neopep,
+    normalize_tesla_table,
     write_normalized,
 )
 
@@ -73,11 +74,47 @@ def test_normalize_gartner_fixture(tmp_path: Path):
     assert normalized.loc[0, "baseline_netmhc_rank"] == 4
 
 
+def test_normalize_gartner_tsv_fixture(tmp_path: Path):
+    source = tmp_path / "NmersTestingSet.txt"
+    pd.DataFrame(
+        {
+            "ID": ["3703", "3703"],
+            "tumor type": ["MELANOMA", "MELANOMA"],
+            "Gene Name": ["NSDHL", "FADS3"],
+            "Wt Epitope": ["FLSRILTGLNYEAPKYHIPYWVAYY", "RHNYSRVAPLVKLLCAKHGLSYEVK"],
+            "Mut Epitope": ["FLSRILTGLNYEVPKYHIPYWVAYY", "RHNYSRVAPLVKLLCAKHGLSYEVK"],
+            "Screening Status": ["1", "unscreened"],
+            "Gene Expression Decile for this sample(1=lowest expression-10=highest expression)": [6.0, 4.0],
+        }
+    ).to_csv(source, sep="\t", index=False)
+
+    normalized = normalize_gartner_table(source)
+
+    assert normalized["patient_id"].tolist() == ["3703", "3703"]
+    assert normalized["label"].tolist() == ["positive", "unknown"]
+    assert normalized.loc[0, "mutant_peptide"] == "FLSRILTGLNYEVPKYHIPYWVAYY"
+
+
 def test_write_normalized(tmp_path: Path):
     out = tmp_path / "processed" / "table.csv"
     path = write_normalized(pd.DataFrame({"a": [1]}), out)
     assert path == out
     assert out.exists()
+
+
+def test_normalize_tesla_fixture(tmp_path: Path):
+    source = tmp_path / "TESLA_neoepitopes.xlsx"
+    pd.DataFrame(
+        {
+            "peptide": ["NILGFTFDI", "ABCDEF"],
+            "target_value": [0, 1],
+            "allele": ["HLA-A02:01", "HLA-B44:02"],
+        }
+    ).to_excel(source, index=False)
+
+    normalized = normalize_tesla_table(source)
+    assert normalized["label"].tolist() == ["negative", "positive"]
+    assert normalized.loc[0, "hla_allele_norm"] == "HLA-A*02:01"
 
 
 def test_normalize_reads_zipped_single_table(tmp_path: Path):
