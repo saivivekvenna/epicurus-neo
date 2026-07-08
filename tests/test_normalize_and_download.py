@@ -5,6 +5,7 @@ import pandas as pd
 
 from epicurus_neo.download import dataset_file_plans
 from epicurus_neo.normalize import (
+    normalize_bigmhc_table,
     normalize_gartner_table,
     normalize_neoranking_neopep,
     normalize_tesla_table,
@@ -21,6 +22,17 @@ def test_download_plan_includes_neoranking_files():
     file_keys = {plan.file_key for plan in plans}
     assert "neopep_data_org" in file_keys
     assert "gartner_nmers_ranking" in file_keys
+
+
+def test_download_plan_includes_bigmhc_direct_files():
+    plans = dataset_file_plans(
+        "configs/datasets.yml",
+        output_dir="data/raw",
+        dataset_key="bigmhc",
+    )
+    file_keys = {plan.file_key for plan in plans}
+    assert "datasets_zip" in file_keys
+    assert "manafest" in file_keys
 
 
 def test_normalize_neoranking_neopep_fixture(tmp_path: Path):
@@ -115,6 +127,43 @@ def test_normalize_tesla_fixture(tmp_path: Path):
     normalized = normalize_tesla_table(source)
     assert normalized["label"].tolist() == ["negative", "positive"]
     assert normalized.loc[0, "hla_allele_norm"] == "HLA-A*02:01"
+
+
+def test_normalize_bigmhc_fixture(tmp_path: Path):
+    source = tmp_path / "im_test.csv"
+    pd.DataFrame(
+        {
+            "mhc": ["HLA-A*02:01", "HLA-B*07:02"],
+            "pep": ["ALDKLSSQHLY", "ASIRNANLY"],
+            "tgt": [1, 0],
+            "BigMHC_EL": [0.9, 0.2],
+            "BigMHC_IM": [0.7, 0.1],
+            "BigMHC_ELIM": [0.8, 0.15],
+        }
+    ).to_csv(source, index=False)
+
+    normalized = normalize_bigmhc_table(source)
+    assert normalized["label"].tolist() == ["positive", "negative"]
+    assert normalized.loc[0, "patient_id"] == "bigmhc_HLA-A*02:01"
+    assert normalized.loc[0, "bigmhc_el_score"] == 0.9
+    assert normalized.loc[0, "bigmhc_im_score"] == 0.7
+
+
+def test_normalize_bigmhc_zip_member_fixture(tmp_path: Path):
+    table = tmp_path / "im_test.csv"
+    archive = tmp_path / "datasets.zip"
+    pd.DataFrame(
+        {
+            "mhc": ["HLA-A*02:01"],
+            "pep": ["ALDKLSSQHLY"],
+            "tgt": [1],
+        }
+    ).to_csv(table, index=False)
+    with ZipFile(archive, "w") as zip_file:
+        zip_file.write(table, arcname="im_test.csv")
+
+    normalized = normalize_bigmhc_table(archive, zip_member="im_test.csv")
+    assert normalized.loc[0, "candidate_id"] == "bigmhc:im_test:0"
 
 
 def test_normalize_reads_zipped_single_table(tmp_path: Path):

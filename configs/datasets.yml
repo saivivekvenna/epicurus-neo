@@ -109,6 +109,21 @@ datasets:
     locked_test: false
     url: https://data.mendeley.com/datasets/dvmz6pkzvb/4
     direct_download: null
+    files:
+      datasets_zip:
+        url: https://data.mendeley.com/public-files/datasets/dvmz6pkzvb/files/1da0314f-692d-4c39-b81f-fa2a7dba86bf/file_downloaded
+        filename: datasets.zip
+        size: 144.27 MB
+        sha256: 0d152a452756cf2e0014ffced6afc25118e7c11cf1f626b26e49f50f79edffaa
+        license: CC BY 4.0
+        notes: Contains im_train.csv, im_val.csv, im_test.csv, iedb.csv, and EL tables.
+      manafest:
+        url: https://data.mendeley.com/public-files/datasets/dvmz6pkzvb/files/6de56487-7b7e-459e-8aee-c80475face9d/file_downloaded
+        filename: manafest.csv
+        size: 34.59 KB
+        sha256: accf19b8bb797ec842c3ee1b1ce1966feb35035df746f7a56b2994403ba1ad99
+        license: CC BY 4.0
+        notes: Neoepitope immunogenicity rows with wildtype peptide and gene.
     notes: >
       Use available BigMHC scores as baselines/features. Keep im_test locked if
       used for external comparison.

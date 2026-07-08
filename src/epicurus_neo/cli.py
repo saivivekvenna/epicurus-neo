@@ -14,6 +14,7 @@ from epicurus_neo.experiment import grouped_cross_validate, summarize_cross_vali
 from epicurus_neo.leakage import detect_exact_leakage, purge_train_overlaps
 from epicurus_neo.metrics import group_metrics, summarize_group_metrics
 from epicurus_neo.normalize import (
+    normalize_bigmhc_table,
     normalize_candidate_table,
     normalize_gartner_table,
     normalize_neoranking_neopep,
@@ -113,6 +114,8 @@ def cmd_normalize(args: argparse.Namespace) -> int:
         from epicurus_neo.normalize import normalize_tesla_table
 
         normalized = normalize_tesla_table(args.input)
+    elif args.kind == "bigmhc":
+        normalized = normalize_bigmhc_table(args.input, zip_member=args.zip_member)
     else:
         normalized = normalize_candidate_table(
             _load_table(Path(args.input)),
@@ -254,11 +257,12 @@ def build_parser() -> argparse.ArgumentParser:
     normalize = sub.add_parser("normalize")
     normalize.add_argument(
         "--kind",
-        choices=["generic", "neoranking-neopep", "gartner", "tesla"],
+        choices=["generic", "neoranking-neopep", "gartner", "tesla", "bigmhc"],
         default="generic",
     )
     normalize.add_argument("--input", required=True)
     normalize.add_argument("--output", required=True)
+    normalize.add_argument("--zip-member")
     normalize.add_argument("--source-dataset", default="external")
     normalize.add_argument("--study-default")
     normalize.set_defaults(func=cmd_normalize)
