@@ -1,0 +1,2 @@
+[console_scripts]
+epicurus = epicurus_neo.cli:main
