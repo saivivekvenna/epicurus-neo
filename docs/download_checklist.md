@@ -103,3 +103,11 @@ epicurus normalize --kind bigmhc --input data/raw/bigmhc/datasets.zip --zip-memb
 epicurus normalize --kind bigmhc --input data/raw/bigmhc/datasets.zip --zip-member im_test.csv --output data/processed/bigmhc_im_test.normalized.csv
 epicurus normalize --kind bigmhc --input data/raw/bigmhc/manafest.csv --output data/processed/bigmhc_manafest.normalized.csv
 ```
+
+Add presentation and retrieval features for the BigMHC hard-part benchmark:
+
+```bash
+epicurus add-mhcflurry-features --input data/processed/bigmhc_im_train_val.normalized.csv --output data/processed/bigmhc_im_train_val.mhcflurry.csv
+epicurus add-mhcflurry-features --input data/processed/bigmhc_im_test.normalized.csv --output data/processed/bigmhc_im_test.mhcflurry.csv
+epicurus add-retrieval-features --input data/processed/bigmhc_im_test.mhcflurry.csv --reference data/processed/bigmhc_im_train_val.mhcflurry.csv --output data/processed/bigmhc_im_test.mhcflurry_retrieval.csv
+```

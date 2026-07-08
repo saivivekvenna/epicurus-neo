@@ -225,3 +225,54 @@ and exceed the strongest published recall@20 (`MHCnuggets-2.4.0`, 0.5259)
 without using `im_test` labels for model selection. Sequence-only learning is
 not enough; next work should add train-side presentation predictions, epitope
 retrieval density, and foreignness/self-similarity features.
+
+## Iteration 006: Positive-Neighborhood Retrieval Score
+
+Dataset:
+
+- Reference for validation: BigMHC `im_train`
+- Validation queries: BigMHC `im_val`
+- Reference for locked test: BigMHC `im_train + im_val`
+- Locked test queries: BigMHC `im_test`
+- Evaluation group: `hla_allele`
+
+Hypothesis:
+
+```text
+T-cell recognition may transfer locally in peptide/HLA space. A candidate whose
+mutant peptide is close to a known immunogenic peptide for the same HLA allele
+should rank higher, even when presentation scores are similar.
+```
+
+Implemented features:
+
+- `retrieval_max_positive_similarity`
+- `retrieval_max_negative_similarity`
+- `retrieval_positive_minus_negative_similarity`
+- `retrieval_topk_positive_similarity_mean`
+- `retrieval_topk_negative_similarity_mean`
+- `retrieval_topk_positive_fraction`
+
+Accepted score:
+
+```text
+epicurus_retrieval_score = retrieval_max_positive_similarity
+```
+
+BigMHC `im_test` result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_retrieval_score` | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `TransPHLA` | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
+| `MHCnuggets-2.4.0` | 2.4074 | 0.2691 | 0.5259 | 0.3927 | 0.3785 |
+| `epicurus_transfer_score` | 2.4259 | 0.2700 | 0.5032 | 0.3997 | 0.3692 |
+| `epicurus_score` with retrieval features | 2.4074 | 0.2691 | 0.5101 | 0.3633 | 0.3405 |
+
+Decision:
+
+Accepted as the first BigMHC hits@20 win over published score columns. This is
+not yet a complete win over every metric: `MHCnuggets-2.4.0` still has better
+recall@20. The next iteration should preserve the retrieval hits gain while
+recovering recall, likely through a score that balances positive-neighborhood
+similarity with a recall-oriented negative-neighborhood or presentation term.
