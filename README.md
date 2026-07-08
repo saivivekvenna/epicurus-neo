@@ -70,3 +70,19 @@ The highest-priority feature families are:
 - Every benchmark run records data versions, split definitions, feature set, and
   model config.
 
+## Current Hard-Part Status
+
+Implemented:
+
+- canonical schema validation
+- grouped top-k metrics
+- exact train/test leakage checks
+- baseline score generation
+- first-pass immunogenicity ranker and dud-risk model
+- mutant-vs-wildtype contrastive features
+- top-k portfolio selection
+- grouped cross-validation
+- public dataset manifest and source-table normalizers
+
+See [docs/data_workflow.md](docs/data_workflow.md) for the data ingestion and
+benchmark commands.
