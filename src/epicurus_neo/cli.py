@@ -8,6 +8,7 @@ import pandas as pd
 
 from epicurus_neo.benchmark import train_and_evaluate
 from epicurus_neo.data_manifest import load_dataset_manifest
+from epicurus_neo.experiment import grouped_cross_validate, summarize_cross_validation
 from epicurus_neo.leakage import detect_exact_leakage
 from epicurus_neo.metrics import group_metrics, summarize_group_metrics
 from epicurus_neo.portfolio import PortfolioConstraints, select_portfolio
@@ -103,6 +104,36 @@ def cmd_select_portfolio(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_group_cv(args: argparse.Namespace) -> int:
+    frame = _load_table(Path(args.table))
+    folds = grouped_cross_validate(
+        frame,
+        group_col=args.group_col,
+        metric_group_col=args.metric_group_col,
+        k=args.k,
+        max_splits=args.max_splits,
+    )
+    payload = {
+        "summary": summarize_cross_validation(folds),
+        "folds": [
+            {
+                "name": fold.name,
+                "status": fold.status,
+                "test_groups": fold.test_groups,
+                "feature_columns": fold.feature_columns,
+                "reason": fold.reason,
+                "benchmarks": [
+                    {"score_col": item.score_col, "summary": item.summary}
+                    for item in fold.benchmark_results
+                ],
+            }
+            for fold in folds
+        ],
+    }
+    print(json.dumps(payload, indent=2))
+    return 0 if all(fold.status != "leakage_blocked" for fold in folds) else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="epicurus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -152,6 +183,14 @@ def build_parser() -> argparse.ArgumentParser:
     portfolio.add_argument("--min-score", type=float)
     portfolio.add_argument("--output", required=True)
     portfolio.set_defaults(func=cmd_select_portfolio)
+
+    group_cv = sub.add_parser("group-cv")
+    group_cv.add_argument("table")
+    group_cv.add_argument("--group-col", required=True)
+    group_cv.add_argument("--metric-group-col", default="patient_id")
+    group_cv.add_argument("-k", type=int, default=20)
+    group_cv.add_argument("--max-splits", type=int)
+    group_cv.set_defaults(func=cmd_group_cv)
 
     return parser
 
