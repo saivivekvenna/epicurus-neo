@@ -18,6 +18,8 @@ AA_GROUPS = [
     set("DE"),
     set("CGP"),
 ]
+AA_ALPHABET = tuple("ACDEFGHIKLMNPQRSTVWY")
+AA_TO_INDEX = {aa: idx for idx, aa in enumerate(AA_ALPHABET)}
 
 
 def peptide_similarity(left: str, right: str) -> float:
@@ -67,6 +69,60 @@ def peptide_biochemical_similarity(left: str, right: str) -> float:
 
     shorter, longer = (left, right) if len(left) < len(right) else (right, left)
     return max(aligned_score(shorter, longer, offset) for offset in range(len(longer) - len(shorter) + 1))
+
+
+def peptide_motif_embedding(peptide: str) -> np.ndarray:
+    """Return a compact deterministic peptide embedding for retrieval prototypes.
+
+    The embedding intentionally avoids supervised labels. It combines amino-acid
+    composition, terminal residue identity, T-cell-face composition, length, and
+    simple biochemical summaries. This gives the retrieval layer a smoother
+    neighborhood than exact sequence matching while staying reproducible and
+    lightweight.
+    """
+    normalized = "".join(aa for aa in str(peptide).upper() if aa in AA_TO_INDEX)
+    if not normalized:
+        return np.zeros(87, dtype=float)
+
+    composition = np.zeros(len(AA_ALPHABET), dtype=float)
+    first = np.zeros(len(AA_ALPHABET), dtype=float)
+    last = np.zeros(len(AA_ALPHABET), dtype=float)
+    tcr_face = np.zeros(len(AA_ALPHABET), dtype=float)
+
+    for aa in normalized:
+        composition[AA_TO_INDEX[aa]] += 1.0
+    composition /= len(normalized)
+    first[AA_TO_INDEX[normalized[0]]] = 1.0
+    last[AA_TO_INDEX[normalized[-1]]] = 1.0
+
+    face_residues = normalized[2:-1] if len(normalized) >= 4 else normalized
+    for aa in face_residues:
+        tcr_face[AA_TO_INDEX[aa]] += 1.0
+    if face_residues:
+        tcr_face /= len(face_residues)
+
+    hydrophobicity = np.array([HYDROPHOBICITY.get(aa, 0.0) for aa in normalized])
+    charge = np.array([CHARGE.get(aa, 0.0) for aa in normalized])
+    biochemical = np.array(
+        [
+            min(len(normalized), 30) / 30.0,
+            float(hydrophobicity.mean()),
+            float(hydrophobicity.std()),
+            float(charge.mean()),
+            float(charge.sum() / max(len(normalized), 1)),
+            float(sum(aa in "FYW" for aa in normalized) / len(normalized)),
+            float(sum(aa in "STNQ" for aa in normalized) / len(normalized)),
+        ],
+        dtype=float,
+    )
+    return np.concatenate([composition, first, last, tcr_face, biochemical])
+
+
+def embedding_cosine_similarity(left: np.ndarray, right: np.ndarray) -> float:
+    denom = float(np.linalg.norm(left) * np.linalg.norm(right))
+    if denom == 0.0:
+        return float("nan")
+    return float(np.dot(left, right) / denom)
 
 
 def _topk_mean(values: list[float], k: int) -> float:
@@ -124,6 +180,31 @@ def _retrieval_summary(prefix: str, pos_sims: list[float], neg_sims: list[float]
     }
 
 
+def _prototype_similarity_summary(
+    prefix: str,
+    query_embedding: np.ndarray,
+    pos_embeddings: list[np.ndarray],
+    neg_embeddings: list[np.ndarray],
+) -> dict[str, float]:
+    pos_prototype = np.mean(pos_embeddings, axis=0) if pos_embeddings else None
+    neg_prototype = np.mean(neg_embeddings, axis=0) if neg_embeddings else None
+    pos_similarity = (
+        embedding_cosine_similarity(query_embedding, pos_prototype)
+        if pos_prototype is not None
+        else float("nan")
+    )
+    neg_similarity = (
+        embedding_cosine_similarity(query_embedding, neg_prototype)
+        if neg_prototype is not None
+        else float("nan")
+    )
+    return {
+        f"{prefix}_positive_prototype_similarity": pos_similarity,
+        f"{prefix}_negative_prototype_similarity": neg_similarity,
+        f"{prefix}_positive_minus_negative_prototype_similarity": pos_similarity - neg_similarity,
+    }
+
+
 def add_retrieval_features(
     frame: pd.DataFrame,
     reference: pd.DataFrame,
@@ -149,19 +230,30 @@ def add_retrieval_features(
         exact_neg_sims: list[float] = []
         biochemical_pos_sims: list[float] = []
         biochemical_neg_sims: list[float] = []
+        embedding_pos_sims: list[float] = []
+        embedding_neg_sims: list[float] = []
+        positive_embeddings: list[np.ndarray] = []
+        negative_embeddings: list[np.ndarray] = []
+        query_embedding = peptide_motif_embedding(peptide)
         for _, ref_row in subset.iterrows():
             ref_peptide = str(ref_row["mutant_peptide_norm"])
             exact_similarity = peptide_similarity(peptide, ref_peptide)
             biochemical_similarity = peptide_biochemical_similarity(peptide, ref_peptide)
+            ref_embedding = peptide_motif_embedding(ref_peptide)
+            embedding_similarity = embedding_cosine_similarity(query_embedding, ref_embedding)
             if pd.isna(exact_similarity):
                 continue
             label = str(ref_row["label"])
             if label == "positive":
                 exact_pos_sims.append(exact_similarity)
                 biochemical_pos_sims.append(biochemical_similarity)
+                embedding_pos_sims.append(embedding_similarity)
+                positive_embeddings.append(ref_embedding)
             elif label == "negative":
                 exact_neg_sims.append(exact_similarity)
                 biochemical_neg_sims.append(biochemical_similarity)
+                embedding_neg_sims.append(embedding_similarity)
+                negative_embeddings.append(ref_embedding)
 
         summary = _retrieval_summary("retrieval", exact_pos_sims, exact_neg_sims, top_k)
         summary.update(
@@ -170,6 +262,22 @@ def add_retrieval_features(
                 biochemical_pos_sims,
                 biochemical_neg_sims,
                 top_k,
+            )
+        )
+        summary.update(
+            _retrieval_summary(
+                "retrieval_motif",
+                embedding_pos_sims,
+                embedding_neg_sims,
+                top_k,
+            )
+        )
+        summary.update(
+            _prototype_similarity_summary(
+                "retrieval_motif",
+                query_embedding,
+                positive_embeddings,
+                negative_embeddings,
             )
         )
         summary["retrieval_reference_count"] = float(len(subset))

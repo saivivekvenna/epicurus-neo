@@ -4,7 +4,9 @@ from epicurus_neo.cli import build_parser, cmd_crossfit_retrieval_features, cmd_
 from epicurus_neo.retrieval_features import (
     add_crossfit_retrieval_features,
     add_retrieval_features,
+    embedding_cosine_similarity,
     peptide_biochemical_similarity,
+    peptide_motif_embedding,
     peptide_similarity,
     residue_biochemical_similarity,
 )
@@ -19,6 +21,15 @@ def test_biochemical_similarity_rewards_conservative_substitutions():
     assert residue_biochemical_similarity("A", "A") == 1.0
     assert residue_biochemical_similarity("K", "R") > residue_biochemical_similarity("K", "D")
     assert peptide_biochemical_similarity("AAAA", "AAAV") > peptide_similarity("AAAA", "AAAV")
+
+
+def test_motif_embedding_produces_smooth_neighborhood():
+    query = peptide_motif_embedding("AAAA")
+    close = peptide_motif_embedding("AAAV")
+    far = peptide_motif_embedding("WWWW")
+
+    assert query.shape == close.shape
+    assert embedding_cosine_similarity(query, close) > embedding_cosine_similarity(query, far)
 
 
 def test_add_retrieval_features_uses_labeled_same_hla_neighbors():
@@ -45,6 +56,10 @@ def test_add_retrieval_features_uses_labeled_same_hla_neighbors():
     assert out.loc[0, "retrieval_max_negative_similarity"] == 0.0
     assert out.loc[0, "retrieval_topk_positive_fraction"] == 0.5
     assert out.loc[0, "retrieval_biochemical_max_positive_similarity"] > 0.75
+    assert out.loc[0, "retrieval_motif_max_positive_similarity"] > out.loc[
+        0, "retrieval_motif_max_negative_similarity"
+    ]
+    assert "retrieval_motif_positive_prototype_similarity" in out.columns
     assert out.loc[0, "retrieval_reference_count"] == 2.0
 
 
