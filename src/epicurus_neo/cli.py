@@ -274,11 +274,7 @@ def cmd_apply_score_selector(args: argparse.Namespace) -> int:
 def cmd_apply_blend_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_blending import apply_blend_selection_files, blend_name
 
-    pair_weights = tuple(args.pair_weight) if args.pair_weight else (0.25, 0.5, 0.75)
-    for weight in pair_weights:
-        if weight <= 0.0 or weight >= 1.0:
-            raise ValueError("--pair-weight values must be between 0 and 1")
-
+    pair_weights = _parse_pair_weights(args.pair_weight)
     output, selection = apply_blend_selection_files(
         args.validation,
         args.target,
@@ -293,6 +289,52 @@ def cmd_apply_blend_selector(args: argparse.Namespace) -> int:
     payload = {
         "output": str(output),
         "pair_weights": list(pair_weights),
+        "default_blend": selection.default_weights,
+        "default_blend_name": blend_name(selection.default_weights),
+        "group_blends": selection.group_weights,
+        "validation_summary": selection.validation_summary,
+    }
+    if args.selection_output:
+        Path(args.selection_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.selection_output).write_text(json.dumps(payload, indent=2) + "\n")
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _parse_pair_weights(raw_weights: list[float] | None) -> tuple[float, ...]:
+    pair_weights = tuple(raw_weights) if raw_weights else (0.25, 0.5, 0.75)
+    for weight in pair_weights:
+        if weight <= 0.0 or weight >= 1.0:
+            raise ValueError("--pair-weight values must be between 0 and 1")
+    return pair_weights
+
+
+def cmd_apply_guarded_blend_selector(args: argparse.Namespace) -> int:
+    from epicurus_neo.score_blending import apply_guarded_blend_selection_files, blend_name
+
+    pair_weights = _parse_pair_weights(args.pair_weight)
+
+    output, selection = apply_guarded_blend_selection_files(
+        args.validation,
+        args.target,
+        args.output,
+        group_col=args.group_col,
+        score_columns=args.score_col,
+        k=args.k,
+        min_positive=args.min_positive,
+        baseline_objective=args.baseline_objective,
+        objective=args.objective,
+        guard_metric=args.guard_metric,
+        min_guard_delta=args.min_guard_delta,
+        pair_weights=pair_weights,
+    )
+    payload = {
+        "output": str(output),
+        "pair_weights": list(pair_weights),
+        "baseline_objective": args.baseline_objective,
+        "objective": args.objective,
+        "guard_metric": args.guard_metric,
+        "min_guard_delta": args.min_guard_delta,
         "default_blend": selection.default_weights,
         "default_blend_name": blend_name(selection.default_weights),
         "group_blends": selection.group_weights,
@@ -452,6 +494,30 @@ def build_parser() -> argparse.ArgumentParser:
         default="hits",
     )
     blend_selector.set_defaults(func=cmd_apply_blend_selector)
+
+    guarded_blend = sub.add_parser("apply-guarded-blend-selector")
+    guarded_blend.add_argument("--validation", required=True)
+    guarded_blend.add_argument("--target", required=True)
+    guarded_blend.add_argument("--output", required=True)
+    guarded_blend.add_argument("--selection-output")
+    guarded_blend.add_argument("--group-col", default="patient_id")
+    guarded_blend.add_argument("--score-col", action="append", required=True)
+    guarded_blend.add_argument("--pair-weight", action="append", type=float)
+    guarded_blend.add_argument("-k", type=int, default=20)
+    guarded_blend.add_argument("--min-positive", type=int, default=1)
+    guarded_blend.add_argument(
+        "--baseline-objective",
+        choices=["hits", "recall", "ndcg", "mrr", "balanced"],
+        default="ndcg",
+    )
+    guarded_blend.add_argument(
+        "--objective",
+        choices=["hits", "recall", "ndcg", "mrr", "balanced"],
+        default="mrr",
+    )
+    guarded_blend.add_argument("--guard-metric", default="mean_hits_at_k")
+    guarded_blend.add_argument("--min-guard-delta", type=float, default=0.0)
+    guarded_blend.set_defaults(func=cmd_apply_guarded_blend_selector)
 
     return parser
 
