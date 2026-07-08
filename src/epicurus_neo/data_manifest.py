@@ -15,6 +15,7 @@ class DatasetSource:
     url: str
     direct_download: str | None
     notes: str
+    files: dict
 
 
 def load_dataset_manifest(path: str | Path) -> list[DatasetSource]:
@@ -32,6 +33,7 @@ def load_dataset_manifest(path: str | Path) -> list[DatasetSource]:
                 url=str(item["url"]),
                 direct_download=item.get("direct_download"),
                 notes=str(item.get("notes", "")).strip(),
+                files=dict(item.get("files", {})),
             )
         )
     return sources
@@ -39,4 +41,3 @@ def load_dataset_manifest(path: str | Path) -> list[DatasetSource]:
 
 def downloadable_sources(sources: list[DatasetSource]) -> list[DatasetSource]:
     return [source for source in sources if source.direct_download]
-

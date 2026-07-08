@@ -5,6 +5,25 @@ datasets:
     locked_test: false
     url: https://github.com/bassanilab/NeoRanking
     direct_download: null
+    files:
+      neopep_data_org:
+        url: https://figshare.com/s/147e67dde683fb769908?file=41359251
+        filename: Neopep_data_org.txt.zip
+        size: 160 MB
+        license: GPL
+        notes: Figshare may require browser/manual download because of WAF challenge.
+      mutation_data_org:
+        url: https://figshare.com/s/2462b62bb6630fe2d257
+        filename: Mutation_data_org.txt.zip
+        size: 6.64 MB
+        license: CC BY 4.0
+        notes: Figshare may require browser/manual download because of WAF challenge.
+      gartner_nmers_ranking:
+        url: https://raw.githubusercontent.com/bassanilab/NeoRanking/master/Data/Gartner_nmers_ranking.txt
+        filename: Gartner_nmers_ranking.txt
+        size: 47 rows
+        license: repository license unclear
+        notes: Small ranking file committed in the NeoRanking repository.
     notes: >
       Main harmonized training backbone. Use patient-level and study-level folds;
       do not row-split for headline claims.
@@ -25,6 +44,13 @@ datasets:
     locked_test: true
     url: https://nih.figshare.com/collections/Datasets_for_Development_of_a_model_for_ranking_candidate_HLA_class_I_neoantigens_based_upon_datasets_of_known_neoepitopes_/4792338
     direct_download: null
+    files:
+      mmps_training:
+        url: https://nih.figshare.com/articles/dataset/Training_Set_of_Mutated_Minimal_Peptides_Screened_by_NCI_Surgery_Branch_for_Reactivity_Against_TIL/11400969
+        filename: MmpsTrainingSet.txt
+        size: 7.19 GB
+        license: CC BY 4.0
+        notes: Very large; do not download by default.
     notes: >
       Contains official train/test style resources for candidate neoantigen
       ranking. Preserve official splits when available.
@@ -68,4 +94,3 @@ datasets:
     notes: >
       Use available BigMHC scores as baselines/features. Keep im_test locked if
       used for external comparison.
-

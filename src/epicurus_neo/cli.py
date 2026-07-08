@@ -8,9 +8,16 @@ import pandas as pd
 
 from epicurus_neo.benchmark import train_and_evaluate
 from epicurus_neo.data_manifest import load_dataset_manifest
+from epicurus_neo.download import dataset_file_plans, download_file
 from epicurus_neo.experiment import grouped_cross_validate, summarize_cross_validation
 from epicurus_neo.leakage import detect_exact_leakage
 from epicurus_neo.metrics import group_metrics, summarize_group_metrics
+from epicurus_neo.normalize import (
+    normalize_candidate_table,
+    normalize_gartner_table,
+    normalize_neoranking_neopep,
+    write_normalized,
+)
 from epicurus_neo.portfolio import PortfolioConstraints, select_portfolio
 from epicurus_neo.schema import validate_schema
 from epicurus_neo.splits import assign_holdout_split
@@ -74,6 +81,38 @@ def cmd_list_datasets(args: argparse.Namespace) -> int:
     sources = load_dataset_manifest(args.manifest)
     payload = [source.__dict__ for source in sources]
     print(json.dumps(payload, indent=2))
+    return 0
+
+
+def cmd_download_plan(args: argparse.Namespace) -> int:
+    plans = dataset_file_plans(
+        args.manifest,
+        output_dir=args.output_dir,
+        dataset_key=args.dataset,
+    )
+    print(json.dumps([plan.__dict__ | {"output_path": str(plan.output_path)} for plan in plans], indent=2))
+    return 0
+
+
+def cmd_download_file(args: argparse.Namespace) -> int:
+    path = download_file(args.url, args.output, overwrite=args.overwrite)
+    print(path)
+    return 0
+
+
+def cmd_normalize(args: argparse.Namespace) -> int:
+    if args.kind == "neoranking-neopep":
+        normalized = normalize_neoranking_neopep(args.input)
+    elif args.kind == "gartner":
+        normalized = normalize_gartner_table(args.input)
+    else:
+        normalized = normalize_candidate_table(
+            _load_table(Path(args.input)),
+            source_dataset=args.source_dataset,
+            study_default=args.study_default,
+        )
+    write_normalized(normalized, args.output)
+    print(json.dumps({"rows": len(normalized), "output": args.output}, indent=2))
     return 0
 
 
@@ -166,6 +205,26 @@ def build_parser() -> argparse.ArgumentParser:
     list_datasets = sub.add_parser("list-datasets")
     list_datasets.add_argument("--manifest", default="configs/datasets.yml")
     list_datasets.set_defaults(func=cmd_list_datasets)
+
+    download_plan = sub.add_parser("download-plan")
+    download_plan.add_argument("--manifest", default="configs/datasets.yml")
+    download_plan.add_argument("--dataset")
+    download_plan.add_argument("--output-dir", default="data/raw")
+    download_plan.set_defaults(func=cmd_download_plan)
+
+    download = sub.add_parser("download-file")
+    download.add_argument("--url", required=True)
+    download.add_argument("--output", required=True)
+    download.add_argument("--overwrite", action="store_true")
+    download.set_defaults(func=cmd_download_file)
+
+    normalize = sub.add_parser("normalize")
+    normalize.add_argument("--kind", choices=["generic", "neoranking-neopep", "gartner"], default="generic")
+    normalize.add_argument("--input", required=True)
+    normalize.add_argument("--output", required=True)
+    normalize.add_argument("--source-dataset", default="external")
+    normalize.add_argument("--study-default")
+    normalize.set_defaults(func=cmd_normalize)
 
     holdout = sub.add_parser("make-holdout-split")
     holdout.add_argument("table")
