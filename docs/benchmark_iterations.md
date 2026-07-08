@@ -367,3 +367,47 @@ Accepted as the current best BigMHC hits@20/precision@20 result. It improves
 the hits target further using validation-only selection, but still does not beat
 the best recall@20. The next hard problem remains recall recovery without
 sacrificing top-20 precision.
+
+## Iteration 009: nDCG-Selected Score Family
+
+Dataset:
+
+- Same validation/test setup as Iteration 008
+- Selection objective: validation `nDCG@20`
+- Candidate score families: exact retrieval, biochemical retrieval, MHCflurry
+  presentation/processing, and `epicurus_transfer_score`
+
+Hypothesis:
+
+```text
+Hits-first validation selection improves precision but under-recovers recall.
+nDCG-first selection should reward putting positives early while still allowing
+more recall-oriented score families to win on HLA groups where retrieval alone
+is too narrow.
+```
+
+Validation-selected default:
+
+```text
+mhcflurry_presentation_score
+```
+
+BigMHC `im_test` result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_selected_score` (`objective=ndcg`) | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `epicurus_selected_score` (`objective=hits`) | 2.5370 | 0.2756 | 0.5159 | 0.3870 | 0.3710 |
+| `epicurus_retrieval_score` | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `TransPHLA` | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
+| `MHCnuggets-2.4.0` | 2.4074 | 0.2691 | 0.5259 | 0.3927 | 0.3785 |
+| `mhcflurry_20_score` | 2.3519 | 0.2663 | 0.4981 | 0.4018 | 0.3881 |
+| `netmhcpan_41_score` | 2.3519 | 0.2663 | 0.5100 | 0.4001 | 0.4015 |
+
+Decision:
+
+Accepted as the new BigMHC headline result. It beats the published BigMHC
+comparison columns on mean hits@20, precision@20, recall@20, and nDCG@20 using
+validation-only score-family selection. It does not beat the best MRR observed
+among all available scores, so the next iteration should focus on early-first
+ranking without giving up the top-20 gains.
