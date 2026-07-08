@@ -106,6 +106,7 @@ def test_train_and_evaluate_reports_ranker_and_baselines():
     score_cols = {item.score_col for item in result.benchmark_results}
     assert "epicurus_hits20_score" in score_cols
     assert "epicurus_blend_score" in score_cols
+    assert "epicurus_pairwise_score" in score_cols
     assert "epicurus_lower_confidence_score" in score_cols
     assert "epicurus_score" in score_cols
     assert "baseline_gartner_nmer_score" in score_cols

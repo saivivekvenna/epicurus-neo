@@ -8,6 +8,7 @@ from epicurus_neo.features import add_baseline_scores
 from epicurus_neo.leakage import LeakageReport, detect_exact_leakage
 from epicurus_neo.metrics import group_metrics, summarize_group_metrics
 from epicurus_neo.model import FittedEpicurusRanker, fit_ranker
+from epicurus_neo.pairwise_ranker import fit_pairwise_ranker
 
 
 @dataclass(frozen=True)
@@ -185,12 +186,18 @@ def train_and_evaluate(
     )
     scored_test = add_transferable_presentation_score(scored_test, group_col=group_col)
     scored_test = add_retrieval_score(scored_test)
+    try:
+        pairwise_ranker = fit_pairwise_ranker(train_features, group_col=group_col)
+        scored_test = pairwise_ranker.predict_scores(scored_test)
+    except ValueError:
+        pass
 
     score_columns = [
         "epicurus_retrieval_score",
         "epicurus_transfer_score",
         "epicurus_hits20_score",
         "epicurus_blend_score",
+        "epicurus_pairwise_score",
         "epicurus_lower_confidence_score",
         "epicurus_score",
         "epicurus_immunogenicity_prob",
