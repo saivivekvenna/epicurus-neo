@@ -414,3 +414,45 @@ BigMHC comparison columns on mean hits@20, precision@20, recall@20, and nDCG@20
 using validation-only score-family selection. Neither beats the best MRR
 observed among all available scores, so the next iteration should focus on
 early-first ranking without giving up the top-20 gains.
+
+## Iteration 010: Balanced Validation Objective
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iterations 008-009
+- Candidate score families: exact retrieval, biochemical retrieval, MHCflurry
+  presentation/processing, and `epicurus_transfer_score`
+- Selection objective: validation
+  `precision@20 + recall@20 + nDCG@20 + MRR`
+
+Hypothesis:
+
+```text
+A balanced validation objective may recover the strong early-ranking behavior
+of MRR-oriented selectors without giving up the top-20 hit and recall gains
+from nDCG-oriented selection.
+```
+
+Validation-selected default:
+
+```text
+mhcflurry_processing_score
+```
+
+BigMHC `im_test` result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_selected_score` (`objective=balanced`) | 2.5185 | 0.2746 | 0.5308 | 0.4088 | 0.3880 |
+| `epicurus_selected_score` (`objective=ndcg`) | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `epicurus_retrieval_score` | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `TransPHLA` | 2.4259 | 0.2700 | 0.5006 | 0.3906 | 0.3732 |
+| `MHCnuggets-2.4.0` | 2.4074 | 0.2691 | 0.5259 | 0.3927 | 0.3785 |
+
+Decision:
+
+Rejected as the headline operating point. The balanced objective is useful as a
+CLI-supported selector because it exposes a validation-only multi-metric policy,
+but on BigMHC it converges to the same held-out operating point as the MRR
+objective: strong recall/nDCG, not enough hits/precision to replace the
+`objective=ndcg` headline.
