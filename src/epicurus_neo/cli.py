@@ -256,6 +256,7 @@ def cmd_apply_score_selector(args: argparse.Namespace) -> int:
         score_columns=args.score_col,
         k=args.k,
         min_positive=args.min_positive,
+        objective=args.objective,
     )
     payload = {
         "output": str(output),
@@ -394,6 +395,7 @@ def build_parser() -> argparse.ArgumentParser:
     selector.add_argument("--score-col", action="append", required=True)
     selector.add_argument("-k", type=int, default=20)
     selector.add_argument("--min-positive", type=int, default=1)
+    selector.add_argument("--objective", choices=["hits", "recall", "ndcg", "mrr"], default="hits")
     selector.set_defaults(func=cmd_apply_score_selector)
 
     return parser

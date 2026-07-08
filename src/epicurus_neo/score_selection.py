@@ -19,13 +19,40 @@ def _positive_count(frame: pd.DataFrame) -> int:
     return int((frame["label"] == "positive").sum())
 
 
-def _score_key(summary: dict[str, float]) -> tuple[float, float, float, float]:
-    return (
-        summary["mean_hits_at_k"],
-        summary["mean_recall_at_k"],
-        summary["mean_ndcg_at_k"],
-        summary["mean_mrr"],
-    )
+def _score_key(
+    summary: dict[str, float],
+    *,
+    objective: str,
+) -> tuple[float, float, float, float]:
+    keys = {
+        "hits": (
+            summary["mean_hits_at_k"],
+            summary["mean_recall_at_k"],
+            summary["mean_ndcg_at_k"],
+            summary["mean_mrr"],
+        ),
+        "recall": (
+            summary["mean_recall_at_k"],
+            summary["mean_hits_at_k"],
+            summary["mean_ndcg_at_k"],
+            summary["mean_mrr"],
+        ),
+        "ndcg": (
+            summary["mean_ndcg_at_k"],
+            summary["mean_hits_at_k"],
+            summary["mean_recall_at_k"],
+            summary["mean_mrr"],
+        ),
+        "mrr": (
+            summary["mean_mrr"],
+            summary["mean_hits_at_k"],
+            summary["mean_recall_at_k"],
+            summary["mean_ndcg_at_k"],
+        ),
+    }
+    if objective not in keys:
+        raise ValueError(f"Unsupported score-selection objective: {objective}")
+    return keys[objective]
 
 
 def best_score_column(
@@ -34,6 +61,7 @@ def best_score_column(
     group_col: str,
     score_columns: list[str],
     k: int = 20,
+    objective: str = "hits",
 ) -> tuple[str, dict[str, float]]:
     best_col = ""
     best_summary: dict[str, float] = {}
@@ -43,7 +71,7 @@ def best_score_column(
             continue
         per_group = group_metrics(frame, group_col=group_col, score_col=score_col, k=k)
         summary = summarize_group_metrics(per_group)
-        key = _score_key(summary)
+        key = _score_key(summary, objective=objective)
         if best_key is None or key > best_key:
             best_key = key
             best_col = score_col
@@ -60,12 +88,14 @@ def select_score_columns_by_group(
     score_columns: list[str],
     k: int = 20,
     min_positive: int = 1,
+    objective: str = "hits",
 ) -> ScoreSelection:
     default_col, default_summary = best_score_column(
         validation,
         group_col=group_col,
         score_columns=score_columns,
         k=k,
+        objective=objective,
     )
     group_score_cols: dict[str, str] = {}
     validation_summary: dict[str, dict[str, float]] = {"__default__": default_summary}
@@ -79,6 +109,7 @@ def select_score_columns_by_group(
             group_col=group_col,
             score_columns=score_columns,
             k=k,
+            objective=objective,
         )
         group_score_cols[str(group_value)] = best_col
         validation_summary[str(group_value)] = summary
@@ -117,6 +148,7 @@ def apply_score_selection_files(
     score_columns: list[str],
     k: int = 20,
     min_positive: int = 1,
+    objective: str = "hits",
 ) -> tuple[Path, ScoreSelection]:
     validation = pd.read_csv(validation_path)
     target = pd.read_csv(target_path)
@@ -126,6 +158,7 @@ def apply_score_selection_files(
         score_columns=score_columns,
         k=k,
         min_positive=min_positive,
+        objective=objective,
     )
     out = apply_score_selection(target, selection, group_col=group_col)
     output = Path(output_path)
