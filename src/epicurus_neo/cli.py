@@ -232,6 +232,19 @@ def cmd_mhcflurry_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_retrieval_features(args: argparse.Namespace) -> int:
+    from epicurus_neo.retrieval_features import add_retrieval_features_file
+
+    output = add_retrieval_features_file(
+        args.input,
+        args.reference,
+        args.output,
+        top_k=args.top_k,
+    )
+    print(output)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="epicurus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -339,6 +352,13 @@ def build_parser() -> argparse.ArgumentParser:
     mhcflurry.add_argument("--input", required=True)
     mhcflurry.add_argument("--output", required=True)
     mhcflurry.set_defaults(func=cmd_mhcflurry_features)
+
+    retrieval = sub.add_parser("add-retrieval-features")
+    retrieval.add_argument("--input", required=True)
+    retrieval.add_argument("--reference", required=True)
+    retrieval.add_argument("--output", required=True)
+    retrieval.add_argument("--top-k", type=int, default=5)
+    retrieval.set_defaults(func=cmd_retrieval_features)
 
     return parser
 
