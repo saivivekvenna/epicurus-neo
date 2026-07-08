@@ -456,3 +456,44 @@ CLI-supported selector because it exposes a validation-only multi-metric policy,
 but on BigMHC it converges to the same held-out operating point as the MRR
 objective: strong recall/nDCG, not enough hits/precision to replace the
 `objective=ndcg` headline.
+
+## Iteration 011: Validation-Selected Rank Blends
+
+Dataset:
+
+- Same BigMHC validation/test setup as Iterations 008-010
+- Candidate score families: exact retrieval, biochemical retrieval, MHCflurry
+  presentation/processing, and `epicurus_transfer_score`
+- Blend search: HLA-local percentile-rank fusion over single score families and
+  pairwise blends with weights 0.25/0.75, 0.50/0.50, and 0.75/0.25
+- Selection still uses validation only; test labels are used only for final
+  reporting
+
+Hypothesis:
+
+```text
+Single-family selection leaves complementary signal on the table. Rank-normalized
+pairwise blends may recover early positives from presentation-like signals while
+keeping retrieval's immunogenic-neighborhood signal in the top 20.
+```
+
+Best BigMHC `im_test` blend results:
+
+| Score | objective | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `epicurus_blend_score` | nDCG | 2.3889 | 0.2682 | 0.5134 | 0.4082 | 0.4160 |
+| `epicurus_blend_score` | MRR | 2.4259 | 0.2700 | 0.5159 | 0.4098 | 0.4006 |
+| `epicurus_blend_score` | balanced | 2.4444 | 0.2709 | 0.5171 | 0.4006 | 0.3830 |
+| `epicurus_blend_score` | hits | 2.4259 | 0.2700 | 0.4999 | 0.3804 | 0.3775 |
+| `epicurus_selected_score` | nDCG | 2.5556 | 0.2765 | 0.5332 | 0.4057 | 0.3849 |
+| `epicurus_retrieval_score` | single score | 2.5000 | 0.2737 | 0.5135 | 0.3963 | 0.4098 |
+| `netmhcpan_41_score` | published | 2.3519 | 0.2663 | 0.5100 | 0.4001 | 0.4015 |
+
+Decision:
+
+Accepted as a secondary operating point, not the top-20 headline. The
+validation-selected nDCG blend is the first Epicurus score to beat the strongest
+published MRR baseline and the retrieval-only MRR while also improving nDCG.
+It does not replace the nDCG score-selector headline because it sacrifices
+hits@20 and precision@20, which remain the primary hackathon submission
+constraint.
