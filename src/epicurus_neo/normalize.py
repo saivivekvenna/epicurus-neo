@@ -60,13 +60,17 @@ def _read_delimited(handle: Any, *, suffix: str) -> pd.DataFrame:
     return pd.read_csv(handle)
 
 
-def read_table(path: str | Path) -> pd.DataFrame:
+def read_table(path: str | Path, *, zip_member: str | None = None) -> pd.DataFrame:
     table_path = Path(path)
     suffix = table_path.suffix.lower()
     if suffix == ".zip":
         with ZipFile(table_path) as archive:
             names = [name for name in archive.namelist() if not name.endswith("/")]
-            if len(names) != 1:
+            if zip_member is not None:
+                if zip_member not in names:
+                    raise ValueError(f"Zip member {zip_member!r} not found in {table_path}")
+                names = [zip_member]
+            elif len(names) != 1:
                 raise ValueError(f"Expected one table file in zip archive, found {names}")
             with archive.open(names[0]) as handle:
                 inner_suffix = Path(names[0]).suffix.lower()
@@ -257,6 +261,56 @@ def normalize_tesla_table(path: str | Path) -> pd.DataFrame:
     report = validate_schema(out)
     if not report.ok:
         raise ValueError(f"Normalized TESLA table failed canonical schema validation: {report}")
+    return out
+
+
+def normalize_bigmhc_table(path: str | Path, *, zip_member: str | None = None) -> pd.DataFrame:
+    frame = read_table(path, zip_member=zip_member)
+    required = {"mhc", "pep", "tgt"}
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(f"BigMHC table missing required columns: {sorted(missing)}")
+
+    split_name = Path(zip_member or path).stem
+    labels = frame["tgt"].map(lambda value: "positive" if int(value) == 1 else "negative")
+    out = pd.DataFrame(
+        {
+            "candidate_id": [f"bigmhc:{split_name}:{idx}" for idx in range(len(frame))],
+            "source_dataset": "bigmhc",
+            "study_id": f"bigmhc_{split_name}",
+            "patient_id": "bigmhc_" + frame["mhc"].astype(str),
+            "hla_allele": frame["mhc"].astype(str),
+            "mutant_peptide": frame["pep"].astype(str),
+            "wildtype_peptide": frame["wtp"].astype(str) if "wtp" in frame.columns else "",
+            "label": labels,
+            "label_weight": 1.0,
+            "assay_type": "bigmhc_immunogenicity",
+        }
+    )
+    if "gene" in frame.columns:
+        out["gene_symbol"] = frame["gene"].astype(str)
+
+    out = _copy_numeric_features(frame, out)
+    rename = {
+        "BigMHC_EL": "bigmhc_el_score",
+        "BigMHC_IM": "bigmhc_im_score",
+        "BigMHC_ELIM": "bigmhc_elim_score",
+        "NetMHCpan-4.1_Scores": "netmhcpan_41_score",
+        "NetMHCpan-4.1_Ranks": "netmhcpan_41_rank",
+        "MHCflurry-2.0_Scores": "mhcflurry_20_score",
+        "MHCflurry-2.0_Ranks": "mhcflurry_20_rank",
+        "PRIME-2.0_Scores": "prime_20_score",
+        "PRIME-2.0_Ranks": "prime_20_rank",
+    }
+    for old, new in rename.items():
+        if old in out.columns and new not in out.columns:
+            out[new] = out[old]
+
+    out = add_contrastive_features(out)
+    out = add_normalized_columns(out)
+    report = validate_schema(out)
+    if not report.ok:
+        raise ValueError(f"Normalized BigMHC table failed canonical schema validation: {report}")
     return out
 
 

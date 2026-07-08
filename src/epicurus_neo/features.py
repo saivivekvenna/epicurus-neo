@@ -34,6 +34,7 @@ NON_FEATURE_COLUMNS = {
     "response_type",
     "Screening Status",
     "target_value",
+    "tgt",
     "immunogenicity",
     "Immunogenicity",
     "reactivity",
