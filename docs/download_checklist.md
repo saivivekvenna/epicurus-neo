@@ -1,0 +1,85 @@
+# Download Checklist
+
+Place downloaded files under `data/raw/<dataset>/`. Raw data is ignored by git.
+
+## Required First
+
+### NeoRanking
+
+Repository and instructions:
+
+- https://github.com/bassanilab/NeoRanking
+
+Download:
+
+- `Neopep_data_org.txt` or `Neopep_data_org.txt.zip`  
+  https://figshare.com/s/a000b0990465ab3e9d33
+- `Mutation_data_org.txt` or `Mutation_data_org.txt.zip`  
+  https://figshare.com/s/3c27fa3b705a74bdfa10
+- `HLA_allotypes.txt`  
+  If present in the same Figshare bundle, put it at `data/raw/neoranking/hla/HLA_allotypes.txt`.
+
+Suggested paths:
+
+```text
+data/raw/neoranking/Neopep_data_org.txt.zip
+data/raw/neoranking/Mutation_data_org.txt.zip
+data/raw/neoranking/hla/HLA_allotypes.txt
+```
+
+### Gartner/NCI
+
+Collection:
+
+- https://nih.figshare.com/collections/Datasets_for_Development_of_a_model_for_ranking_candidate_HLA_class_I_neoantigens_based_upon_datasets_of_known_neoepitopes_/4792338
+
+Download in this priority order:
+
+- Training Nmers randomly subsampled to reduce expression bias, 2.02 MB  
+  https://nih.figshare.com/articles/dataset/Training_Set_of_Long_Peptides_Screened_by_NCI_Surgery_Branch_for_Reactivity_Against_TIL/11400972
+- Test Set of Long Peptides, 4.11 MB  
+  https://nih.figshare.com/articles/dataset/Test_Set_of_Long_Peptides_Screened_by_NCI_Surgery_Branch_for_Reactivity_Against_TIL/11400984
+- All Long Peptides, 12.55 MB  
+  https://nih.figshare.com/articles/dataset/All_Long_Peptides_Screened_by_the_NCI_Surgery_Branch_for_Reactivity_Against_TIL/11400966
+
+Optional/heavy:
+
+- Training Mmps, 1.12 GB  
+  https://nih.figshare.com/articles/dataset/All_Mutated_Minimal_Peptides_Screened_by_the_NCI_Surgery_Branch_for_Reactivity_Against_TIL/11400975
+- Test Set of Mutated Minimal Peptides, 2.2 GB  
+  https://nih.figshare.com/articles/dataset/Test_Set_of_Mutated_Minimal_Peptides_screened_by_NCI_Surgery_Branch_for_Reactivity_Against_TIL/11400987
+- All Mutated Minimal Peptides, 7.19 GB  
+  https://nih.figshare.com/articles/dataset/Training_Set_of_Mutated_Minimal_Peptides_Screened_by_NCI_Surgery_Branch_for_Reactivity_Against_TIL/11400969
+
+### TESLA
+
+Keep locked until the model recipe is frozen.
+
+- Article / PMC page: https://pmc.ncbi.nlm.nih.gov/articles/PMC7652061/
+- Supplemental `mmc5.xlsx` from the Cell article, or Mendeley mirror:
+  https://data.mendeley.com/datasets/6x87nx8jtc
+
+Suggested path:
+
+```text
+data/raw/tesla/mmc5.xlsx
+```
+
+## Useful Next
+
+### CEDAR
+
+- Database: https://cedar.iedb.org/
+- Export page: https://cedar.iedb.org/database_export_v3.php
+
+### NEPdb
+
+- https://nep.whu.edu.cn/
+
+### BigMHC
+
+- Data: https://data.mendeley.com/datasets/dvmz6pkzvb/4
+- Code: https://github.com/KarchinLab/bigmhc
+
+Prioritize `datasets.zip` if downloading BigMHC.
+

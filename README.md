@@ -86,3 +86,7 @@ Implemented:
 
 See [docs/data_workflow.md](docs/data_workflow.md) for the data ingestion and
 benchmark commands.
+
+See [docs/download_checklist.md](docs/download_checklist.md) for exact source
+links and [docs/auto_research.md](docs/auto_research.md) for the LLM-guided
+experiment loop.
