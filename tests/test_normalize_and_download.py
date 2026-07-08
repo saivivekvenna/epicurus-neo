@@ -90,20 +90,35 @@ def test_normalize_gartner_tsv_fixture(tmp_path: Path):
     source = tmp_path / "NmersTestingSet.txt"
     pd.DataFrame(
         {
-            "ID": ["3703", "3703"],
-            "tumor type": ["MELANOMA", "MELANOMA"],
-            "Gene Name": ["NSDHL", "FADS3"],
-            "Wt Epitope": ["FLSRILTGLNYEAPKYHIPYWVAYY", "RHNYSRVAPLVKLLCAKHGLSYEVK"],
-            "Mut Epitope": ["FLSRILTGLNYEVPKYHIPYWVAYY", "RHNYSRVAPLVKLLCAKHGLSYEVK"],
-            "Screening Status": ["1", "unscreened"],
-            "Gene Expression Decile for this sample(1=lowest expression-10=highest expression)": [6.0, 4.0],
+            "ID": ["3703", "3703", "3703", "3703"],
+            "tumor type": ["MELANOMA", "MELANOMA", "MELANOMA", "MELANOMA"],
+            "Gene Name": ["NSDHL", "FADS3", "BRAF", "TP53"],
+            "Wt Epitope": [
+                "FLSRILTGLNYEAPKYHIPYWVAYY",
+                "RHNYSRVAPLVKLLCAKHGLSYEVK",
+                "AAAAAAAAL",
+                "CCCCCCCCL",
+            ],
+            "Mut Epitope": [
+                "FLSRILTGLNYEVPKYHIPYWVAYY",
+                "RHNYSRVAPLVKLLCAKHGLSYEVK",
+                "AAAAAAAAV",
+                "CCCCCCCCV",
+            ],
+            "Screening Status": ["1", "0", "-", "unscreened"],
+            "Gene Expression Decile for this sample(1=lowest expression-10=highest expression)": [
+                6.0,
+                4.0,
+                2.0,
+                1.0,
+            ],
         }
     ).to_csv(source, sep="\t", index=False)
 
     normalized = normalize_gartner_table(source)
 
-    assert normalized["patient_id"].tolist() == ["3703", "3703"]
-    assert normalized["label"].tolist() == ["positive", "unknown"]
+    assert normalized["patient_id"].tolist() == ["3703", "3703", "3703", "3703"]
+    assert normalized["label"].tolist() == ["positive", "negative", "negative", "unknown"]
     assert normalized.loc[0, "mutant_peptide"] == "FLSRILTGLNYEVPKYHIPYWVAYY"
 
 

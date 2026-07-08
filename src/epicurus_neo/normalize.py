@@ -217,6 +217,20 @@ def normalize_gartner_table(path: str | Path) -> pd.DataFrame:
         source_dataset="gartner_nci",
         study_default="gartner_nci",
     )
+    if "Screening Status" in frame.columns:
+        status = frame["Screening Status"].astype(str).str.strip().str.lower()
+        labels = status.map(
+            {
+                "cd8": "positive",
+                "1": "positive",
+                "0": "negative",
+                "-": "negative",
+                "unscreened": "unknown",
+            }
+        ).fillna("unknown")
+        out["label"] = labels
+        out["label_weight"] = np.where(labels == "unknown", 0.0, 1.0)
+
     rename = {
         "Rank NetMHC": "baseline_netmhc_rank",
         "Rank Nmer Model": "baseline_gartner_nmer_rank",
