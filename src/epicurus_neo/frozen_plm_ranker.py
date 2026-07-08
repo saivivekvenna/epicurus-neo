@@ -35,13 +35,23 @@ DEFAULT_BASE_FEATURES = (
     "recognition_hla_max_similarity",
     "recognition_hla_topk_similarity_mean",
     "recognition_hla_max_weighted_similarity",
+    "recognition_hla_centered_max_similarity",
+    "recognition_hla_centered_topk_similarity_mean",
+    "recognition_hla_centered_max_weighted_similarity",
     "recognition_pathogen_max_similarity",
     "recognition_pathogen_topk_similarity_mean",
     "recognition_pathogen_max_weighted_similarity",
+    "recognition_pathogen_centered_max_similarity",
+    "recognition_pathogen_centered_topk_similarity_mean",
+    "recognition_pathogen_centered_max_weighted_similarity",
     "recognition_human_max_similarity",
     "recognition_human_topk_similarity_mean",
     "recognition_human_max_weighted_similarity",
+    "recognition_human_centered_max_similarity",
+    "recognition_human_centered_topk_similarity_mean",
+    "recognition_human_centered_max_weighted_similarity",
     "recognition_pathogen_minus_human_similarity",
+    "recognition_centered_pathogen_minus_human_similarity",
 )
 
 

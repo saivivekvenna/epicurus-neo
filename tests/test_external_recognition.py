@@ -57,6 +57,7 @@ def test_external_recognition_features_separate_hla_and_origin_neighbors():
     assert out.loc[0, "recognition_pathogen_max_similarity"] == 1.0
     assert out.loc[0, "recognition_human_max_similarity"] == 0.0
     assert out.loc[0, "recognition_pathogen_minus_human_similarity"] == 1.0
+    assert out.loc[0, "recognition_hla_centered_max_similarity"] > 0.0
 
 
 def test_external_recognition_cli_parses_commands():

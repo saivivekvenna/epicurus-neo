@@ -52,11 +52,18 @@ def compute_plm_embeddings(
 
     for start in range(0, len(unique), batch_size):
         batch = unique[start : start + batch_size]
-        inputs = tokenizer(batch, return_tensors="pt", padding=True)
+        inputs = tokenizer(
+            batch,
+            return_tensors="pt",
+            padding=True,
+            return_special_tokens_mask=True,
+        )
         inputs = {key: value.to(device) for key, value in inputs.items()}
+        special_tokens_mask = inputs.pop("special_tokens_mask")
         with torch.no_grad():
             outputs = model(**inputs)
-        pooled = _mean_pool_embeddings(outputs.last_hidden_state, inputs["attention_mask"])
+        residue_mask = inputs["attention_mask"] * (1 - special_tokens_mask)
+        pooled = _mean_pool_embeddings(outputs.last_hidden_state, residue_mask)
         for peptide, vector in zip(batch, pooled, strict=True):
             norm = np.linalg.norm(vector)
             embeddings[peptide] = vector / norm if norm else vector
