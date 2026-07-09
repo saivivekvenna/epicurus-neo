@@ -455,6 +455,36 @@ def cmd_transfer_rank(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_finetune_plm_rank(args: argparse.Namespace) -> int:
+    from epicurus_neo.plm_finetune import run_finetuned_plm_ranker_files
+
+    validation_output, selection_output, selection = run_finetuned_plm_ranker_files(
+        args.external,
+        args.train,
+        args.validation,
+        args.output,
+        args.selection_output,
+        model_name=args.model_name,
+        external_group_col=args.external_group_col,
+        target_group_col=args.group_col,
+        k=args.k,
+        device=args.device,
+    )
+    print(
+        json.dumps(
+            {
+                "output": str(validation_output),
+                "selection_output": str(selection_output),
+                "config": selection.config.__dict__,
+                "selected_target_epoch": selection.selected_target_epoch,
+                "validation_summary": selection.validation_summary,
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -779,6 +809,19 @@ def build_parser() -> argparse.ArgumentParser:
     transfer_rank.add_argument("--group-col", default="hla_allele")
     transfer_rank.add_argument("-k", type=int, default=20)
     transfer_rank.set_defaults(func=cmd_transfer_rank)
+
+    finetune_plm_rank = sub.add_parser("finetune-plm-rank")
+    finetune_plm_rank.add_argument("--external", required=True)
+    finetune_plm_rank.add_argument("--train", required=True)
+    finetune_plm_rank.add_argument("--validation", required=True)
+    finetune_plm_rank.add_argument("--output", required=True)
+    finetune_plm_rank.add_argument("--selection-output", required=True)
+    finetune_plm_rank.add_argument("--model-name", default="facebook/esm2_t6_8M_UR50D")
+    finetune_plm_rank.add_argument("--external-group-col", default="hla_allele")
+    finetune_plm_rank.add_argument("--group-col", default="hla_allele")
+    finetune_plm_rank.add_argument("--device")
+    finetune_plm_rank.add_argument("-k", type=int, default=20)
+    finetune_plm_rank.set_defaults(func=cmd_finetune_plm_rank)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)
