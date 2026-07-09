@@ -1341,3 +1341,22 @@ cross-reactivity relation needed for recognition. The next paired model must be
 pretrained on shared-TCR peptide relationships with HLA context before direct
 cancer-screen fine-tuning. NeoPrecis-Immuno is the required external baseline
 for that hypothesis.
+
+## Iteration 029: Frozen NeoPrecis Diagnostic
+
+The released Apache-2.0 NeoPrecis-Immuno model was applied without IMPROVE
+label fitting. IMPROVE publishes NetMHC percentile rank rather than the raw
+NetMHC score expected by the model, so the adapter used the explicit
+approximation `1 - RankEL_4.1 / 100`.
+
+| Direction | Evaluated candidates | Mean hits@20 |
+| --- | ---: | ---: |
+| Higher NP-Immuno score | 17,359 | 0.5714 |
+| Lower NP-Immuno score | 17,359 | 0.4857 |
+
+Mean scores were almost identical for IMPROVE positives and negatives. This
+diagnostic rejects NeoPrecis as a drop-in per-peptide score. It is not an exact
+reproduction of the published method because of the binding-input
+approximation and because NeoPrecis aggregates peptide-HLA evidence at mutation
+level. Exact reproduction requires rerunning a compatible NetMHCpan version to
+obtain raw scores before making a comparative claim.

@@ -178,8 +178,10 @@ oracle hits@20, oracle capture, confidence intervals, and per-patient results.
 ## Research Order
 
 1. Reproduce NeoPrecis-Immuno as an external Apache-2.0 baseline on IMPROVE.
-2. Add its HLA-aware cross-reactivity score to the patient ranker without
-   retraining on IMPROVE labels.
+   The percentile-rank approximation failed; exact reproduction needs raw
+   NetMHCpan scores.
+2. Add its HLA-aware cross-reactivity score to the patient ranker only if the
+   exact frozen baseline transfers without IMPROVE-label tuning.
 3. Rebuild cross-reactivity pretraining with stricter peptide/TCR/study
    holdouts and direct top-20 downstream selection.
 4. Add selection-aware fine-tuning on direct cancer screens.
