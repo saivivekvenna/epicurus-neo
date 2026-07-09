@@ -413,6 +413,20 @@ def cmd_external_recognition_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_screened_recognition_features(args: argparse.Namespace) -> int:
+    from epicurus_neo.screened_recognition import add_screened_recognition_features_file
+
+    output = add_screened_recognition_features_file(
+        args.input,
+        args.reference,
+        args.embedding_cache,
+        args.output,
+        top_ks=tuple(args.top_k or [1, 3, 5, 10, 20]),
+    )
+    print(output)
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -717,6 +731,14 @@ def build_parser() -> argparse.ArgumentParser:
     external_recognition.add_argument("--output", required=True)
     external_recognition.add_argument("--top-k", type=int, default=5)
     external_recognition.set_defaults(func=cmd_external_recognition_features)
+
+    screened_recognition = sub.add_parser("add-screened-recognition-features")
+    screened_recognition.add_argument("--input", required=True)
+    screened_recognition.add_argument("--reference", required=True)
+    screened_recognition.add_argument("--embedding-cache", required=True)
+    screened_recognition.add_argument("--output", required=True)
+    screened_recognition.add_argument("--top-k", action="append", type=int)
+    screened_recognition.set_defaults(func=cmd_screened_recognition_features)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)

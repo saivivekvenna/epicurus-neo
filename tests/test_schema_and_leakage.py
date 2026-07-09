@@ -1,7 +1,7 @@
 import pandas as pd
 
 from epicurus_neo.leakage import detect_exact_leakage, purge_train_overlaps
-from epicurus_neo.schema import add_normalized_columns, supervised_rows, validate_schema
+from epicurus_neo.schema import add_normalized_columns, normalize_hla, supervised_rows, validate_schema
 
 
 def _frame() -> pd.DataFrame:
@@ -68,3 +68,8 @@ def test_empty_wildtype_does_not_create_false_hla_leakage():
 
     assert report.shared_wildtype_hla == ()
     assert purged["candidate_id"].tolist() == ["a"]
+
+
+def test_normalize_hla_canonicalizes_compact_four_digit_alleles():
+    assert normalize_hla("A0201") == "HLA-A*02:01"
+    assert normalize_hla("HLA-B0702") == "HLA-B*07:02"

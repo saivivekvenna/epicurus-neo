@@ -50,6 +50,11 @@ def normalize_hla(value: object) -> str:
     hla = str(value).strip().upper().replace("HLA-", "")
     if "*" not in hla and len(hla) >= 5 and hla[1].isdigit():
         hla = f"{hla[0]}*{hla[1:]}"
+    if "*" in hla:
+        locus, fields = hla.split("*", maxsplit=1)
+        if ":" not in fields and len(fields) == 4 and fields.isdigit():
+            fields = f"{fields[:2]}:{fields[2:]}"
+        hla = f"{locus}*{fields}"
     return f"HLA-{hla}"
 
 
@@ -87,4 +92,3 @@ def validate_schema(frame: pd.DataFrame, required: Iterable[str] = REQUIRED_COLU
 def supervised_rows(frame: pd.DataFrame) -> pd.DataFrame:
     """Return experimentally labeled rows; unknown/unassayed rows are excluded."""
     return frame[frame["label"].isin(["positive", "negative"])].copy()
-
