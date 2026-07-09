@@ -91,5 +91,8 @@ See [docs/download_checklist.md](docs/download_checklist.md) for exact source
 links and [docs/auto_research.md](docs/auto_research.md) for the LLM-guided
 experiment loop.
 
+See [docs/system_architecture.md](docs/system_architecture.md) for the full
+WES/RNA-to-top-20 product boundary and benchmark hierarchy.
+
 Current benchmark iterations are tracked in
 [docs/benchmark_iterations.md](docs/benchmark_iterations.md).

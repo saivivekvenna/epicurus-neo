@@ -1239,3 +1239,69 @@ Accepted as reusable direct-recognition training and external-validation
 infrastructure. This iteration does not alter the locked BigMHC headline. The
 next experiment will train a recognition residual from IMPROVE and select its
 blend strength on BigMHC `im_val` before any locked-test evaluation.
+
+## Iteration 027: Cross-Dataset Transfer and Benchmark Realignment
+
+Goal:
+
+- test whether substantially more direct recognition data trains a better
+  BigMHC reranker;
+- quantify whether a `5 hits@20` goal is possible on the locked benchmark.
+
+Leakage control:
+
+- IMPROVE had 38 exact peptide-HLA overlaps with BigMHC train, 4 with
+  validation, and 0 with test.
+- All 42 overlapping rows were purged before external feature construction or
+  transfer training.
+- The broader direct-screen union removed 1,008 exact overlaps against the
+  union of BigMHC train, validation, and test candidates.
+- No BigMHC test label was used for model or hyperparameter selection.
+
+Validation results:
+
+| Method | External data | mean hits@20 | recall@20 | nDCG@20 |
+| --- | --- | ---: | ---: | ---: |
+| Frozen headline | none | 1.8182 | 0.5384 | 0.4994 |
+| Signed PLM recognition neighborhood | IMPROVE | 1.4364 | 0.5090 | 0.4193 |
+| Frozen PLM ranker + screened features | IMPROVE | 1.7273 | 0.5252 | 0.4853 |
+| Target-only transfer control | none | 1.5818 | 0.5199 | 0.4721 |
+| Pooled ranker, patient-grouped external loss | IMPROVE | 1.6545 | 0.5240 | 0.4719 |
+| Pooled ranker, HLA-grouped external loss | IMPROVE | 1.6909 | 0.5278 | 0.4820 |
+| Pairwise fine-tuned ESM2 | target only | 1.4545 | 0.5066 | 0.3999 |
+| Pairwise fine-tuned ESM2 | IMPROVE pretraining | 1.4364 | 0.5001 | 0.4382 |
+| Pooled HLA-grouped ranker | IMPROVE + 2025 multimer | 1.6545 | 0.5222 | 0.4869 |
+
+The extra data did improve the otherwise identical frozen-feature ranker:
+IMPROVE HLA-grouped pooling increased validation hits from `1.5818` to `1.6909`.
+It did not beat the mature retrieval/presentation headline. End-to-end PLM
+fine-tuning reduced validation hits despite falling pairwise training loss,
+showing that the learned sequence relation did not transfer.
+
+One label-free locked check averaged within-HLA ranks across ten published model
+families:
+
+| Policy | mean hits@20 | precision@20 | recall@20 | nDCG@20 |
+| --- | ---: | ---: | ---: | ---: |
+| Current headline | 2.5556 | 0.2765 | 0.5332 | 0.4057 |
+| Published-model consensus | 2.2593 | 0.2617 | 0.4890 | 0.3893 |
+| Fixed 50/50 headline + consensus | 2.4074 | 0.2691 | 0.5118 | 0.3972 |
+
+Oracle audit:
+
+| Benchmark | Group | Oracle mean hits@20 | Current mean hits@20 |
+| --- | --- | ---: | ---: |
+| BigMHC validation | HLA allele | 1.9636 | 1.8182 |
+| BigMHC locked test | HLA allele | 3.5185 | 2.5556 |
+| IMPROVE official CV | patient | 6.4571 | 1.4714 |
+| 2025 multimer | patient | 1.3077 | not accepted |
+
+Decision:
+
+No transfer method replaces the BigMHC headline. A `5 hits@20` target is
+mathematically impossible on BigMHC because the oracle ceiling is `3.5185`.
+BigMHC is now treated as a component-level peptide/HLA regression benchmark.
+The primary hard-part target moves to patient-disjoint IMPROVE, where an oracle
+mean of `6.4571` makes `5 hits@20` valid and where patient, expression,
+clonality, mutant/wild-type, and tumor-context features match the eventual
+WES/RNA product.
