@@ -427,6 +427,34 @@ def cmd_screened_recognition_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_transfer_rank(args: argparse.Namespace) -> int:
+    from epicurus_neo.transfer_ranker import run_transfer_ranker_files
+
+    validation_output, selection_output, selection = run_transfer_ranker_files(
+        args.external,
+        args.train,
+        args.validation,
+        args.embedding_cache,
+        args.output,
+        args.selection_output,
+        external_group_col=args.external_group_col,
+        target_group_col=args.group_col,
+        k=args.k,
+    )
+    print(
+        json.dumps(
+            {
+                "output": str(validation_output),
+                "selection_output": str(selection_output),
+                "config": selection.config.__dict__,
+                "validation_summary": selection.validation_summary,
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
 def cmd_apply_score_selector(args: argparse.Namespace) -> int:
     from epicurus_neo.score_selection import apply_score_selection_files
 
@@ -739,6 +767,18 @@ def build_parser() -> argparse.ArgumentParser:
     screened_recognition.add_argument("--output", required=True)
     screened_recognition.add_argument("--top-k", action="append", type=int)
     screened_recognition.set_defaults(func=cmd_screened_recognition_features)
+
+    transfer_rank = sub.add_parser("transfer-rank")
+    transfer_rank.add_argument("--external", required=True)
+    transfer_rank.add_argument("--train", required=True)
+    transfer_rank.add_argument("--validation", required=True)
+    transfer_rank.add_argument("--embedding-cache", required=True)
+    transfer_rank.add_argument("--output", required=True)
+    transfer_rank.add_argument("--selection-output", required=True)
+    transfer_rank.add_argument("--external-group-col", default="patient_id")
+    transfer_rank.add_argument("--group-col", default="hla_allele")
+    transfer_rank.add_argument("-k", type=int, default=20)
+    transfer_rank.set_defaults(func=cmd_transfer_rank)
 
     selector = sub.add_parser("apply-score-selector")
     selector.add_argument("--validation", required=True)
