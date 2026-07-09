@@ -210,8 +210,16 @@ def _batch_scores(
         return_special_tokens_mask=True,
     )
     inputs = {key: value.to(device) for key, value in inputs.items()}
-    allele_tensor = torch.as_tensor(allele_indices, dtype=torch.long, device=device)
-    numeric_tensor = torch.as_tensor(numeric, dtype=torch.float32, device=device)
+    allele_tensor = torch.as_tensor(
+        np.array(allele_indices, copy=True),
+        dtype=torch.long,
+        device=device,
+    )
+    numeric_tensor = torch.as_tensor(
+        np.array(numeric, copy=True),
+        dtype=torch.float32,
+        device=device,
+    )
     return model(inputs, allele_tensor, numeric_tensor)
 
 

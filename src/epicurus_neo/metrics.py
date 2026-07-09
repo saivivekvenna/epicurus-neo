@@ -80,15 +80,21 @@ def summarize_group_metrics(metrics: list[GroupMetrics]) -> dict[str, float]:
             "mean_recall_at_k": 0.0,
             "mean_ndcg_at_k": 0.0,
             "mean_mrr": 0.0,
+            "oracle_mean_hits_at_k": 0.0,
+            "oracle_capture_rate": 0.0,
         }
 
+    mean_hits = float(np.mean([m.hits_at_k for m in metrics]))
+    oracle_mean_hits = float(np.mean([min(m.positives, m.evaluated) for m in metrics]))
     return {
         "groups": float(len(metrics)),
-        "mean_hits_at_k": float(np.mean([m.hits_at_k for m in metrics])),
+        "mean_hits_at_k": mean_hits,
         "mean_precision_at_k": float(np.mean([m.precision_at_k for m in metrics])),
         "mean_recall_at_k": float(np.mean([m.recall_at_k for m in metrics])),
         "mean_ndcg_at_k": float(np.mean([m.ndcg_at_k for m in metrics])),
         "mean_mrr": float(np.mean([m.mrr for m in metrics])),
+        "oracle_mean_hits_at_k": oracle_mean_hits,
+        "oracle_capture_rate": mean_hits / oracle_mean_hits if oracle_mean_hits else 0.0,
     }
 
 
@@ -117,4 +123,3 @@ def expected_calibration_error(
         accuracy = float(np.mean(y_true[mask]))
         ece += float(np.mean(mask)) * abs(accuracy - confidence)
     return ece
-

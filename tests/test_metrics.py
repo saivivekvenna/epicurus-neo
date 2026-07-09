@@ -22,10 +22,11 @@ def test_group_metrics_focus_on_top_k():
     assert metrics[1].hits_at_k == 1
     assert summary["groups"] == 2.0
     assert summary["mean_hits_at_k"] == 1.0
+    assert summary["oracle_mean_hits_at_k"] == 1.5
+    assert summary["oracle_capture_rate"] == 2 / 3
 
 
 def test_expected_calibration_error():
     y_true = np.array([0, 0, 1, 1])
     y_prob = np.array([0.1, 0.2, 0.8, 0.9])
     assert expected_calibration_error(y_true, y_prob, bins=2) < 0.2
-
