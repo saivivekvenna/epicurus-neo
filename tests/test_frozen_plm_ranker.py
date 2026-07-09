@@ -69,6 +69,30 @@ def test_build_frozen_plm_features_combines_embeddings_and_alleles():
     assert (features.filter(like="hla_").sum(axis=1) == 1).all()
 
 
+def test_build_frozen_plm_features_includes_screened_recognition_signal():
+    frame = _frame("train")
+    frame["screened_recognition_hla_centered_top10_response_rate"] = [
+        0.8,
+        0.1,
+        0.6,
+        0.2,
+        0.7,
+        0.3,
+    ] * 2
+    embeddings = _embeddings(frame)
+
+    features = build_frozen_plm_features(
+        frame,
+        embeddings,
+        allele_vocabulary=("HLA-A*01:01", "HLA-A*02:01"),
+    )
+
+    assert (
+        features["screened_recognition_hla_centered_top10_response_rate"].tolist()
+        == frame["screened_recognition_hla_centered_top10_response_rate"].tolist()
+    )
+
+
 def test_frozen_plm_ranker_selects_on_validation_and_refits():
     train = _frame("train")
     validation = _frame("validation")

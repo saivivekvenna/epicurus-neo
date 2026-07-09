@@ -52,6 +52,15 @@ DEFAULT_BASE_FEATURES = (
     "recognition_human_centered_max_weighted_similarity",
     "recognition_pathogen_minus_human_similarity",
     "recognition_centered_pathogen_minus_human_similarity",
+    "screened_recognition_hla_centered_positive_minus_negative_similarity",
+    "screened_recognition_hla_centered_top10_response_rate",
+    "screened_recognition_hla_centered_top10_weighted_response_rate",
+    "screened_recognition_family_centered_positive_minus_negative_similarity",
+    "screened_recognition_family_centered_top10_response_rate",
+    "screened_recognition_family_centered_top10_weighted_response_rate",
+    "screened_recognition_global_centered_positive_minus_negative_similarity",
+    "screened_recognition_global_centered_top10_response_rate",
+    "screened_recognition_global_centered_top10_weighted_response_rate",
 )
 
 
