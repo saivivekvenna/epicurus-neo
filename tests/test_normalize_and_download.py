@@ -6,7 +6,9 @@ import pandas as pd
 from epicurus_neo.download import dataset_file_plans
 from epicurus_neo.normalize import (
     normalize_bigmhc_table,
+    normalize_cd8_multimer_2025,
     normalize_gartner_table,
+    normalize_improve_cv,
     normalize_neoranking_neopep,
     normalize_tesla_table,
     write_normalized,
@@ -198,3 +200,73 @@ def test_normalize_reads_zipped_single_table(tmp_path: Path):
 
     normalized = normalize_neoranking_neopep(archive)
     assert normalized.loc[0, "label"] == "positive"
+
+
+def test_normalize_cd8_multimer_2025_repairs_dimensions_and_deduplicates(tmp_path: Path):
+    source = tmp_path / "mmc2.xlsx"
+    pd.DataFrame(
+        {
+            "Patient ID": ["TIL#01", "TIL#01", "PBMC#01"],
+            "Alt. ID": ["A", "A", "B"],
+            "WT epitope": ["SIINFEKLT", "SIINFEKLT", "AAAAAAAAA"],
+            "MUT epitope": ["SIINFEKLA", "SIINFEKLA", "AAAAAAAAV"],
+            "HLA": ["HLA-A*02:01", "HLA-A*02:01", "HLA-B*07:02"],
+            "Response": ["YES", "YES", "NO"],
+            "Resp. Magnitude": [0.4, 0.4, None],
+            "Binding affinity (%Rank score)": [0.2, 0.2, 5.0],
+            "RNA expression (TPM)": [10.0, 10.0, 0.0],
+            "Proteasomal processing score": [0.8, 0.8, 0.3],
+            "EL (%Rank score)": [0.1, 0.1, 10.0],
+            "RF classifier score": [0.9, 0.9, 0.1],
+            "Agretopicity": [0.01, 0.01, 1.0],
+            "Foreignness score": [0.7, 0.7, 0.0],
+            "Dissimilarity": [1.0, 1.0, 0.0],
+            "Dataset": ["TIL", "TIL", "PBMC"],
+            "Tumor type": ["Melanoma_TIL", "Melanoma_TIL", "TNBC"],
+            "SYMBOL": ["BRAF", "BRAF", "TP53"],
+            "ENSG": ["ENSG1", "ENSG1", "ENSG2"],
+            "Genome assembly": ["grch38", "grch38", "grch38"],
+            "TMB": [5.0, 5.0, 2.0],
+        }
+    ).to_excel(source, index=False)
+
+    normalized = normalize_cd8_multimer_2025(source)
+
+    assert len(normalized) == 2
+    assert normalized["label"].tolist() == ["positive", "negative"]
+    assert normalized.loc[0, "patient_id"] == "cd8_multimer_2025:TIL#01"
+    assert normalized.loc[0, "source_duplicate_count"] == "2"
+    assert normalized.loc[0, "netmhcpan_binding_score"] == 0.998
+    assert normalized.loc[0, "netmhcpan_el_score"] == 0.999
+    assert normalized.loc[0, "agretopicity_score"] == 2.0
+    assert "Resp. Magnitude" not in normalized.columns
+
+
+def test_normalize_improve_cv_fixture(tmp_path: Path):
+    source = tmp_path / "improve.tsv"
+    pd.DataFrame(
+        {
+            "Patient": ["BC-1", "RH-1"],
+            "HLA_allele": ["HLA-A02:01", "HLA-B07:02"],
+            "Norm_peptide": ["SIINFEKLT", "AAAAAAAAA"],
+            "Mut_peptide": ["SIINFEKLA", "AAAAAAAAV"],
+            "response": [1, 0],
+            "cohort": ["bladder", "melanoma"],
+            "Partition": [0, 1],
+            "Gene_Symbol": ["BRAF", "TP53"],
+            "RankEL_4.1": [0.2, 10.0],
+            "RankBA_4.1": [0.4, 20.0],
+            "RankEL_wt_4.1": [5.0, 2.0],
+            "Expression": [10.0, 0.0],
+            "Stability": [2.0, 0.5],
+            "Foreigness": [0.8, 0.0],
+        }
+    ).to_csv(source, sep="\t", index=False)
+
+    normalized = normalize_improve_cv(source)
+
+    assert normalized["label"].tolist() == ["positive", "negative"]
+    assert normalized["patient_id"].tolist() == ["improve:BC-1", "improve:RH-1"]
+    assert normalized["official_partition"].tolist() == ["0", "1"]
+    assert normalized.loc[0, "netmhcpan_el_score"] == 0.998
+    assert normalized.loc[1, "netmhcpan_binding_score"] == 0.8

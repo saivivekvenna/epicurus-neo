@@ -35,6 +35,24 @@ epicurus normalize \
   --output data/processed/gartner_nmers_test.normalized.csv
 ```
 
+Cross-tumor 2025 patient pHLA multimer screen:
+
+```bash
+epicurus normalize \
+  --kind cd8-multimer-2025 \
+  --input data/raw/cd8_multimer_2025/files/mmc2.xlsx \
+  --output data/processed/cd8_multimer_2025.normalized.csv
+```
+
+IMPROVE official patient-disjoint CV matrix:
+
+```bash
+epicurus normalize \
+  --kind improve-cv \
+  --input data/raw/improve/data.zip \
+  --output data/processed/improve_cv.normalized.csv
+```
+
 Then validate:
 
 ```bash
@@ -83,4 +101,3 @@ epicurus select-portfolio \
 
 The diversity limits are optional and must be tuned only on validation data, not
 on locked tests.
-

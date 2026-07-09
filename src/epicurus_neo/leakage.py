@@ -37,13 +37,24 @@ def _shared_values(train: pd.Series, test: pd.Series) -> tuple[str, ...]:
     return tuple(sorted(value for value in shared if value))
 
 
+def _peptide_hla_keys(frame: pd.DataFrame, peptide_kind: str) -> pd.Series:
+    peptide_col = f"{peptide_kind}_peptide_norm"
+    key_col = f"{peptide_kind}_hla_key"
+    peptide = frame[peptide_col].fillna("").astype(str).str.strip()
+    return frame.loc[peptide.ne(""), key_col]
+
+
 def detect_exact_leakage(train: pd.DataFrame, test: pd.DataFrame) -> LeakageReport:
     train_norm = add_normalized_columns(train)
     test_norm = add_normalized_columns(test)
     return LeakageReport(
-        shared_mutant_hla=_shared_values(train_norm["mutant_hla_key"], test_norm["mutant_hla_key"]),
+        shared_mutant_hla=_shared_values(
+            _peptide_hla_keys(train_norm, "mutant"),
+            _peptide_hla_keys(test_norm, "mutant"),
+        ),
         shared_wildtype_hla=_shared_values(
-            train_norm["wildtype_hla_key"], test_norm["wildtype_hla_key"]
+            _peptide_hla_keys(train_norm, "wildtype"),
+            _peptide_hla_keys(test_norm, "wildtype"),
         ),
         shared_patients=_shared_values(train_norm["patient_id"], test_norm["patient_id"]),
         shared_studies=_shared_values(train_norm["study_id"], test_norm["study_id"]),
@@ -54,10 +65,14 @@ def purge_train_overlaps(train: pd.DataFrame, test: pd.DataFrame) -> pd.DataFram
     """Remove train rows that share exact peptide/HLA keys with the test fold."""
     train_norm = add_normalized_columns(train)
     test_norm = add_normalized_columns(test)
-    blocked_mutant = set(test_norm["mutant_hla_key"].dropna().astype(str))
-    blocked_wildtype = set(test_norm["wildtype_hla_key"].dropna().astype(str))
+    blocked_mutant = set(_peptide_hla_keys(test_norm, "mutant").dropna().astype(str))
+    blocked_wildtype = set(_peptide_hla_keys(test_norm, "wildtype").dropna().astype(str))
+    train_mutant = _peptide_hla_keys(train_norm, "mutant")
+    train_wildtype = _peptide_hla_keys(train_norm, "wildtype")
     keep = ~(
-        train_norm["mutant_hla_key"].astype(str).isin(blocked_mutant)
-        | train_norm["wildtype_hla_key"].astype(str).isin(blocked_wildtype)
+        train_norm.index.to_series().isin(train_mutant[train_mutant.isin(blocked_mutant)].index)
+        | train_norm.index.to_series().isin(
+            train_wildtype[train_wildtype.isin(blocked_wildtype)].index
+        )
     )
     return train.loc[keep].copy()

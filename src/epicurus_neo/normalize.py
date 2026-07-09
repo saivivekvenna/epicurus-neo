@@ -6,6 +6,7 @@ from zipfile import ZipFile
 
 import numpy as np
 import pandas as pd
+from openpyxl import load_workbook
 
 from epicurus_neo.features import add_contrastive_features
 from epicurus_neo.schema import add_normalized_columns, validate_schema
@@ -60,6 +61,20 @@ def _read_delimited(handle: Any, *, suffix: str) -> pd.DataFrame:
     return pd.read_csv(handle)
 
 
+def _read_xlsx_with_repaired_dimensions(path: Path) -> pd.DataFrame:
+    """Read publisher workbooks that incorrectly declare their used range as A1."""
+    workbook = load_workbook(path, read_only=True, data_only=True)
+    worksheet = workbook.active
+    worksheet.reset_dimensions()
+    rows = worksheet.iter_rows(values_only=True)
+    try:
+        header = next(rows)
+    except StopIteration:
+        return pd.DataFrame()
+    columns = [str(value) if value is not None else f"unnamed_{idx}" for idx, value in enumerate(header)]
+    return pd.DataFrame(rows, columns=columns)
+
+
 def read_table(path: str | Path, *, zip_member: str | None = None) -> pd.DataFrame:
     table_path = Path(path)
     suffix = table_path.suffix.lower()
@@ -79,6 +94,8 @@ def read_table(path: str | Path, *, zip_member: str | None = None) -> pd.DataFra
         return pd.read_csv(table_path)
     if suffix in {".tsv", ".txt"}:
         return _read_delimited(table_path, suffix=suffix)
+    if suffix == ".xlsx":
+        return _read_xlsx_with_repaired_dimensions(table_path)
     raise ValueError(f"Unsupported input table format: {table_path}")
 
 
@@ -325,6 +342,185 @@ def normalize_bigmhc_table(path: str | Path, *, zip_member: str | None = None) -
     report = validate_schema(out)
     if not report.ok:
         raise ValueError(f"Normalized BigMHC table failed canonical schema validation: {report}")
+    return out
+
+
+def normalize_cd8_multimer_2025(path: str | Path) -> pd.DataFrame:
+    """Normalize the 8,103-candidate patient pHLA multimer screen."""
+    frame = read_table(path)
+    required = {
+        "Patient ID",
+        "WT epitope",
+        "MUT epitope",
+        "HLA",
+        "Response",
+        "Dataset",
+        "Tumor type",
+    }
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(f"CD8 multimer table missing required columns: {sorted(missing)}")
+
+    frame = frame.copy()
+    frame["_source_row"] = np.arange(2, len(frame) + 2)
+    dedup_key = ["Patient ID", "MUT epitope", "HLA"]
+    label_counts = frame.groupby(dedup_key, dropna=False)["Response"].nunique()
+    conflicting = label_counts[label_counts > 1]
+    if not conflicting.empty:
+        raise ValueError(
+            f"CD8 multimer table has {len(conflicting)} duplicate candidates with conflicting labels"
+        )
+    frame["_source_row_count"] = frame.groupby(dedup_key, dropna=False)["Response"].transform("size")
+    frame = frame.drop_duplicates(dedup_key, keep="first").reset_index(drop=True)
+
+    labels = frame["Response"].map(_label_from_response)
+    specimen = frame["Dataset"].astype(str).str.strip().str.lower()
+    out = pd.DataFrame(
+        {
+            "candidate_id": "cd8_multimer_2025:" + frame["_source_row"].astype(str),
+            "source_dataset": "cd8_multimer_2025",
+            "study_id": "cd8_multimer_2025",
+            "patient_id": "cd8_multimer_2025:" + frame["Patient ID"].astype(str),
+            "hla_allele": frame["HLA"].astype(str),
+            "mutant_peptide": frame["MUT epitope"].astype(str),
+            "wildtype_peptide": frame["WT epitope"].astype(str),
+            "label": labels,
+            "label_weight": 1.0,
+            "assay_type": "phla_multimer_" + specimen,
+            "source_patient_id": frame["Patient ID"].astype(str),
+            "source_patient_alias": frame.get("Alt. ID", "").astype(str),
+            "specimen_source": frame["Dataset"].astype(str),
+            "tumor_type": frame["Tumor type"].astype(str),
+            "gene_symbol": frame.get("SYMBOL", "").astype(str),
+            "ensembl_gene_id": frame.get("ENSG", "").astype(str),
+            "genome_assembly": frame.get("Genome assembly", "").astype(str),
+            "source_duplicate_count": frame["_source_row_count"].astype(str),
+        }
+    )
+
+    numeric_map = {
+        "Binding affinity (%Rank score)": "netmhcpan_binding_percentile_rank",
+        "RNA expression (TPM)": "expression_tpm",
+        "Proteasomal processing score": "proteasomal_processing_score",
+        "EL (%Rank score)": "netmhcpan_el_percentile_rank",
+        "RF classifier score": "source_rf_presentation_score",
+        "Agretopicity": "agretopicity_ratio",
+        "Foreignness score": "foreignness_score",
+        "Dissimilarity": "self_dissimilarity_score",
+        "TMB": "tumor_mutational_burden",
+    }
+    for source, target in numeric_map.items():
+        if source in frame.columns:
+            out[target] = pd.to_numeric(frame[source], errors="coerce")
+
+    if "netmhcpan_binding_percentile_rank" in out.columns:
+        rank = out["netmhcpan_binding_percentile_rank"].clip(lower=0, upper=100)
+        out["netmhcpan_binding_score"] = 1.0 - rank / 100.0
+    if "netmhcpan_el_percentile_rank" in out.columns:
+        rank = out["netmhcpan_el_percentile_rank"].clip(lower=0, upper=100)
+        out["netmhcpan_el_score"] = 1.0 - rank / 100.0
+    if "expression_tpm" in out.columns:
+        out["log_expression_tpm"] = np.log1p(out["expression_tpm"].clip(lower=0))
+    if "agretopicity_ratio" in out.columns:
+        out["agretopicity_score"] = -np.log10(out["agretopicity_ratio"].clip(lower=1e-12))
+
+    out = add_contrastive_features(out)
+    out = add_normalized_columns(out)
+    report = validate_schema(out)
+    if not report.ok:
+        raise ValueError(f"Normalized CD8 multimer table failed canonical schema validation: {report}")
+    return out
+
+
+def normalize_improve_cv(
+    path: str | Path,
+    *,
+    zip_member: str | None = None,
+) -> pd.DataFrame:
+    """Normalize IMPROVE's official patient-disjoint cross-validation matrix."""
+    table_path = Path(path)
+    if table_path.suffix.lower() == ".zip" and zip_member is None:
+        zip_member = (
+            "data/03_data_for_CV/IMPROVE/"
+            "03_3_final_peptide_features_Partition_for_CV.txt"
+        )
+    frame = read_table(table_path, zip_member=zip_member)
+    required = {
+        "Patient",
+        "HLA_allele",
+        "Norm_peptide",
+        "Mut_peptide",
+        "response",
+        "cohort",
+        "Partition",
+    }
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(f"IMPROVE CV table missing required columns: {sorted(missing)}")
+
+    labels = frame["response"].map(_label_from_response)
+    if (labels == "unknown").any():
+        raise ValueError("IMPROVE CV table contains unrecognized response labels")
+
+    out = pd.DataFrame(
+        {
+            "candidate_id": [f"improve:{idx}" for idx in range(len(frame))],
+            "source_dataset": "improve",
+            "study_id": "improve_" + frame["cohort"].astype(str),
+            "patient_id": "improve:" + frame["Patient"].astype(str),
+            "hla_allele": frame["HLA_allele"].astype(str),
+            "mutant_peptide": frame["Mut_peptide"].astype(str),
+            "wildtype_peptide": frame["Norm_peptide"].astype(str),
+            "label": labels,
+            "label_weight": 1.0,
+            "assay_type": "validated_tcell_response",
+            "official_partition": frame["Partition"].astype(str),
+            "tumor_type": frame["cohort"].astype(str),
+            "gene_symbol": frame.get("Gene_Symbol", "").astype(str),
+        }
+    )
+
+    numeric_map = {
+        "RankEL_4.1": "netmhcpan_el_percentile_rank",
+        "RankBA_4.1": "netmhcpan_binding_percentile_rank",
+        "RankEL_wt_4.1": "wildtype_netmhcpan_el_percentile_rank",
+        "Stability": "binding_stability_hours",
+        "Prime": "prime_source_score",
+        "DAI_4.1": "differential_agretopicity_index",
+        "Expression": "expression_tpm",
+        "CelPrev": "cellular_prevalence",
+        "PrioScore": "source_priority_score",
+        "SelfSim": "self_similarity_score",
+        "Foreigness": "foreignness_score",
+        "HLAexp": "hla_expression",
+        "CYT": "cytolytic_activity",
+        "NetMHCExp": "netmhc_expression_score",
+        "rna_af": "rna_variant_allele_fraction",
+        "ValMutRNACoef": "validated_mutant_rna_coefficient",
+        "HydroAll": "source_hydrophobicity_all",
+        "HydroCore": "source_hydrophobicity_tcr_core",
+    }
+    for source, target in numeric_map.items():
+        if source in frame.columns:
+            out[target] = pd.to_numeric(frame[source], errors="coerce")
+
+    if "netmhcpan_el_percentile_rank" in out.columns:
+        rank = out["netmhcpan_el_percentile_rank"].clip(lower=0, upper=100)
+        out["netmhcpan_el_score"] = 1.0 - rank / 100.0
+    if "netmhcpan_binding_percentile_rank" in out.columns:
+        rank = out["netmhcpan_binding_percentile_rank"].clip(lower=0, upper=100)
+        out["netmhcpan_binding_score"] = 1.0 - rank / 100.0
+    if "wildtype_netmhcpan_el_percentile_rank" in out.columns:
+        rank = out["wildtype_netmhcpan_el_percentile_rank"].clip(lower=0, upper=100)
+        out["wildtype_netmhcpan_el_score"] = 1.0 - rank / 100.0
+    if "expression_tpm" in out.columns:
+        out["log_expression_tpm"] = np.log1p(out["expression_tpm"].clip(lower=0))
+
+    out = add_contrastive_features(out)
+    out = add_normalized_columns(out)
+    report = validate_schema(out)
+    if not report.ok:
+        raise ValueError(f"Normalized IMPROVE table failed canonical schema validation: {report}")
     return out
 
 

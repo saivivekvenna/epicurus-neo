@@ -207,6 +207,16 @@ def train_and_evaluate(
         "baseline_pvac_style_score",
         "baseline_presentation_score",
         "baseline_binding_score",
+        "netmhcpan_el_score",
+        "netmhcpan_binding_score",
+        "source_rf_presentation_score",
+        "proteasomal_processing_score",
+        "expression_tpm",
+        "agretopicity_score",
+        "foreignness_score",
+        "self_dissimilarity_score",
+        "prime_source_score",
+        "source_priority_score",
     ]
     results = evaluate_score_columns(
         scored_test, group_col=group_col, score_columns=score_columns, k=k

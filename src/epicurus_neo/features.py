@@ -37,11 +37,13 @@ NON_FEATURE_COLUMNS = {
     "tgt",
     "rand",
     "retrieval_fold",
+    "official_partition",
     "immunogenicity",
     "Immunogenicity",
     "reactivity",
     "Reactivity",
     "TIL Reactivity",
+    "source_duplicate_count",
 }
 
 

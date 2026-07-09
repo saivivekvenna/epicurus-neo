@@ -16,7 +16,9 @@ from epicurus_neo.metrics import group_metrics, summarize_group_metrics
 from epicurus_neo.normalize import (
     normalize_bigmhc_table,
     normalize_candidate_table,
+    normalize_cd8_multimer_2025,
     normalize_gartner_table,
+    normalize_improve_cv,
     normalize_neoranking_neopep,
     write_normalized,
 )
@@ -199,6 +201,10 @@ def cmd_normalize(args: argparse.Namespace) -> int:
         normalized = normalize_tesla_table(args.input)
     elif args.kind == "bigmhc":
         normalized = normalize_bigmhc_table(args.input, zip_member=args.zip_member)
+    elif args.kind == "cd8-multimer-2025":
+        normalized = normalize_cd8_multimer_2025(args.input)
+    elif args.kind == "improve-cv":
+        normalized = normalize_improve_cv(args.input, zip_member=args.zip_member)
     else:
         normalized = normalize_candidate_table(
             _load_table(Path(args.input)),
@@ -588,7 +594,15 @@ def build_parser() -> argparse.ArgumentParser:
     normalize = sub.add_parser("normalize")
     normalize.add_argument(
         "--kind",
-        choices=["generic", "neoranking-neopep", "gartner", "tesla", "bigmhc"],
+        choices=[
+            "generic",
+            "neoranking-neopep",
+            "gartner",
+            "tesla",
+            "bigmhc",
+            "cd8-multimer-2025",
+            "improve-cv",
+        ],
         default="generic",
     )
     normalize.add_argument("--input", required=True)

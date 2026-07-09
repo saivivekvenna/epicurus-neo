@@ -127,3 +127,47 @@ datasets:
     notes: >
       Use available BigMHC scores as baselines/features. Keep im_test locked if
       used for external comparison.
+
+  cd8_multimer_2025:
+    name: Cross-tumor patient pHLA multimer screen / Immuno-Oncology and Technology 2025
+    role: external_test_and_grouped_training
+    locked_test: false
+    url: https://doi.org/10.1016/j.iotech.2025.101062
+    direct_download: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12318345/supplementaryFiles
+    files:
+      supplementary:
+        url: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12318345/supplementaryFiles
+        filename: PMC12318345_supplementary.zip
+        size: 3.1 MB
+        sha256: 662c122cd1a37fea466ac27c63f95a12aa15e17abd6f6fd428eddecf3443975a
+        license: CC BY-NC-ND 4.0
+        notes: >
+          mmc2.xlsx contains 8,103 tested patient peptide-HLA candidates across
+          26 patients, with 34 multimer-positive responses. Evaluate with
+          patient-grouped splits; never use random row splits.
+    notes: >
+      High-value direct recognition dataset. The source candidate-generation
+      filters differ between the TIL and PBMC cohorts, so retain specimen source
+      and report both pooled and stratified results.
+
+  fukuoka_vaccine_2026:
+    name: Fukuoka personalized neoantigen vaccine cohort 2026
+    role: future_external_test_and_grouped_training
+    locked_test: false
+    url: https://doi.org/10.3389/fimmu.2026.1829509
+    direct_download: null
+    notes: >
+      Reports 2,317 vaccinated short peptides from 352 patients with 313
+      post-vaccination ELISpot positives. The publisher XML references
+      Table1.xlsx, but the Frontiers file endpoints currently return 404.
+
+  improve:
+    name: IMPROVE broad-scale T-cell recognition dataset
+    role: primary_grouped_training
+    locked_test: false
+    url: https://github.com/SRHgroup/IMPROVE_paper
+    direct_download: https://codeload.github.com/SRHgroup/IMPROVE_paper/zip/refs/heads/main
+    notes: >
+      The official CV matrix contains 17,520 experimentally tested candidates,
+      467 positives, 70 patients, and five patient-disjoint partitions. Preserve
+      the published Partition column and do not use random row splits.

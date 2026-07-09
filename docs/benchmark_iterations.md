@@ -1200,3 +1200,42 @@ epitope proximity is enough. The next recognition experiment needs tighter
 task alignment: tumor neoantigen positives and screened negatives, paired
 mutant/wild-type tolerance features, or TCR-contact-position representations
 rather than whole-peptide mean embeddings.
+
+## Iteration 026: Direct Recognition Dataset Expansion
+
+Added two patient-level, experimentally screened recognition datasets without
+using BigMHC `im_test` labels:
+
+- IMPROVE official cross-validation matrix:
+  - 17,520 tested candidates
+  - 467 positives
+  - 70 patients in five official patient-disjoint partitions
+- Cross-tumor 2025 pHLA multimer screen:
+  - 8,095 deduplicated tested candidates
+  - 34 positives
+  - 26 patients split across TIL and PBMC cohorts
+
+IMPROVE five-fold out-of-fold result:
+
+| Score | mean hits@20 | precision@20 | recall@20 | nDCG@20 | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| PRIME source score | 1.2000 | 0.0600 | 0.2086 | 0.1267 | 0.1815 |
+| Epicurus learned ranker | 1.4714 | 0.0736 | 0.2206 | 0.1432 | 0.1986 |
+
+Patient-level paired bootstrap versus PRIME:
+
+- hits@20 delta: `+0.2714`, 95% interval `[+0.0143, +0.5429]`
+- precision@20 delta: `+0.0136`, 95% interval `[+0.0007, +0.0271]`
+- probability of a positive hits delta: `0.977`
+
+The first unconstrained cross-cohort transfer experiment failed: a model trained
+on the TIL subset recovered 5 PBMC top-20 hits, while NetMHCpan EL recovered 10.
+This supports using the new labels for constrained residual learning or
+stage-aware auxiliary training, not replacing presentation ranking outright.
+
+Decision:
+
+Accepted as reusable direct-recognition training and external-validation
+infrastructure. This iteration does not alter the locked BigMHC headline. The
+next experiment will train a recognition residual from IMPROVE and select its
+blend strength on BigMHC `im_val` before any locked-test evaluation.

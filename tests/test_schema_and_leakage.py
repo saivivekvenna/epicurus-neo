@@ -49,3 +49,22 @@ def test_purge_train_overlaps_removes_exact_peptide_keys():
     test = _frame().iloc[1:].copy()
     purged = purge_train_overlaps(train, test)
     assert purged["candidate_id"].tolist() == ["a"]
+
+
+def test_empty_wildtype_does_not_create_false_hla_leakage():
+    train = _frame().iloc[[0]].copy()
+    test = _frame().iloc[[2]].copy()
+    train["wildtype_peptide"] = ""
+    test["wildtype_peptide"] = ""
+    train["hla_allele"] = "HLA-A*02:01"
+    test["hla_allele"] = "HLA-A*02:01"
+    train["patient_id"] = "train_patient"
+    test["patient_id"] = "test_patient"
+    train["study_id"] = "train_study"
+    test["study_id"] = "test_study"
+
+    report = detect_exact_leakage(train, test)
+    purged = purge_train_overlaps(train, test)
+
+    assert report.shared_wildtype_hla == ()
+    assert purged["candidate_id"].tolist() == ["a"]
