@@ -1305,3 +1305,39 @@ The primary hard-part target moves to patient-disjoint IMPROVE, where an oracle
 mean of `6.4571` makes `5 hits@20` valid and where patient, expression,
 clonality, mutant/wild-type, and tumor-context features match the eventual
 WES/RNA product.
+
+## Iteration 028: Patient Baselines and Paired Sequence Audit
+
+The IMPROVE source table was audited before further optimization. Twenty-three
+patients had all positives ordered before negatives, and 33 patients achieved
+their oracle top-20 score from source order alone. Metrics now break score ties
+with a deterministic hash of biological candidate identity. Source row order
+and candidate IDs cannot decide top-k membership.
+
+Reproduced official and external baselines under the corrected metric:
+
+| Method | Mean hits@20 |
+| --- | ---: |
+| Official IMPROVE RF, TME excluded | 1.4429 |
+| NeoGuider isotonic logistic regression | 1.3429 |
+| Epicurus direct-recognition ranker | 1.4714 |
+| Patient-budget XGBoost candidate | 1.4857 |
+| Development-only RF/Epicurus rank blend | 1.5143 |
+
+The blend is diagnostic, not a locked result, because its weight was selected
+after inspecting aggregate out-of-fold performance.
+
+Representation experiments:
+
+| Added evidence | Mean hits@20 | Decision |
+| --- | ---: | --- |
+| Leakage-safe ESM retrieval from training folds | 0.9857 | reject |
+| Raw features in stricter preprocessing harness | 1.4143 | control |
+| Mutant-minus-wild-type ESM delta | 1.1857 | reject |
+| Full mutant/wild-type ESM pair | 1.4143 | reject |
+
+Generic protein-language-model geometry did not encode the T-cell
+cross-reactivity relation needed for recognition. The next paired model must be
+pretrained on shared-TCR peptide relationships with HLA context before direct
+cancer-screen fine-tuning. NeoPrecis-Immuno is the required external baseline
+for that hypothesis.

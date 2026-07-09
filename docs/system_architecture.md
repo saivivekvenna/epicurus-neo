@@ -114,7 +114,7 @@ Do not force one dataset to validate the whole system.
 
 | Benchmark | Unit | Current hits@20 | Oracle hits@20 | Role |
 | --- | --- | ---: | ---: | --- |
-| BigMHC `im_test` | HLA allele | 2.5556 | 3.5185 | component regression |
+| BigMHC `im_test` | HLA allele | 2.5741 | 3.5185 | component regression |
 | IMPROVE official CV | patient | 1.4714 | 6.4571 | primary hard-part target |
 | 2025 multimer cohort | patient | not accepted | 1.3077 | external robustness |
 
@@ -147,3 +147,6 @@ Always report:
 6. Run leave-cohort-out and independent multimer validation.
 7. Integrate the frozen ranker behind the pVACtools candidate adapter.
 8. Produce the final top-20 table with uncertainty, provenance, and rationale.
+
+The detailed ranking-engine build and training program is defined in
+[`ranking_engine_plan.md`](ranking_engine_plan.md).
