@@ -27,6 +27,26 @@ def _binary_labels(labels: pd.Series) -> np.ndarray:
     return labels.map({"positive": 1, "negative": 0}).astype(int).to_numpy()
 
 
+def _candidate_tie_break_key(frame: pd.DataFrame) -> pd.Series:
+    identity_families = (
+        ("mutant_peptide_norm", "mutant_peptide", "Mut_peptide"),
+        ("hla_allele_norm", "hla_allele", "HLA_allele"),
+        ("wildtype_peptide_norm", "wildtype_peptide", "Norm_peptide"),
+        ("gene_symbol", "Gene_Symbol", "Gene_ID"),
+    )
+    identity = pd.Series("", index=frame.index, dtype="object")
+    used = False
+    for family in identity_families:
+        column = next((name for name in family if name in frame.columns), None)
+        if column is None:
+            continue
+        identity = identity + "|" + frame[column].fillna("").astype(str)
+        used = True
+    if not used and "candidate_id" in frame.columns:
+        identity = frame["candidate_id"].fillna("").astype(str)
+    return pd.util.hash_pandas_object(identity, index=False)
+
+
 def group_metrics(
     frame: pd.DataFrame,
     *,
@@ -40,7 +60,13 @@ def group_metrics(
     labeled = frame[frame[label_col].isin(["positive", "negative"])].copy()
 
     for group_id, group in labeled.groupby(group_col, sort=True):
-        ranked = group.sort_values(score_col, ascending=False, kind="mergesort")
+        group = group.copy()
+        group["__candidate_tie_break_key"] = _candidate_tie_break_key(group)
+        ranked = group.sort_values(
+            [score_col, "__candidate_tie_break_key"],
+            ascending=[False, True],
+            kind="mergesort",
+        )
         labels = _binary_labels(ranked[label_col])
         positives = int(labels.sum())
         top = labels[:k]
