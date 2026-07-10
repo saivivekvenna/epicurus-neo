@@ -6,9 +6,9 @@
 - Completed studies: Braun RCC, Hu/NeoVax, mKRAS-VAX, PDAC NeoVax, and Nous-209
 - Blocked studies: Fukuoka (`BLOCKED_SOURCE_UNAVAILABLE`, zero labels)
 - Source files pinned: Braun, Hu, mKRAS, PDAC NeoVax, and Nous-209 source sets
-- Files currently being edited: sufficiency audit and final documentation
-- Latest focused verification: combined audit built 82 patients, 974 primary labels; verdict insufficient
-- Exact next task: final full-suite verification and compaction review
+- Files currently being edited: none after final verification
+- Latest verification: 194 tests passed; Ruff passed; tracked audit byte-matched regeneration
+- Exact next task: none; hand off the clean branch
 
 ## Reproduction
 

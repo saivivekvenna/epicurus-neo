@@ -420,13 +420,6 @@ def cmd_ingest_backbone(args) -> int:
     summaries = []
     failures = []
     for entry in registry.backbone():
-        namespace = argparse.Namespace(
-            registry=args.registry,
-            study_id=entry.canonical_study_id,
-            output_root=args.output_root,
-            raw_root=args.raw_root,
-            rebuild=args.rebuild,
-        )
         try:
             resolved = _factory_adapter(entry.canonical_study_id, args.raw_root)
             runner = EventBJobRunner(args.output_root)
@@ -443,9 +436,7 @@ def cmd_ingest_backbone(args) -> int:
                     )
                 continue
             adapter, manifest = resolved
-            checkpoint, result = runner.ingest(
-                entry, adapter, manifest, rebuild=namespace.rebuild
-            )
+            checkpoint, result = runner.ingest(entry, adapter, manifest, rebuild=args.rebuild)
             row = _checkpoint_summary(checkpoint)
             row["reused"] = result is None
             summaries.append(row)

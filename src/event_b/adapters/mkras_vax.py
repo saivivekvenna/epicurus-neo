@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from hashlib import sha256
 import json
 from pathlib import Path
 import shutil
@@ -11,6 +10,7 @@ import urllib.request
 import pandas as pd
 
 from event_b.adapters.base import AdapterDeclaration
+from event_b.adapters.common import entity_frame, provenance_record, stable_record_id
 from event_b.corpus import EventBCorpus
 from event_b.manifest import SourceManifest, manifest_from_paths, sha256_file
 from event_b.models import (
@@ -105,43 +105,9 @@ def source_manifest(raw_dir: str | Path) -> SourceManifest:
     )
 
 
-def _id(prefix: str, *parts: object) -> str:
-    identity = "|".join(str(part) for part in parts)
-    return f"{prefix}:" + sha256(identity.encode()).hexdigest()[:20]
-
-
-def _prov(
-    entity: str,
-    entity_id: str,
-    *,
-    document: str,
-    table: str,
-    row: int | str,
-    column: str,
-    fragment: str,
-    method: str = "deterministic_xlsx_adapter",
-    origin: str = ValueOrigin.SOURCE_REPORTED.value,
-) -> dict:
-    provenance_id = _id("prov", entity, entity_id)
-    return {
-        "provenance_id": provenance_id,
-        "entity_type": entity,
-        "entity_id": entity_id,
-        "field_name": "*",
-        "source_document": document,
-        "table": table,
-        "row": str(row),
-        "column": column,
-        "source_fragment": fragment,
-        "extraction_method": method,
-        "extraction_confidence": 1.0,
-        "value_origin": origin,
-        "review_status": ReviewStatus.ACCEPTED.value,
-    }
-
-
-def _frame(entity: str, rows: list[dict]) -> pd.DataFrame:
-    return pd.DataFrame(rows) if rows else pd.DataFrame(columns=SCHEMAS[entity].columns)
+_id = stable_record_id
+_prov = provenance_record
+_frame = entity_frame
 
 
 class MKRASVaxAdapter:

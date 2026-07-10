@@ -10,7 +10,11 @@ import urllib.request
 import pandas as pd
 
 from event_b.adapters.base import AdapterDeclaration
-from event_b.adapters.mkras_vax import _frame, _id, _prov
+from event_b.adapters.common import (
+    entity_frame as _frame,
+    provenance_record as _prov,
+    stable_record_id as _id,
+)
 from event_b.corpus import EventBCorpus
 from event_b.manifest import SourceManifest, manifest_from_paths, sha256_file
 from event_b.models import (
