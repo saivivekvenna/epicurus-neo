@@ -1,0 +1,667 @@
+{
+  "completeness": [
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 12,
+      "n_candidates": 12,
+      "n_positive": 5,
+      "patient_id": "braun_rcc_2025:101",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 8,
+      "n_candidates": 8,
+      "n_positive": 2,
+      "patient_id": "braun_rcc_2025:102",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 16,
+      "n_candidates": 16,
+      "n_positive": 3,
+      "patient_id": "braun_rcc_2025:104",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 19,
+      "n_candidates": 19,
+      "n_positive": 14,
+      "patient_id": "braun_rcc_2025:105",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 16,
+      "n_candidates": 16,
+      "n_positive": 5,
+      "patient_id": "braun_rcc_2025:106",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 12,
+      "n_candidates": 12,
+      "n_positive": 7,
+      "patient_id": "braun_rcc_2025:107",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 15,
+      "n_candidates": 15,
+      "n_positive": 7,
+      "patient_id": "braun_rcc_2025:108",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 16,
+      "n_candidates": 16,
+      "n_positive": 10,
+      "patient_id": "braun_rcc_2025:109",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 15,
+      "n_candidates": 15,
+      "n_positive": 8,
+      "patient_id": "braun_rcc_2025:110",
+      "ranking_informative": false,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 58,
+      "n_positive": 18,
+      "patient_id": "hu_neovax_2021:1",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 41,
+      "n_positive": 2,
+      "patient_id": "hu_neovax_2021:11",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 37,
+      "n_positive": 3,
+      "patient_id": "hu_neovax_2021:12",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 67,
+      "n_positive": 23,
+      "patient_id": "hu_neovax_2021:2",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 70,
+      "n_positive": 18,
+      "patient_id": "hu_neovax_2021:3",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 72,
+      "n_positive": 15,
+      "patient_id": "hu_neovax_2021:4",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 101,
+      "n_positive": 28,
+      "patient_id": "hu_neovax_2021:5",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 95,
+      "n_positive": 21,
+      "patient_id": "hu_neovax_2021:6",
+      "ranking_informative": true,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "denominator_type": "POSITIVE_ENRICHED",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 6,
+      "patient_id": "mkras_vax_2026:J1994_1",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 1,
+      "patient_id": "mkras_vax_2026:J1994_10",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "POSITIVE_ENRICHED",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 6,
+      "patient_id": "mkras_vax_2026:J1994_12",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 3,
+      "patient_id": "mkras_vax_2026:J1994_13",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "POSITIVE_ENRICHED",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 6,
+      "patient_id": "mkras_vax_2026:J1994_14",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "POSITIVE_ENRICHED",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 6,
+      "patient_id": "mkras_vax_2026:J1994_18",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "POSITIVE_ENRICHED",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 6,
+      "patient_id": "mkras_vax_2026:J1994_2",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "POSITIVE_ENRICHED",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 6,
+      "patient_id": "mkras_vax_2026:J1994_3",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 5,
+      "patient_id": "mkras_vax_2026:J1994_5",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 5,
+      "patient_id": "mkras_vax_2026:J1994_6",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "POSITIVE_ENRICHED",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 6,
+      "patient_id": "mkras_vax_2026:J1994_7",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 6,
+      "n_candidates": 6,
+      "n_positive": 4,
+      "patient_id": "mkras_vax_2026:J1994_9",
+      "ranking_informative": false,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 7,
+      "n_candidates": 7,
+      "n_positive": 1,
+      "patient_id": "pdac_neovax_2023:patient_1",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 14,
+      "n_candidates": 14,
+      "n_positive": 8,
+      "patient_id": "pdac_neovax_2023:patient_10",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 13,
+      "n_candidates": 13,
+      "n_positive": 3,
+      "patient_id": "pdac_neovax_2023:patient_11",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 10,
+      "n_candidates": 10,
+      "n_positive": 1,
+      "patient_id": "pdac_neovax_2023:patient_14",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 10,
+      "n_candidates": 10,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_18",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 20,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_19",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 19,
+      "n_candidates": 19,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_20",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 10,
+      "n_candidates": 10,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_23",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 10,
+      "n_candidates": 10,
+      "n_positive": 3,
+      "patient_id": "pdac_neovax_2023:patient_25",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 9,
+      "n_candidates": 9,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_28",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 19,
+      "n_candidates": 19,
+      "n_positive": 5,
+      "patient_id": "pdac_neovax_2023:patient_29",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 20,
+      "n_candidates": 20,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_3",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 19,
+      "n_candidates": 19,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_4",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 16,
+      "n_candidates": 16,
+      "n_positive": 1,
+      "patient_id": "pdac_neovax_2023:patient_5",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 10,
+      "n_candidates": 10,
+      "n_positive": 1,
+      "patient_id": "pdac_neovax_2023:patient_6",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    },
+    {
+      "denominator_type": "COMPLETE_TESTED_SET",
+      "k_patient": 17,
+      "n_candidates": 17,
+      "n_positive": 0,
+      "patient_id": "pdac_neovax_2023:patient_9",
+      "ranking_informative": false,
+      "study_id": "pdac_neovax_2023"
+    }
+  ],
+  "corpus_verdict": "INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA",
+  "note": "Diagnostic swing under the standing insufficiency verdict; not a headline claim.",
+  "presentation": {
+    "classification": {
+      "auroc": NaN,
+      "brier": NaN
+    },
+    "compatibility": {
+      "hu_neovax_2021": {
+        "n_compatible": 207,
+        "n_positive": 18
+      },
+      "pdac_neovax_2023": {
+        "n_compatible": 4,
+        "n_positive": 0
+      }
+    },
+    "macro_hits_at_k": {
+      "delta": NaN,
+      "delta_ci": [
+        null,
+        null
+      ]
+    },
+    "per_fold": {},
+    "ranking_informative_patients": 0,
+    "reason": "MHCflurry (class-I, <=15mer) scores only short peptides; long SLPs are incompatible, so fewer than two studies retain a viable presentation-comparable subset (the comparison would collapse to one study).",
+    "track": "presentation",
+    "verdict": "NOT_VIABLE_PRESENTATION_INCOMPATIBLE"
+  },
+  "presentation_availability": [
+    {
+      "resolved": 0,
+      "study_id": "braun_rcc_2025",
+      "total": 129
+    },
+    {
+      "resolved": 207,
+      "study_id": "hu_neovax_2021",
+      "total": 541
+    },
+    {
+      "resolved": 0,
+      "study_id": "mkras_vax_2026",
+      "total": 72
+    },
+    {
+      "resolved": 223,
+      "study_id": "pdac_neovax_2023",
+      "total": 223
+    }
+  ],
+  "prevalence_by_study": [
+    {
+      "n": 129,
+      "positive_rate": 0.4728682170542636,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "n": 541,
+      "positive_rate": 0.2365988909426987,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "n": 72,
+      "positive_rate": 0.8333333333333334,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "n": 223,
+      "positive_rate": 0.1031390134529148,
+      "study_id": "pdac_neovax_2023"
+    }
+  ],
+  "study_confound": {
+    "accuracy": 0.9626943005181348,
+    "majority_rate": 0.5606217616580311,
+    "per_study": {
+      "braun_rcc_2025": 0.8682170542635659,
+      "hu_neovax_2021": 1.0,
+      "mkras_vax_2026": 1.0,
+      "pdac_neovax_2023": 0.9147982062780269
+    }
+  },
+  "universal": {
+    "baseline": "prevalence",
+    "classification": {
+      "auroc": 0.5367256998041932,
+      "average_precision": 0.4205699782282243,
+      "brier": 0.42274790686816144,
+      "calibration": [
+        {
+          "bin": 0,
+          "mean_label": 0.4431818181818182,
+          "mean_score": 0.1424120441230703,
+          "n": 88
+        },
+        {
+          "bin": 1,
+          "mean_label": 0.45726495726495725,
+          "mean_score": 0.2879598859855941,
+          "n": 234
+        },
+        {
+          "bin": 2,
+          "mean_label": 0.26900584795321636,
+          "mean_score": 0.4967025495530046,
+          "n": 171
+        },
+        {
+          "bin": 3,
+          "mean_label": 0.20078740157480315,
+          "mean_score": 0.7022490965641124,
+          "n": 254
+        },
+        {
+          "bin": 4,
+          "mean_label": 0.13302752293577982,
+          "mean_score": 0.8682552786907056,
+          "n": 218
+        }
+      ],
+      "per_fold_auroc": {
+        "braun_rcc_2025": 0.47854387656702024,
+        "hu_neovax_2021": 0.4357502269975787,
+        "mkras_vax_2026": 0.675,
+        "pdac_neovax_2023": 0.557608695652174
+      },
+      "pooled_note": "pooled OOF AUROC conflates cross-study calibration shift with discrimination; macro/per-fold is the honest read",
+      "pooled_out_of_fold_auroc": 0.3165133477633478
+    },
+    "macro_capture": {
+      "delta": 0.006597222222222223,
+      "delta_ci": [
+        -0.042708333333333334,
+        0.08159722222222222
+      ],
+      "per_study": {
+        "braun_rcc_2025": 0.0,
+        "hu_neovax_2021": 0.026388888888888892,
+        "mkras_vax_2026": 0.0,
+        "pdac_neovax_2023": 0.0
+      }
+    },
+    "macro_hits_at_k": {
+      "delta": -0.21875,
+      "delta_ci": [
+        -0.46875,
+        0.0625
+      ],
+      "per_study": {
+        "braun_rcc_2025": 0.0,
+        "hu_neovax_2021": -0.875,
+        "mkras_vax_2026": 0.0,
+        "pdac_neovax_2023": 0.0
+      }
+    },
+    "macro_p_at_least_1": {
+      "delta": 0.03125,
+      "delta_ci": [
+        0.0,
+        0.09375
+      ],
+      "per_study": {
+        "braun_rcc_2025": 0.0,
+        "hu_neovax_2021": 0.125,
+        "mkras_vax_2026": 0.0,
+        "pdac_neovax_2023": 0.0
+      }
+    },
+    "micro_hits_at_k": {
+      "delta_ci": [
+        -0.4473684210526316,
+        0.05263157894736842
+      ],
+      "delta_vs_baseline": -0.18421052631578946,
+      "n": 38,
+      "p_better": 0.05265
+    },
+    "model": "logistic",
+    "per_fold": {
+      "braun_rcc_2025": {
+        "classification": {
+          "auroc": 0.47854387656702024,
+          "average_precision": 0.4736922973404303,
+          "brier": 0.32169209563944984
+        },
+        "hits_at_k": {
+          "delta_ci": [
+            0.0,
+            0.0
+          ],
+          "delta_vs_baseline": 0.0,
+          "n": 9,
+          "p_better": 0.0
+        },
+        "n_patients": 9,
+        "n_ranking_informative": 0
+      },
+      "hu_neovax_2021": {
+        "classification": {
+          "auroc": 0.4357502269975787,
+          "average_precision": 0.20697726351671533,
+          "brier": 0.3628321434560321
+        },
+        "hits_at_k": {
+          "delta_ci": [
+            -1.875,
+            0.25
+          ],
+          "delta_vs_baseline": -0.875,
+          "n": 8,
+          "p_better": 0.04865
+        },
+        "n_patients": 8,
+        "n_ranking_informative": 8
+      },
+      "mkras_vax_2026": {
+        "classification": {
+          "auroc": 0.675,
+          "average_precision": 0.8908333333333333,
+          "brier": 0.4745905998898459
+        },
+        "hits_at_k": {
+          "delta_ci": [
+            0.0,
+            0.0
+          ],
+          "delta_vs_baseline": 0.0,
+          "n": 5,
+          "p_better": 0.0
+        },
+        "n_patients": 5,
+        "n_ranking_informative": 0
+      },
+      "pdac_neovax_2023": {
+        "classification": {
+          "auroc": 0.557608695652174,
+          "average_precision": 0.11077701872241849,
+          "brier": 0.5318767884873179
+        },
+        "hits_at_k": {
+          "delta_ci": [
+            0.0,
+            0.0
+          ],
+          "delta_vs_baseline": 0.0,
+          "n": 16,
+          "p_better": 0.0
+        },
+        "n_patients": 16,
+        "n_ranking_informative": 0
+      }
+    },
+    "ranking_informative_patients": 8,
+    "track": "universal",
+    "verdict": "REJECT"
+  }
+}

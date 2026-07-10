@@ -62,6 +62,17 @@ def _track_lines(title: str, track: dict, opponent: str) -> list[str]:
         f"- Ranking-informative patients (n_eligible > k): "
         f"{track.get('ranking_informative_patients', 'n/a')}"
     )
+    if track.get("reason"):
+        lines.append(f"- Reason: {track['reason']}")
+    compatibility = track.get("compatibility")
+    if isinstance(compatibility, dict) and compatibility:
+        lines.append(
+            "- Presentation-compatible candidates: "
+            + ", ".join(
+                f"{study}={info['n_compatible']} ({info['n_positive']} pos)"
+                for study, info in compatibility.items()
+            )
+        )
     return lines
 
 

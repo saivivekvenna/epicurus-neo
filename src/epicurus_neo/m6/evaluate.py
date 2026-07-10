@@ -14,8 +14,8 @@ from epicurus_neo.m6.ranking import classification_metrics, patient_rank_vectors
 _GUARD_METRICS = ("hits_at_k", "capture_fraction", "p_at_least_1")
 
 
-def _entry(candidate: np.ndarray, baseline: np.ndarray) -> dict:
-    comparison = paired_bootstrap(candidate, baseline, seed=17)
+def _entry(candidate: np.ndarray, baseline: np.ndarray, *, n: int = 20_000) -> dict:
+    comparison = paired_bootstrap(candidate, baseline, n=n, seed=17)
     return {
         "delta_vs_baseline": comparison.delta,
         "delta_ci": [comparison.lo, comparison.hi],
@@ -104,6 +104,7 @@ def evaluate_track(
     tier: str = "core",
     k_cap: int = 20,
     seed: int = 17,
+    bootstrap_n: int = 20_000,
 ) -> dict:
     """Run LOSO for one (model vs baseline) comparison and assemble the registered report."""
     report = completeness_report(frame, k_cap=k_cap)
@@ -146,14 +147,19 @@ def evaluate_track(
         informative = int((rankable.groupby("patient_id").size() > k_cap).sum())
         informative_total += informative
         per_fold[fold.held_out_study] = {
-            "hits_at_k": _entry(cand["hits_at_k"], base["hits_at_k"]),
+            "hits_at_k": _entry(cand["hits_at_k"], base["hits_at_k"], n=bootstrap_n),
             "n_patients": int(rankable.patient_id.nunique()),
             "n_ranking_informative": informative,
             **fold_report,
         }
-    macro = {metric: macro_paired_delta(per_study[metric], seed=seed) for metric in _GUARD_METRICS}
+    macro = {
+        metric: macro_paired_delta(per_study[metric], seed=seed, n=bootstrap_n)
+        for metric in _GUARD_METRICS
+    }
     micro_hits = _entry(
-        np.concatenate(micro["hits_at_k"]["cand"]), np.concatenate(micro["hits_at_k"]["base"])
+        np.concatenate(micro["hits_at_k"]["cand"]),
+        np.concatenate(micro["hits_at_k"]["base"]),
+        n=bootstrap_n,
     )
     classification = _macro_classification(per_fold, pooled_true, pooled_score)
     verdict = pre_registered_verdict(
