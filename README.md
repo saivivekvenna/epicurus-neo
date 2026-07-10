@@ -54,6 +54,14 @@ The next-stage evidence contract is in
 available, `epicurus funnel-report ledger.csv` reports per-stage candidate recall with confidence
 intervals and explicit bounds for missing evidence.
 
+The Event-B corpus substrate is documented in
+[`docs/milestone_4_event_b_corpus.md`](docs/milestone_4_event_b_corpus.md). It keeps vaccine-induced
+response separate from pre-existing reactivity, clinical outcome, and presentation; preserves
+field-level provenance and review state; emits pending LLM extraction tasks when no endpoint exists;
+and generates leakage-safe splits, deterministic Parquet exports, and corpus audits. The current
+[audit](artifacts/milestone_4/corpus_audit.md)
+finds zero available Event-B patients, so recognition modeling remains blocked.
+
 ## Benchmark roles
 
 - IMPROVE official five-fold patient CV: primary Event-A component/ranking regression.

@@ -48,9 +48,9 @@ REQUIRED_LABEL_METADATA = {
 
 def _coerce_enum(value, enum_type: type[Enum], field: str):
     if isinstance(value, enum_type):
-        return value
+        return value.value
     try:
-        return enum_type(str(value).strip().lower())
+        return enum_type(str(value).strip().lower()).value
     except ValueError as error:
         raise ValueError(f"Unknown {field}: {value!r}") from error
 
@@ -72,19 +72,17 @@ def validate_label_metadata(frame: pd.DataFrame) -> pd.DataFrame:
         lambda value: _coerce_enum(value, EventType, "event_type")
     )
     out["assay"] = out["assay"].map(lambda value: _coerce_enum(value, Assay, "assay"))
-    out["label"] = out["label"].map(coerce_label)
+    out["label"] = out["label"].map(lambda value: coerce_label(value).name)
     out["timepoint"] = out["timepoint"].map(
         lambda value: _coerce_enum(value, Timepoint, "timepoint")
     )
 
-    tested = out["label"].map(
-        lambda value: value is Label.POSITIVE or value is Label.TESTED_NEGATIVE
-    )
-    unknown_assay = out["assay"].map(lambda value: value is Assay.UNKNOWN)
+    tested = out["label"].isin([Label.POSITIVE.name, Label.TESTED_NEGATIVE.name])
+    unknown_assay = out["assay"].eq(Assay.UNKNOWN.value)
     if (tested & unknown_assay).any():
         raise ValueError("Tested labels require an explicit assay")
-    vaccine_event = out["event_type"].map(lambda value: value is EventType.VACCINE_INDUCED_RESPONSE)
-    pre_vaccine = out["timepoint"].map(lambda value: value is Timepoint.PRE_VACCINE)
+    vaccine_event = out["event_type"].eq(EventType.VACCINE_INDUCED_RESPONSE.value)
+    pre_vaccine = out["timepoint"].eq(Timepoint.PRE_VACCINE.value)
     if (vaccine_event & pre_vaccine & tested).any():
         raise ValueError("A tested vaccine-induced response cannot be measured pre-vaccine")
     return out

@@ -1,0 +1,14 @@
+{
+  "accepted_assay_n": 17082,
+  "canonical_candidate_n": 17520,
+  "decision": "INSUFFICIENT_DATA_DO_NOT_FIT_RECOGNITION_MODEL",
+  "event_a_positive_n": 458,
+  "event_a_tested_negative_n": 16624,
+  "event_b_patient_n": 0,
+  "event_b_positive_patient_n": 0,
+  "event_b_study_n": 0,
+  "patient_n": 70,
+  "quarantined_candidate_n": 438,
+  "source_study_n": 1,
+  "unique_peptide_sequence_n": 15293
+}

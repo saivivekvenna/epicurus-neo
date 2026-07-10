@@ -47,19 +47,18 @@ class FunnelStageSummary:
 
 
 def _has_status(series: pd.Series, status: ReachabilityStatus) -> pd.Series:
-    """Compare str-backed enums without pandas coercing the scalar to text."""
-    return series.map(lambda value: value is status)
+    return series.astype(str).eq(status.value)
 
 
-def _coerce_status(value: Any) -> ReachabilityStatus:
+def _coerce_status(value: Any) -> str:
     if isinstance(value, ReachabilityStatus):
-        return value
+        return value.value
     if value is None or pd.isna(value):
-        return ReachabilityStatus.NOT_ASSESSED
+        return ReachabilityStatus.NOT_ASSESSED.value
     if isinstance(value, (bool, np.bool_)):
-        return ReachabilityStatus.REACHED if value else ReachabilityStatus.LOST
+        return ReachabilityStatus.REACHED.value if value else ReachabilityStatus.LOST.value
     if isinstance(value, (int, np.integer)) and value in {0, 1}:
-        return ReachabilityStatus.REACHED if value else ReachabilityStatus.LOST
+        return ReachabilityStatus.REACHED.value if value else ReachabilityStatus.LOST.value
     text = str(value).strip().lower()
     aliases = {
         "reached": ReachabilityStatus.REACHED,
@@ -75,7 +74,7 @@ def _coerce_status(value: Any) -> ReachabilityStatus:
         "na": ReachabilityStatus.NOT_ASSESSED,
     }
     try:
-        return aliases[text]
+        return aliases[text].value
     except KeyError as error:
         raise ValueError(f"Unknown reachability status: {value!r}") from error
 
@@ -111,16 +110,16 @@ def validate_reachability_ledger(
         upstream_unknown = False
         for stage in STAGES:
             status = row[stage]
-            if status is ReachabilityStatus.REACHED and (upstream_lost or upstream_unknown):
+            if status == ReachabilityStatus.REACHED.value and (upstream_lost or upstream_unknown):
                 reason = "lost" if upstream_lost else "not assessed"
                 raise ValueError(
                     f"{row[positive_id_col]!r} reaches {stage} after an upstream stage was {reason}"
                 )
-            if upstream_lost and status is ReachabilityStatus.NOT_ASSESSED:
-                out.at[index, stage] = ReachabilityStatus.LOST
-                status = ReachabilityStatus.LOST
-            upstream_lost = upstream_lost or status is ReachabilityStatus.LOST
-            upstream_unknown = upstream_unknown or status is ReachabilityStatus.NOT_ASSESSED
+            if upstream_lost and status == ReachabilityStatus.NOT_ASSESSED.value:
+                out.at[index, stage] = ReachabilityStatus.LOST.value
+                status = ReachabilityStatus.LOST.value
+            upstream_lost = upstream_lost or status == ReachabilityStatus.LOST.value
+            upstream_unknown = upstream_unknown or status == ReachabilityStatus.NOT_ASSESSED.value
     return out
 
 
@@ -150,7 +149,7 @@ def annotate_reachability(
         table = stage_tables.get(stage)
         keys = stage_keys.get(stage)
         if table is None:
-            ledger[stage] = ReachabilityStatus.NOT_ASSESSED
+            ledger[stage] = ReachabilityStatus.NOT_ASSESSED.value
             continue
         if not keys:
             raise ValueError(f"Explicit identity keys are required for supplied stage {stage}")
@@ -173,7 +172,9 @@ def annotate_reachability(
             else ReachabilityStatus.NOT_ASSESSED
         )
         ledger[stage] = [
-            ReachabilityStatus.REACHED if identity in stage_identities else absent_status
+            ReachabilityStatus.REACHED.value
+            if identity in stage_identities
+            else absent_status.value
             for identity in positive_identities
         ]
     return validate_reachability_ledger(

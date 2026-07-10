@@ -80,14 +80,14 @@ def test_annotate_reachability_uses_explicit_stage_identity_keys():
         {"mutation_called": True, "transcript_represented": True},
     )
     assert ledger["mutation_called"].tolist() == [
-        ReachabilityStatus.REACHED,
-        ReachabilityStatus.REACHED,
+        ReachabilityStatus.REACHED.value,
+        ReachabilityStatus.REACHED.value,
     ]
     assert ledger["transcript_represented"].tolist() == [
-        ReachabilityStatus.REACHED,
-        ReachabilityStatus.LOST,
+        ReachabilityStatus.REACHED.value,
+        ReachabilityStatus.LOST.value,
     ]
-    assert ledger.loc[1, "peptide_generated"] is ReachabilityStatus.LOST
+    assert ledger.loc[1, "peptide_generated"] == ReachabilityStatus.LOST.value
 
 
 def test_incomplete_stage_does_not_convert_absence_to_loss():
@@ -105,8 +105,8 @@ def test_incomplete_stage_does_not_convert_absence_to_loss():
         {"mutation_called": False},
     )
     assert ledger["mutation_called"].tolist() == [
-        ReachabilityStatus.REACHED,
-        ReachabilityStatus.NOT_ASSESSED,
+        ReachabilityStatus.REACHED.value,
+        ReachabilityStatus.NOT_ASSESSED.value,
     ]
 
 
@@ -133,10 +133,10 @@ def test_label_metadata_keeps_event_assay_label_and_timepoint_distinct():
         }
     )
     validated = validate_label_metadata(frame)
-    assert validated.loc[0, "event_type"] is EventType.PRE_EXISTING_REACTIVITY
-    assert validated.loc[1, "assay"] is Assay.ELISPOT
-    assert validated.loc[1, "label"] is Label.TESTED_NEGATIVE
-    assert validated.loc[1, "timepoint"] is Timepoint.POST_BOOST
+    assert validated.loc[0, "event_type"] == EventType.PRE_EXISTING_REACTIVITY.value
+    assert validated.loc[1, "assay"] == Assay.ELISPOT.value
+    assert validated.loc[1, "label"] == Label.TESTED_NEGATIVE.name
+    assert validated.loc[1, "timepoint"] == Timepoint.POST_BOOST.value
 
 
 def test_label_metadata_rejects_semantic_contradictions():
