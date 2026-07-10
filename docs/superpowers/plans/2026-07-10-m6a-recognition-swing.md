@@ -170,6 +170,8 @@ git commit -m "milestone-6a: M6 candidate-resolved label-frame loader"
 - Consumes: `load_label_frame()` output.
 - Produces: `completeness_report(frame: pd.DataFrame, *, k_cap: int = 20) -> pd.DataFrame` — one row per patient with columns `patient_id, study_id, n_candidates, n_positive, k_patient, ranking_informative, denominator_type`. `denominator_type ∈ {"COMPLETE_TESTED_SET", "POSITIVE_ENRICHED"}` (all 45 candidate-resolved patients carry ≥1 tested negative → all `COMPLETE_TESTED_SET`; the branch is retained so a future positive-only cohort is flagged, not silently admitted).
 
+  > **Erratum (post-implementation, 2026-07-10):** the "all 45 → all `COMPLETE_TESTED_SET`" grounding is wrong. Shipped reality: 38 `HAS_TESTED_NEGATIVE`, 7 `NO_TESTED_NEGATIVE` (the mKRAS 6/6-responders). The labels were renamed to state the actual criterion — presence/absence of a tested negative (rankability), *not* denominator completeness — and the Step-1 assertion below (`(report.denominator_type == "COMPLETE_TESTED_SET").all()`) is superseded by the shipped test asserting 38/7 in `tests/test_m6_completeness.py`.
+
 - [ ] **Step 1: Write the failing test**
 
 ```python

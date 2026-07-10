@@ -80,6 +80,16 @@ def completeness_report(frame: pd.DataFrame, *, k_cap: int = 20) -> pd.DataFrame
     frame is already restricted to POSITIVE/TESTED_NEGATIVE, so ``n_candidates`` is
     ``n_eligible``). Selection is degenerate where ``n_eligible <= k_cap`` because
     the top-k set is the whole list.
+
+    ``denominator_type`` records one narrow fact: whether the patient's tested
+    candidate set contains at least one negative (``HAS_TESTED_NEGATIVE``) or none
+    (``NO_TESTED_NEGATIVE``). It is a *rankability* flag, not a claim about
+    denominator completeness or selection bias -- a patient can sit on a complete,
+    unbiased candidate universe and still be ``NO_TESTED_NEGATIVE``. The seven
+    mKRAS 6/6-responders are exactly that: the shared six-peptide panel is a
+    complete denominator, but they responded to all of it, leaving no negative to
+    rank against. They are therefore excluded from primary top-k (nothing to rank)
+    yet retained in pooled classification.
     """
     grouped = frame.groupby("patient_id", sort=True)
     report = grouped.agg(
@@ -97,7 +107,5 @@ def completeness_report(frame: pd.DataFrame, *, k_cap: int = 20) -> pd.DataFrame
         .reindex(report.patient_id)
         .to_numpy()
     )
-    report["denominator_type"] = np.where(
-        has_negative, "COMPLETE_TESTED_SET", "POSITIVE_ENRICHED"
-    )
+    report["denominator_type"] = np.where(has_negative, "HAS_TESTED_NEGATIVE", "NO_TESTED_NEGATIVE")
     return report

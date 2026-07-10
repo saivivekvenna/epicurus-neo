@@ -11,7 +11,9 @@ def _records(value) -> list[dict]:
     return list(value)
 
 
-def assemble_audit(*, universal, presentation, completeness, prevalence, confound, availability) -> dict:
+def assemble_audit(
+    *, universal, presentation, completeness, prevalence, confound, availability
+) -> dict:
     return {
         "corpus_verdict": CORPUS_VERDICT,
         "note": "Diagnostic swing under the standing insufficiency verdict; not a headline claim.",
@@ -50,9 +52,10 @@ def _track_lines(title: str, track: dict, opponent: str) -> list[str]:
     ]
     per_fold = classification.get("per_fold_auroc")
     if isinstance(per_fold, dict) and per_fold:
-        lines.append("- Per-held-out-study AUROC: " + ", ".join(
-            f"{study}={_fmt(value)}" for study, value in per_fold.items()
-        ))
+        lines.append(
+            "- Per-held-out-study AUROC: "
+            + ", ".join(f"{study}={_fmt(value)}" for study, value in per_fold.items())
+        )
     if "pooled_out_of_fold_auroc" in classification:
         lines.append(
             f"- Pooled OOF AUROC (caveated): {_fmt(classification['pooled_out_of_fold_auroc'])} "
@@ -76,6 +79,20 @@ def _track_lines(title: str, track: dict, opponent: str) -> list[str]:
     return lines
 
 
+def _completeness_lines(records: list) -> list[str]:
+    has_neg = sum(1 for r in records if r.get("denominator_type") == "HAS_TESTED_NEGATIVE")
+    no_neg = sum(1 for r in records if r.get("denominator_type") == "NO_TESTED_NEGATIVE")
+    return [
+        "## Candidate-universe completeness gate",
+        f"- Patients with >=1 tested negative (HAS_TESTED_NEGATIVE, rankable): {has_neg}",
+        f"- Patients with no tested negative (NO_TESTED_NEGATIVE): {no_neg}",
+        "- NO_TESTED_NEGATIVE is a rankability flag (no negative to rank against), not a "
+        "denominator-bias claim: e.g. the mKRAS 6/6-responders sit on a complete shared "
+        "six-peptide panel. These patients are excluded from primary top-k and kept in "
+        "pooled classification.",
+    ]
+
+
 def render_audit_markdown(audit: dict) -> str:
     lines = [
         "# Milestone 6A audit: Event-B-only recognition swing",
@@ -88,13 +105,16 @@ def render_audit_markdown(audit: dict) -> str:
         "",
         *_track_lines("Presentation track", audit["presentation"], "presentation-only (hu + pdac)"),
         "",
+        *_completeness_lines(audit.get("completeness", [])),
+        "",
         "## Study confound",
         f"- Study-only classifier accuracy: {_fmt(audit['study_confound'].get('accuracy'))} "
         f"(majority rate {_fmt(audit['study_confound'].get('majority_rate'))})",
     ]
     prevalence = audit.get("prevalence_by_study", [])
     if prevalence:
-        lines.append("- Positive rate by study: " + ", ".join(
-            f"{row['study_id']}={_fmt(row['positive_rate'])}" for row in prevalence
-        ))
+        lines.append(
+            "- Positive rate by study: "
+            + ", ".join(f"{row['study_id']}={_fmt(row['positive_rate'])}" for row in prevalence)
+        )
     return "\n".join(lines) + "\n"

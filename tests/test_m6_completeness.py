@@ -13,14 +13,16 @@ def test_completeness_gate_grounded_counts():
     mkras = report[report.study_id == "mkras_vax_2026"]
     assert (mkras.k_patient == 6).all()
     assert (~mkras.ranking_informative).all()
-    # 38 patients carry a tested negative; 7 mKRAS 6/6-responders are positive-enriched
-    # (no negative to rank against) and must be barred from primary top-k downstream.
+    # 38 patients carry a tested negative (HAS_TESTED_NEGATIVE); 7 mKRAS 6/6-responders
+    # carry none (NO_TESTED_NEGATIVE). This is a rankability flag, not a denominator-bias
+    # claim -- the mKRAS six-peptide panel is a complete shared denominator; those 7 simply
+    # responded to all of it, so they are barred from primary top-k (no negative to rank).
     counts = report.denominator_type.value_counts()
-    assert counts["COMPLETE_TESTED_SET"] == 38
-    assert counts["POSITIVE_ENRICHED"] == 7
-    enriched = report[report.denominator_type == "POSITIVE_ENRICHED"]
-    assert (enriched.study_id == "mkras_vax_2026").all()
-    assert (enriched.n_positive == enriched.n_candidates).all()
+    assert counts["HAS_TESTED_NEGATIVE"] == 38
+    assert counts["NO_TESTED_NEGATIVE"] == 7
+    no_negative = report[report.denominator_type == "NO_TESTED_NEGATIVE"]
+    assert (no_negative.study_id == "mkras_vax_2026").all()
+    assert (no_negative.n_positive == no_negative.n_candidates).all()
     # k_patient never exceeds 20 and never exceeds the patient's candidate count.
     assert (report.k_patient <= 20).all()
     assert (report.k_patient <= report.n_candidates).all()

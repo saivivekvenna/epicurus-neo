@@ -20,6 +20,11 @@ Diagnostic swing under the standing insufficiency verdict; not a headline claim.
 - Reason: MHCflurry (class-I, <=15mer) scores only short peptides; long SLPs are incompatible, so fewer than two studies retain a viable presentation-comparable subset (the comparison would collapse to one study).
 - Presentation-compatible candidates: hu_neovax_2021=207 (18 pos), pdac_neovax_2023=4 (0 pos)
 
+## Candidate-universe completeness gate
+- Patients with >=1 tested negative (HAS_TESTED_NEGATIVE, rankable): 38
+- Patients with no tested negative (NO_TESTED_NEGATIVE): 7
+- NO_TESTED_NEGATIVE is a rankability flag (no negative to rank against), not a denominator-bias claim: e.g. the mKRAS 6/6-responders sit on a complete shared six-peptide panel. These patients are excluded from primary top-k and kept in pooled classification.
+
 ## Study confound
 - Study-only classifier accuracy: 0.9627 (majority rate 0.5606)
 - Positive rate by study: braun_rcc_2025=0.4729, hu_neovax_2021=0.2366, mkras_vax_2026=0.8333, pdac_neovax_2023=0.1031

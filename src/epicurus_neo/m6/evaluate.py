@@ -36,7 +36,9 @@ def macro_paired_delta(
     studies = sorted(per_study)
     diffs = {study: _finite_diffs(*per_study[study]) for study in studies}
     populated = [study for study in studies if len(diffs[study])]
-    point = float(np.mean([diffs[study].mean() for study in populated])) if populated else float("nan")
+    point = (
+        float(np.mean([diffs[study].mean() for study in populated])) if populated else float("nan")
+    )
     rng = np.random.default_rng(seed)
     draws = []
     for _ in range(n):
@@ -108,7 +110,9 @@ def evaluate_track(
 ) -> dict:
     """Run LOSO for one (model vs baseline) comparison and assemble the registered report."""
     report = completeness_report(frame, k_cap=k_cap)
-    complete = set(report.loc[report.denominator_type == "COMPLETE_TESTED_SET", "patient_id"])
+    rankable_patients = set(
+        report.loc[report.denominator_type == "HAS_TESTED_NEGATIVE", "patient_id"]
+    )
 
     per_study: dict[str, dict[str, tuple[np.ndarray, np.ndarray]]] = {m: {} for m in _GUARD_METRICS}
     micro: dict[str, dict[str, list]] = {m: {"cand": [], "base": []} for m in _GUARD_METRICS}
@@ -123,14 +127,14 @@ def evaluate_track(
         base_scores = fit_predict(baseline_name, train, evaluation, cols, seed=seed)
         scored = evaluation.assign(_model=model_scores, _base=base_scores)
         # Pooled classification uses every candidate; primary top-k excludes
-        # positive-enriched patients (no negative to rank against).
+        # patients with no tested negative (nothing to rank against).
         pooled_true.append(scored.label.to_numpy())
         pooled_score.append(model_scores)
         fold_class = classification_metrics(scored.label.to_numpy(), model_scores)
         fold_report = {
             "classification": {k: fold_class[k] for k in ("auroc", "average_precision", "brier")}
         }
-        rankable = scored[scored.patient_id.isin(complete)]
+        rankable = scored[scored.patient_id.isin(rankable_patients)]
         if rankable.empty:
             per_fold[fold.held_out_study] = {
                 "n_patients": 0,

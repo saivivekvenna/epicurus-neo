@@ -97,6 +97,14 @@ evaluated (all required features present).** Ranking is over exactly those candi
   metrics.** (Grounded: all 45 candidate-resolved patients carry ≥1 tested negative, so none are
   trivially positive-only; the gate's real work here is *naming the denominator type per study* and
   flagging ranking-degenerate patients, not culling.)
+
+  > **Erratum (post-implementation, 2026-07-10):** the parenthetical grounding above is wrong.
+  > 38 of 45 candidate-resolved patients carry ≥1 tested negative; 7 mKRAS 6/6-responders carry
+  > none, so the shipped gate *does* cull those 7 from primary top-*k*. The implemented
+  > `denominator_type` is binary and encodes only presence/absence of a tested negative
+  > (rankability) — not the four categories listed above, and not denominator completeness or
+  > selection bias. Shipped labels: `HAS_TESTED_NEGATIVE` / `NO_TESTED_NEGATIVE`. See
+  > `artifacts/milestone_6/m6a_audit.md` and the `completeness_report` docstring.
 - The report states plainly whether M6 is evaluating **"reranking among reported vaccine candidates"**
   (the honest current name) versus **"selecting the best 20 from the full generated candidate
   universe"** (not yet supported). Do not use the second name for the first experiment.
