@@ -1,0 +1,141 @@
+{
+  "accepted": {
+    "assays": 623,
+    "event_counts": {
+      "EPITOPE_SPREADING": 82,
+      "EVENT_B_VACCINE_INDUCED_RESPONSE": 541
+    },
+    "patients": 8,
+    "positives": 128,
+    "tested_negatives": 495,
+    "untested": 0
+  },
+  "class_breakdown": {
+    "CLASS_I": 304,
+    "CLASS_II": 334
+  },
+  "de_novo_basis": "Ott 2017 and Hu 2021 both report no pre-vaccination neoantigen reactivity; this table carries no week-0 column, so de-novo is author-asserted (not baseline-verified) and recognition_evidence temporal_clarity is set lower than a baseline-verified de-novo claim",
+  "epitope_spreading": {
+    "all_non_vaccine": true,
+    "any_positive": false,
+    "assays": 82,
+    "note": "week-16 epitope-spreading responses in Datasets 11a-c are uniformly non-reactive; the paper's spreading positives arise at later / post-checkpoint timepoints not ingested here. Kept as EPITOPE_SPREADING, never vaccine-candidate recognition."
+  },
+  "expected_from_literature": {
+    "cd4_positive_neoantigens": 58,
+    "cd4_tolerance": 3,
+    "cd8_positive_neoantigens": 15,
+    "patients": 8
+  },
+  "model_readiness": {
+    "decision": "EVENT_B_VERTICAL_SLICE_VALIDATED_NOT_YET_SUFFICIENT_FOR_GENERAL_MODEL",
+    "event_b_patient_n": 8,
+    "event_b_positive_patient_n": 8,
+    "event_b_study_n": 1,
+    "registered_minimums": {
+      "event_b_patients": 100,
+      "event_b_studies": 2,
+      "positive_patients": 30
+    },
+    "sufficient_for_recognition_model_development": false
+  },
+  "ott_cross_check_source": "PMC5577644 (Ott 2017; per-peptide screen for patients 1-6)",
+  "reconciliation": {
+    "cd4": {
+      "delta": 2,
+      "observed": {
+        "assayed_rows": 296,
+        "positive_neoantigens": 56,
+        "positive_rows": 105,
+        "total_neoantigens": 96
+      },
+      "ott_reported": [
+        58,
+        97
+      ],
+      "reconciles_within_tolerance": true
+    },
+    "cd8": {
+      "observed": {
+        "assayed_rows": 167,
+        "positive_neoantigens": 15,
+        "positive_rows": 18,
+        "total_neoantigens": 97
+      },
+      "ott_reported": [
+        15,
+        97
+      ],
+      "reconciles": true
+    }
+  },
+  "reliability_differentiation": {
+    "FUNCTIONAL_T_CELL_ASSAY": {
+      "assay_directness": [
+        0.9
+      ],
+      "candidate_specificity": [
+        1.0
+      ],
+      "n": 82,
+      "temporal_clarity": [
+        0.6
+      ],
+      "vaccine_relevance": [
+        0.0
+      ]
+    },
+    "LONGITUDINAL_PERSISTENCE": {
+      "assay_directness": [
+        0.7
+      ],
+      "candidate_specificity": [
+        0.8
+      ],
+      "n": 128,
+      "temporal_clarity": [
+        0.8
+      ],
+      "vaccine_relevance": [
+        1.0
+      ]
+    },
+    "VACCINE_EVENT_B": {
+      "assay_directness": [
+        0.6,
+        0.9
+      ],
+      "candidate_specificity": [
+        0.6,
+        1.0
+      ],
+      "n": 541,
+      "temporal_clarity": [
+        0.7
+      ],
+      "vaccine_relevance": [
+        1.0
+      ]
+    }
+  },
+  "review_queue": {
+    "by_code": {
+      "DUPLICATE_IDENTITY": 22,
+      "UNSCORABLE_ASSAY": 15
+    },
+    "total": 37
+  },
+  "source_observed": {
+    "patient_n": 8,
+    "patients": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "11",
+      "12"
+    ]
+  }
+}

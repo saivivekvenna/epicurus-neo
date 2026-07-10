@@ -4,7 +4,8 @@ __pycache__/
 .ruff_cache/
 *.pyc
 *.egg-info/
-data/raw/
+data/raw/*
+!data/raw/MANUAL_SOURCES.md
 data/interim/
 data/processed/
 outputs/

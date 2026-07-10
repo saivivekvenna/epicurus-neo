@@ -16,6 +16,10 @@ SCHEMA_VERSION = "event-b-1.0.0"
 class BiologicalEvent(str, Enum):
     EVENT_A_PREEXISTING_REACTIVITY = "EVENT_A_PREEXISTING_REACTIVITY"
     EVENT_B_VACCINE_INDUCED_RESPONSE = "EVENT_B_VACCINE_INDUCED_RESPONSE"
+    # Post-vaccine T-cell response to a neoantigen that was NOT in the vaccine (epitope
+    # spreading). Vaccine-induced in the broad sense, but not recognition of a vaccine
+    # candidate, so it is kept distinct and never counted as an Event-B training label.
+    EPITOPE_SPREADING = "EPITOPE_SPREADING"
     EVENT_C_CLINICAL_OUTCOME = "EVENT_C_CLINICAL_OUTCOME"
     PRESENTATION_ONLY = "PRESENTATION_ONLY"
     UNKNOWN_EVENT = "UNKNOWN_EVENT"

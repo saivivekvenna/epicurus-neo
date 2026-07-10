@@ -58,9 +58,29 @@ The Event-B corpus substrate is documented in
 [`docs/milestone_4_event_b_corpus.md`](docs/milestone_4_event_b_corpus.md). It keeps vaccine-induced
 response separate from pre-existing reactivity, clinical outcome, and presentation; preserves
 field-level provenance and review state; emits pending LLM extraction tasks when no endpoint exists;
-and generates leakage-safe splits, deterministic Parquet exports, and corpus audits. The current
+and generates leakage-safe splits, deterministic Parquet exports, and corpus audits. The Milestone 4
 [audit](artifacts/milestone_4/corpus_audit.md)
-finds zero available Event-B patients, so recognition modeling remains blocked.
+finds zero available Event-B patients in IMPROVE, because IMPROVE measures Event A.
+
+Milestone 5a ingests the first real Event-B study — the open-access Braun 2025 RCC NeoVax trial
+(NCT02950766) — end to end, recomputing per-peptide immunogenicity from raw ELISpot replicates with
+the paper's own positivity rule and reconciling to its reported 61 immunogenic / 68 tested-negative
+peptides across 9 patients. The combined audit moves from zero to nine Event-B patients with the
+conservative verdict `EVENT_B_VERTICAL_SLICE_VALIDATED_NOT_YET_SUFFICIENT_FOR_GENERAL_MODEL`. See
+[`docs/milestone_5a_braun_vertical_slice.md`](docs/milestone_5a_braun_vertical_slice.md); reproduce
+with `python scripts/event_b_corpus.py import-braun-rcc`.
+
+Milestone 5b.1 adds the second independent Event-B study — the Hu 2021 melanoma NeoVax follow-up
+(NCT01970358) — from its consolidated per-peptide CD8 (class-I minimal epitope) and CD4 (class-II
+assay peptide) ELISpot calls, reconciling patients 1–6 to Ott 2017's published totals (CD8 15/97
+exactly). Epitope spreading to non-vaccine neoantigens is kept strictly separate
+(`EPITOPE_SPREADING`, never a vaccine-candidate label), and distinct recognition channels carry
+distinct reliability metadata rather than one flattened strength. The combined IMPROVE + Braun + Hu
+audit reaches two Event-B studies and seventeen patients, tipping the verdict to
+`EVENT_B_MULTI_STUDY_CORPUS_VALIDATED_INSUFFICIENT_PATIENTS_FOR_GENERAL_MODEL`. See
+[`docs/milestone_5b1_hu_vertical_slice.md`](docs/milestone_5b1_hu_vertical_slice.md); the ~2.2 GB
+source is placed manually (`data/raw/MANUAL_SOURCES.md`), then `python scripts/event_b_corpus.py
+import-hu-neovax`.
 
 ## Benchmark roles
 
