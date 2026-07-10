@@ -15,6 +15,7 @@ from event_b.models import (
     MHCClass,
     ResponseLabel,
     ReviewStatus,
+    SCHEMAS,
     ValueOrigin,
     VaccineInclusion,
 )
@@ -353,6 +354,42 @@ def _validate_provenance(corpus: EventBCorpus, issues: list[ReviewIssue]) -> Non
             _issue(issues, "provenance", row.provenance_id, "VALUE_ORIGIN", str(row.value_origin))
 
 
+def _validate_relationships(corpus: EventBCorpus, issues: list[ReviewIssue]) -> None:
+    allowed = {
+        "COMPONENT_OF_VACCINE",
+        "CONTAINED_WITHIN",
+        "DERIVED_FROM",
+        "TESTS_RESPONSE_TO",
+        "RESTRICTED_BY",
+        "SPREAD_FROM",
+    }
+    entity_ids = {
+        entity: set(frame[SCHEMAS[entity].id_column].astype(str))
+        for entity, frame in corpus.tables().items()
+        if entity != "entity_relationships"
+    }
+    for _, row in corpus.entity_relationships.iterrows():
+        if str(row.relationship_type) not in allowed:
+            _issue(
+                issues,
+                "entity_relationships",
+                row.relationship_id,
+                "RELATIONSHIP_TYPE",
+                str(row.relationship_type),
+            )
+        for role in ("source", "target"):
+            entity = str(row[f"{role}_entity_type"])
+            entity_id = str(row[f"{role}_entity_id"])
+            if entity not in entity_ids or entity_id not in entity_ids[entity]:
+                _issue(
+                    issues,
+                    "entity_relationships",
+                    row.relationship_id,
+                    "UNKNOWN_RELATIONSHIP_ENTITY",
+                    f"{role} {entity}:{entity_id} is absent",
+                )
+
+
 def validate_corpus(corpus: EventBCorpus) -> ValidationResult:
     normalized = corpus.normalized()
     issues: list[ReviewIssue] = []
@@ -360,6 +397,7 @@ def validate_corpus(corpus: EventBCorpus) -> ValidationResult:
     _validate_candidates(normalized, issues)
     _validate_assays(normalized, issues)
     _validate_provenance(normalized, issues)
+    _validate_relationships(normalized, issues)
     try:
         normalized.recognition_evidence = validate_evidence(normalized.recognition_evidence)
     except ValueError as error:

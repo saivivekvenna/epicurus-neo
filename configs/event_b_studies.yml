@@ -43,13 +43,14 @@ studies:
     cancer_type: pancreatic ductal adenocarcinoma
     vaccine_platform: pooled mutant-KRAS long-peptide vaccine plus checkpoint blockade
     antigen_design: SHARED
-    source_availability: open primary publication; supplements under source review
-    adapter_status: NOT_IMPLEMENTED
-    ingestion_status: SOURCES_PENDING
+    source_availability: open primary publication and checksum-pinned PDF/XLSX supplements
+    adapter_status: IMPLEMENTED
+    ingestion_status: ACCEPTED
     expected_data_structures: [PDF, XLSX]
     known_publication_overlap: []
     known_limitations:
       - Shared vaccine components must remain separate from patient tumor-KRAS identity.
+      - Patient HLA genotype remains source-available but is not transcribed into the adapter.
     current_blocker:
   - canonical_study_id: pdac_neovax_2023
     cohort_id: NCT04161755_phase1

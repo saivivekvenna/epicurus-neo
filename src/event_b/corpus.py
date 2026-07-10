@@ -15,6 +15,7 @@ def _empty(entity: str) -> pd.DataFrame:
 
 @dataclass
 class EventBCorpus:
+    antigens: pd.DataFrame = field(default_factory=lambda: _empty("antigens"))
     studies: pd.DataFrame = field(default_factory=lambda: _empty("studies"))
     patients: pd.DataFrame = field(default_factory=lambda: _empty("patients"))
     vaccines: pd.DataFrame = field(default_factory=lambda: _empty("vaccines"))
@@ -26,6 +27,9 @@ class EventBCorpus:
     )
     candidate_funnel_links: pd.DataFrame = field(
         default_factory=lambda: _empty("candidate_funnel_links")
+    )
+    entity_relationships: pd.DataFrame = field(
+        default_factory=lambda: _empty("entity_relationships")
     )
     provenance: pd.DataFrame = field(default_factory=lambda: _empty("provenance"))
 

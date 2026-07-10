@@ -10,7 +10,7 @@ from typing import Any
 import pandas as pd
 
 
-SCHEMA_VERSION = "event-b-1.0.0"
+SCHEMA_VERSION = "event-b-1.1.0"
 
 
 class BiologicalEvent(str, Enum):
@@ -132,6 +132,25 @@ class EntitySchema:
 
 
 SCHEMAS = {
+    "antigens": EntitySchema(
+        "antigens",
+        "antigen_id",
+        ("antigen_id", "study_id", "mutant_sequence", "component_type", "provenance_id"),
+        (
+            "antigen_id",
+            "study_id",
+            "gene",
+            "protein_change",
+            "mutant_sequence",
+            "wildtype_sequence",
+            "component_type",
+            "peptide_length",
+            "hla_alleles",
+            "hla_evidence_type",
+            "provenance_id",
+            "schema_version",
+        ),
+    ),
     "studies": EntitySchema(
         "studies",
         "study_id",
@@ -320,6 +339,31 @@ SCHEMAS = {
             "recognition_scored",
             "vaccine_inclusion",
             "functional_assay",
+            "provenance_id",
+            "schema_version",
+        ),
+    ),
+    "entity_relationships": EntitySchema(
+        "entity_relationships",
+        "relationship_id",
+        (
+            "relationship_id",
+            "study_id",
+            "source_entity_type",
+            "source_entity_id",
+            "target_entity_type",
+            "target_entity_id",
+            "relationship_type",
+            "provenance_id",
+        ),
+        (
+            "relationship_id",
+            "study_id",
+            "source_entity_type",
+            "source_entity_id",
+            "target_entity_type",
+            "target_entity_id",
+            "relationship_type",
             "provenance_id",
             "schema_version",
         ),

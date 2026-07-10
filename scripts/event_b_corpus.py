@@ -9,8 +9,14 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
-from event_b.adapters import BraunRCCAdapter, HuNeoVaxAdapter, ImproveEventAAdapter
+from event_b.adapters import (
+    BraunRCCAdapter,
+    HuNeoVaxAdapter,
+    ImproveEventAAdapter,
+    MKRASVaxAdapter,
+)
 from event_b.adapters import hu_neovax
+from event_b.adapters import mkras_vax
 from event_b.adapters.braun_rcc import (
     DOI,
     EXPECTED_SHA256,
@@ -351,6 +357,9 @@ def _factory_adapter(study_id: str, raw_root: Path):
     elif study_id == hu_neovax.STUDY_ID:
         adapter = HuNeoVaxAdapter(raw_root / "hu_melanoma_2021")
         paths = hu_neovax.hu_source_paths(raw_root / "hu_melanoma_2021")
+    elif study_id == mkras_vax.STUDY_ID:
+        adapter = MKRASVaxAdapter(raw_root / "mkras_vax_2026")
+        paths = mkras_vax.stage_sources(raw_root / "mkras_vax_2026")
     else:
         return None
     return adapter, manifest_from_paths(

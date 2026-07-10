@@ -17,6 +17,7 @@ from event_b.splits import SplitManifest
 
 
 PARQUET_TABLES = {
+    "antigens": "antigens.parquet",
     "studies": "studies.parquet",
     "patients": "patients.parquet",
     "vaccines": "vaccines.parquet",
@@ -25,6 +26,7 @@ PARQUET_TABLES = {
     "clinical_outcomes": "clinical_outcomes.parquet",
     "recognition_evidence": "recognition_evidence.parquet",
     "candidate_funnel_links": "candidate_funnel_links.parquet",
+    "entity_relationships": "entity_relationships.parquet",
     "provenance": "provenance.parquet",
 }
 

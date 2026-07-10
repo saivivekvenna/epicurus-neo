@@ -26,6 +26,7 @@ from event_b.models import (
     MHCClass,
     ResponseLabel,
     ReviewStatus,
+    SCHEMA_VERSION,
     ValueOrigin,
     VaccineInclusion,
     stable_candidate_id,
@@ -251,7 +252,7 @@ def test_stable_candidate_identity_is_patient_and_hla_specific():
     assert first != stable_candidate_id(base | {"patient_id": "p2"})
     assert first != stable_candidate_id(base | {"hla_alleles": ["B07"]})
     schema = entity_json_schema("candidates")
-    assert schema["properties"]["schema_version"]["const"] == "event-b-1.0.0"
+    assert schema["properties"]["schema_version"]["const"] == SCHEMA_VERSION
     assert schema["additionalProperties"] is False
 
 

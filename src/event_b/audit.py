@@ -139,6 +139,7 @@ def corpus_audit(
         decision = "INSUFFICIENT_DATA_DO_NOT_FIT_RECOGNITION_MODEL"
     return {
         "sample_sizes": {
+            "antigen_n": int(corpus.antigens.antigen_id.nunique()),
             "peptide_n": int(candidates.mutant_peptide.nunique()),
             "patient_n": int(patients.patient_id.nunique()),
             "study_n": int(corpus.studies.study_id.nunique()),

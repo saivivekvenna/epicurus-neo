@@ -2,13 +2,13 @@
 
 - Branch: `milestone-5b-public-event-b-backbone`
 - Starting merged commit: `8731e1d`
-- Completed phases: baseline integrity gate; registry and resumable ingestion factory
-- Completed studies: existing Braun RCC and Hu/NeoVax remain accepted and unchanged
-- Backbone studies: source and label-semantics review in progress
-- Source files pinned: existing Braun and Hu sources only
+- Completed phases: baseline integrity gate; registry and resumable ingestion factory; mKRAS-VAX
+- Completed studies: Braun RCC, Hu/NeoVax, and mKRAS-VAX
+- Backbone studies: PDAC NeoVax, Nous-209, and Fukuoka source/semantics review in progress
+- Source files pinned: existing Braun and Hu sources; mKRAS PDF and XLSX supplements
 - Files currently being edited: registry, source notes, backbone audit implementation
-- Latest focused verification: 27 tests passed; Ruff passed; Braun factory run reused cleanly
-- Exact next task: freeze primary-source semantics and resolve each mandatory backbone study
+- Latest focused verification: mKRAS factory export reconciled 12 patients and 72 primary labels
+- Exact next task: freeze PDAC NeoVax sources and resolve candidate-level denominators
 
 ## Reproduction
 
