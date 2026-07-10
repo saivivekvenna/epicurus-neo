@@ -11,7 +11,8 @@
   },
   "combined_output": "outputs/event_b_backbone/combined",
   "event_b_patients": 82,
+  "candidate_resolved_patient_n": 45,
   "primary_candidate_labels": 974,
   "schema_version": "event-b-1.1.0",
-  "verdict": "INSUFFICIENT_PUBLIC_EVENT_B_DATA"
+  "verdict": "INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA"
 }

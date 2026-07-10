@@ -2,7 +2,7 @@
 
 ## Outcome
 
-**`INSUFFICIENT_PUBLIC_EVENT_B_DATA`**
+**`INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA`**
 
 Five independent accepted Event-B cohorts reproduce in one deterministic corpus. Fukuoka is
 blocked and contributes no records. No recognition model was trained.
@@ -10,8 +10,10 @@ blocked and contributes no records. No recognition model was trained.
 ## Corpus
 
 - Event-B studies: 5
-- Unique Event-B patients: 82
-- Event-B-positive patients: 74
+- Unique Event-B patients: 82 (total tier)
+- Candidate-resolved patients: 45 across 4 studies (peptide-ranking tier)
+- Patient-level-only patients: 37 (Nous-209; eligibility/abstention only, no peptide labels)
+- Event-B-positive patients: 74 total; 37 candidate-resolved
 - Patients with explicit tested negatives: 38
 - Unique patient-candidate pairs: 1,072
 - Primary candidate labels: 974
@@ -46,4 +48,5 @@ none. Missing accepted-record provenance and accepted-label contradictions are b
 Patient, study, HLA, peptide-cluster, cancer-type and shared-antigen-group holdouts can each retain
 positive patients and explicit negatives on both sides. Temporal holdout is not viable because the
 public candidate tables do not expose enough calendar dates. A full study holdout is viable, but the
-registered minimum still fails at 82 versus 100 Event-B patients.
+registered minimum still fails at 45 candidate-resolved versus 100 patients (the 82-patient headline
+includes 37 patient-level-only Nous-209 participants that cannot train peptide ranking).

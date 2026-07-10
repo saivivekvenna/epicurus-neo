@@ -16,6 +16,7 @@ from event_b.splits import SplitType, generate_split_manifest
 
 VERDICTS = {
     "INSUFFICIENT_PUBLIC_EVENT_B_DATA",
+    "INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA",
     "PUBLIC_EVENT_B_MINIMUM_MET_BUT_STUDY_HOLDOUT_NOT_VIABLE",
     "PUBLIC_EVENT_B_BACKBONE_VALIDATED_READY_FOR_BASELINE_EXPERIMENTS",
     "PUBLIC_EVENT_B_DATA_HETEROGENEOUS_REQUIRES_STRATIFIED_MODELLING",
@@ -221,6 +222,15 @@ def sufficiency_audit(
     positive_patients = set(assays.loc[event_b & positive, "patient_id"].astype(str))
     negative_patients = set(assays.loc[event_b & negative, "patient_id"].astype(str))
     event_b_studies = set(assays.loc[event_b & (positive | negative), "study_id"].astype(str))
+    # Peptide-ranking evidence tier: only Event-B assays mapped to a specific candidate can
+    # train "which peptide works". Patient-level-only cohorts (e.g. no per-pool identity) are
+    # reported for eligibility/abstention questions but never counted toward this tier.
+    candidate_resolved_patients = set(primary.patient_id.astype(str))
+    candidate_resolved_positive_patients = set(
+        primary.loc[primary_positive, "patient_id"].astype(str)
+    )
+    candidate_resolved_studies = set(primary.study_id.astype(str))
+    patient_level_only_patients = event_b_patients - candidate_resolved_patients
 
     publication_ids = set()
     for value in corpus.studies.publication_ids:
@@ -310,10 +320,13 @@ def sufficiency_audit(
 
     repeated_peptides = primary.groupby("mutant_peptide").candidate_id.nunique()
     split_report = split_feasibility(corpus, registry)
+    # The registered gate measures peptide-ranking readiness, so it counts candidate-resolved
+    # patients/studies/positives only. A patient-level-only cohort can lift the headline patient
+    # count without adding a single peptide label, so it must not be able to satisfy this gate.
     minimum_met = (
-        len(event_b_patients) >= 100
-        and len(event_b_studies) >= 2
-        and len(positive_patients) >= 30
+        len(candidate_resolved_patients) >= 100
+        and len(candidate_resolved_studies) >= 2
+        and len(candidate_resolved_positive_patients) >= 30
     )
     study_holdout = split_report[SplitType.STUDY_HOLDOUT.value]["feasible"]
     no_overwhelming_dominance = dominance["largest_study_primary_label_fraction"] < 0.7
@@ -326,7 +339,7 @@ def sufficiency_audit(
     label_comparable_primary = bool(primary_n and primary.candidate_id.notna().all())
 
     if not minimum_met:
-        verdict = "INSUFFICIENT_PUBLIC_EVENT_B_DATA"
+        verdict = "INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA"
     elif not study_holdout:
         verdict = "PUBLIC_EVENT_B_MINIMUM_MET_BUT_STUDY_HOLDOUT_NOT_VIABLE"
     elif not label_comparable_primary:
@@ -346,6 +359,10 @@ def sufficiency_audit(
             "unique_patients": int(corpus.patients.patient_id.nunique()),
             "event_b_patients": len(event_b_patients),
             "event_b_positive_patients": len(positive_patients),
+            "candidate_resolved_patient_n": len(candidate_resolved_patients),
+            "candidate_resolved_positive_patient_n": len(candidate_resolved_positive_patients),
+            "candidate_resolved_study_n": len(candidate_resolved_studies),
+            "patient_level_only_patient_n": len(patient_level_only_patients),
             "patients_with_explicit_tested_negatives": len(negative_patients),
             "vaccine_components": int(corpus.candidates.candidate_id.nunique()),
             "unique_patient_candidate_pairs": int(
@@ -447,9 +464,9 @@ def sufficiency_audit(
         "split_feasibility": split_report,
         "registered_minimum": {
             "thresholds": {
-                "event_b_patients": 100,
-                "independent_event_b_studies": 2,
-                "event_b_positive_patients": 30,
+                "candidate_resolved_patients": 100,
+                "candidate_resolved_studies": 2,
+                "candidate_resolved_positive_patients": 30,
             },
             "met": minimum_met,
             "study_holdout_feasible": study_holdout,
@@ -470,8 +487,19 @@ def render_sufficiency_markdown(audit: dict) -> str:
         "",
         f"**Verdict: {audit['verdict']}**",
         "",
-        "No recognition model was fitted. CD4/CD8 counts below use source-resolved candidate class, "
+        "No recognition model was fitted. The registered gate is evaluated on candidate-resolved "
+        "(peptide-level) patients only; patient-level-only cohorts are reported but never counted "
+        "toward peptide-ranking readiness. CD4/CD8 counts below use source-resolved candidate class, "
         "not inferred cellular phenotype.",
+        "",
+        "## Evidence tiers (peptide-ranking sample vs. total)",
+        "",
+        f"- `total_event_b_patient_n`: {counts['event_b_patients']}",
+        f"- `candidate_resolved_patient_n`: {counts['candidate_resolved_patient_n']}",
+        f"- `patient_level_only_patient_n`: {counts['patient_level_only_patient_n']}",
+        f"- `candidate_resolved_positive_patient_n`: {counts['candidate_resolved_positive_patient_n']}",
+        f"- `candidate_resolved_study_n`: {counts['candidate_resolved_study_n']}",
+        f"- `candidate_level_primary_label_n`: {counts['primary_candidate_labels']}",
         "",
         "## Global counts",
         "",

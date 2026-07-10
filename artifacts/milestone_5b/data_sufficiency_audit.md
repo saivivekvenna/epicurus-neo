@@ -1,8 +1,17 @@
 # Public Event-B data sufficiency audit
 
-**Verdict: INSUFFICIENT_PUBLIC_EVENT_B_DATA**
+**Verdict: INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA**
 
-No recognition model was fitted. CD4/CD8 counts below use source-resolved candidate class, not inferred cellular phenotype.
+No recognition model was fitted. The registered gate is evaluated on candidate-resolved (peptide-level) patients only; patient-level-only cohorts are reported but never counted toward peptide-ranking readiness. CD4/CD8 counts below use source-resolved candidate class, not inferred cellular phenotype.
+
+## Evidence tiers (peptide-ranking sample vs. total)
+
+- `total_event_b_patient_n`: 82
+- `candidate_resolved_patient_n`: 45
+- `patient_level_only_patient_n`: 37
+- `candidate_resolved_positive_patient_n`: 37
+- `candidate_resolved_study_n`: 4
+- `candidate_level_primary_label_n`: 974
 
 ## Global counts
 
@@ -12,6 +21,10 @@ No recognition model was fitted. CD4/CD8 counts below use source-resolved candid
 - `unique_patients`: 82
 - `event_b_patients`: 82
 - `event_b_positive_patients`: 74
+- `candidate_resolved_patient_n`: 45
+- `candidate_resolved_positive_patient_n`: 37
+- `candidate_resolved_study_n`: 4
+- `patient_level_only_patient_n`: 37
 - `patients_with_explicit_tested_negatives`: 38
 - `vaccine_components`: 1072
 - `unique_patient_candidate_pairs`: 1072
@@ -34,7 +47,7 @@ No recognition model was fitted. CD4/CD8 counts below use source-resolved candid
 
 ## Registered minimum
 
-- `thresholds`: {'event_b_patients': 100, 'independent_event_b_studies': 2, 'event_b_positive_patients': 30}
+- `thresholds`: {'candidate_resolved_patients': 100, 'candidate_resolved_studies': 2, 'candidate_resolved_positive_patients': 30}
 - `met`: False
 - `study_holdout_feasible`: True
 - `no_overwhelming_primary_label_dominance`: True

@@ -102,6 +102,10 @@ def test_sufficiency_keeps_patient_study_and_label_counts_distinct():
     counts = audit["required_counts"]
     assert counts["event_b_patients"] == 6
     assert counts["event_b_studies"] == 3
+    # With no patient-level-only evidence, the candidate-resolved tier equals the headline.
+    assert counts["candidate_resolved_patient_n"] == 6
+    assert counts["candidate_resolved_study_n"] == 3
+    assert counts["patient_level_only_patient_n"] == 0
     assert counts["primary_candidate_labels"] == 12
     assert counts["assay_observations"] == 12
     assert counts["event_b_positives"] == 6
@@ -114,7 +118,7 @@ def test_registered_minimum_and_verdict_are_conservative():
     corpus, registry = _fixture()
     audit = sufficiency_audit(corpus, registry)
     assert not audit["registered_minimum"]["met"]
-    assert audit["verdict"] == "INSUFFICIENT_PUBLIC_EVENT_B_DATA"
+    assert audit["verdict"] == "INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA"
     assert audit["label_quality"]["inferred_negatives"] == 0
 
 
@@ -137,6 +141,44 @@ def test_split_feasibility_requires_both_labels_on_both_sides():
 def test_sufficiency_markdown_contains_verdict_and_study_status():
     corpus, registry = _fixture()
     markdown = render_sufficiency_markdown(sufficiency_audit(corpus, registry))
-    assert "INSUFFICIENT_PUBLIC_EVENT_B_DATA" in markdown
+    assert "INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA" in markdown
+    assert "Evidence tiers" in markdown
+    assert "candidate_resolved_patient_n" in markdown
     assert "`s1`" in markdown
     assert "Split feasibility" in markdown
+
+
+def test_patient_level_only_evidence_never_satisfies_candidate_resolved_gate():
+    """A patient-level-only cohort must lift the headline count but not the peptide-ranking tier."""
+    corpus, registry = _fixture()
+    extra_patient = pd.DataFrame(
+        [{"patient_id": "s1:pl", "study_id": "s1", "cancer_type": "cancer_s1"}]
+    )
+    extra_assay = pd.DataFrame(
+        [
+            {
+                "assay_id": "a:s1:pl",
+                "candidate_id": pd.NA,
+                "patient_id": "s1:pl",
+                "study_id": "s1",
+                "event_type": BiologicalEvent.EVENT_B_VACCINE_INDUCED_RESPONSE.value,
+                "response_label": ResponseLabel.POSITIVE.value,
+                "assay_type": "ELISPOT",
+                "source_interpretation": "patient-level only",
+            }
+        ]
+    )
+    corpus = EventBCorpus(
+        studies=corpus.studies,
+        patients=pd.concat([corpus.patients, extra_patient], ignore_index=True),
+        candidates=corpus.candidates,
+        assays=pd.concat([corpus.assays, extra_assay], ignore_index=True),
+    )
+    counts = sufficiency_audit(corpus, registry)["required_counts"]
+    # Headline superset absorbs the patient-level-only positive ...
+    assert counts["event_b_patients"] == 7
+    assert counts["event_b_positive_patients"] == 7
+    # ... but the candidate-resolved tier that the gate depends on is untouched.
+    assert counts["candidate_resolved_patient_n"] == 6
+    assert counts["candidate_resolved_positive_patient_n"] == 6
+    assert counts["patient_level_only_patient_n"] == 1

@@ -209,13 +209,16 @@
     "no_overwhelming_primary_label_dominance": true,
     "study_holdout_feasible": true,
     "thresholds": {
-      "event_b_patients": 100,
-      "event_b_positive_patients": 30,
-      "independent_event_b_studies": 2
+      "candidate_resolved_patients": 100,
+      "candidate_resolved_positive_patients": 30,
+      "candidate_resolved_studies": 2
     }
   },
   "required_counts": {
     "assay_observations": 1398,
+    "candidate_resolved_patient_n": 45,
+    "candidate_resolved_positive_patient_n": 37,
+    "candidate_resolved_study_n": 4,
     "cd4_responses": 110,
     "cd8_responses": 18,
     "class_i_observations": 207,
@@ -229,6 +232,7 @@
     "event_b_studies": 5,
     "event_b_tested_negatives": 693,
     "event_b_untested_candidates": 9,
+    "patient_level_only_patient_n": 37,
     "patients_with_explicit_tested_negatives": 38,
     "personalized_antigen_observations": 902,
     "primary_candidate_labels": 974,
@@ -355,5 +359,5 @@
       "reason": "fewer than two source-resolved candidate dates"
     }
   },
-  "verdict": "INSUFFICIENT_PUBLIC_EVENT_B_DATA"
+  "verdict": "INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA"
 }

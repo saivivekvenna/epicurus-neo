@@ -33,6 +33,9 @@ and assay granularity; otherwise the registry and study note retain a reproducib
 
 mKRAS-VAX and PDAC NeoVax have candidate-resolved accepted adapters. Nous-209 is accepted only at
 patient level because patient-by-pool identities are absent. Fukuoka is blocked by source access and
-patient-overlap uncertainty. Together with Braun and Hu, the combined corpus contains 82 Event-B
-patients and 974 primary candidate labels. It supports a viable full-study holdout but does not meet
-the registered 100-patient minimum, yielding `INSUFFICIENT_PUBLIC_EVENT_B_DATA`.
+patient-overlap uncertainty. Together with Braun and Hu, the combined corpus contains 82 total
+Event-B patients, but only 45 are candidate-resolved (the peptide-ranking sample) across 4
+candidate-resolved studies; the other 37 are Nous-209 patient-level-only participants. All 974
+primary candidate labels are nested inside those 45 patients. The corpus supports a viable full-study
+holdout, but because the registered gate counts candidate-resolved patients only, 45 < 100 yields
+`INSUFFICIENT_CANDIDATE_RESOLVED_PUBLIC_EVENT_B_DATA`.
