@@ -191,6 +191,10 @@ def render_reconciliation_markdown(recon: dict) -> str:
         "inflate the accepted count to 62, it is routed to the review queue; the 129 accepted assays",
         "(61 positive + 68 tested-negative) match the paper's reported figures.",
         "",
+        "**AMACR sensitivity line:** official accepted immunogenic count: **61**. Including the one "
+        "unresolved AMACR|p.Y41N review record: **62**. The corpus reports 61 and holds the 62nd for "
+        "review, so the choice is explicit rather than silent.",
+        "",
         "## Review queue, event typing, and completeness",
         "",
         f"- Review queue: {recon['review_queue']['total']} record(s) by code "

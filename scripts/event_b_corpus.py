@@ -9,7 +9,8 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
-from event_b.adapters import ImproveEventAAdapter
+from event_b.adapters import BraunRCCAdapter, ImproveEventAAdapter
+from event_b.adapters import hu_neovax
 from event_b.adapters.braun_rcc import DOI, EXPECTED_SHA256, NCT, PMCID, STUDY_ID, SUPPL_URL
 from event_b.audit import corpus_audit, render_audit_markdown
 from event_b.braun_pipeline import (
@@ -21,6 +22,12 @@ from event_b.braun_pipeline import (
 )
 from event_b.export import export_corpus
 from event_b.extraction import ExtractionTask, emit_extraction_tasks
+from event_b.hu_pipeline import (
+    assert_quality_gates as assert_hu_gates,
+    build_hu_corpus,
+    reconcile_hu,
+    render_reconciliation_markdown as render_hu_reconciliation_markdown,
+)
 from event_b.ingest import ingest_source
 from event_b.manifest import manifest_from_paths
 from event_b.review import read_review_queue
@@ -174,6 +181,132 @@ def cmd_braun(args) -> int:
     return 0
 
 
+def _hu_fetch_record(raw_dir: Path) -> dict:
+    return {
+        "publication_id": f"DOI:{hu_neovax.DOI}; {hu_neovax.PMCID}",
+        "trial_id": hu_neovax.NCT,
+        "acquisition": "manual (PMC author-manuscript supplement behind a proof-of-work gate)",
+        "source_url": hu_neovax.DOWNLOAD_URL,
+        "cross_check_source": hu_neovax.OTT_PMCID,
+        "retrieval_date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "files": [
+            {
+                "name": name,
+                "sha256": digest,
+                "media_type": Path(name).suffix.lstrip("."),
+                "local_path": str(hu_neovax.hu_source_path(raw_dir).resolve()),
+            }
+            for name, digest in sorted(hu_neovax.EXPECTED_SHA256.items())
+        ],
+    }
+
+
+def _split_input(corpus) -> "object":
+    return (
+        corpus.candidates.loc[
+            :, ["candidate_id", "patient_id", "study_id", "mutant_peptide", "hla_alleles"]
+        ]
+        .drop_duplicates(subset="candidate_id")
+        .reset_index(drop=True)
+    )
+
+
+def cmd_hu(args) -> int:
+    raw_dir = args.raw_dir
+    build = build_hu_corpus(raw_dir)
+    accepted = build.result.accepted_corpus
+    assert_hu_gates(accepted)
+
+    hu_split = generate_split_manifest(_split_input(accepted), SplitType.PATIENT_HOLDOUT)
+    hu_out = Path(args.output)
+    written = export_corpus(
+        accepted,
+        hu_out,
+        review_queue=build.review_queue,
+        source_manifests=[build.manifest],
+        split_manifests=[hu_split],
+        adapter_declarations=[build.adapter.declaration],
+    )
+    recon = reconcile_hu(build)
+    recon_md = render_hu_reconciliation_markdown(recon)
+    (hu_out / "hu_reconciliation.md").write_text(recon_md)
+    (hu_out / "fetch_record.json").write_text(
+        json.dumps(_hu_fetch_record(Path(raw_dir)), indent=2, sort_keys=True) + "\n"
+    )
+
+    milestone = Path(args.milestone_dir)
+    milestone.mkdir(parents=True, exist_ok=True)
+    (milestone / "hu_reconciliation.md").write_text(recon_md)
+    (milestone / "hu_reconciliation.json").write_text(
+        json.dumps(recon, indent=2, sort_keys=True, default=str) + "\n"
+    )
+
+    # Combine with whichever prior corpora are materialised: IMPROVE (Event-A) and Braun (Event-B).
+    corpora = []
+    declarations = []
+    combined_issues: tuple = tuple(build.review_queue)
+    improve_dir = Path(args.improve_corpus)
+    if (improve_dir / "assays.parquet").exists():
+        corpora.append(load_corpus_from_parquet(improve_dir))
+        declarations.append(ImproveEventAAdapter.declaration)
+        combined_issues = tuple(read_review_queue(improve_dir / "review_queue.jsonl")) + combined_issues
+    braun_dir = Path(args.braun_corpus)
+    if (braun_dir / "assays.parquet").exists():
+        corpora.append(load_corpus_from_parquet(braun_dir))
+        declarations.append(BraunRCCAdapter.declaration)
+        combined_issues = tuple(read_review_queue(braun_dir / "review_queue.jsonl")) + combined_issues
+
+    combined_summary: dict[str, object] = {"built": False}
+    if corpora:
+        combined = combine_corpora(*corpora, accepted)
+        declarations.append(build.adapter.declaration)
+        combined_input = _split_input(combined)
+        split_manifests = [generate_split_manifest(combined_input, SplitType.PATIENT_HOLDOUT)]
+        try:
+            split_manifests.append(generate_split_manifest(combined_input, SplitType.STUDY_HOLDOUT))
+        except ValueError:
+            pass
+        combined_written = export_corpus(
+            combined,
+            args.combined_output,
+            review_queue=combined_issues,
+            source_manifests=[build.manifest],
+            split_manifests=split_manifests,
+            adapter_declarations=declarations,
+        )
+        audit = corpus_audit(combined, combined_issues, declarations)
+        (milestone / "combined_corpus_audit.json").write_text(
+            json.dumps(audit, indent=2, sort_keys=True, default=str) + "\n"
+        )
+        (milestone / "combined_corpus_audit.md").write_text(render_audit_markdown(audit))
+        combined_summary = {
+            "built": True,
+            "output": str(args.combined_output),
+            "written_tables": len(combined_written),
+            "sample_sizes": audit["sample_sizes"],
+            "event_counts": audit["event_counts"],
+            "model_readiness": audit["model_readiness"],
+        }
+
+    print(
+        json.dumps(
+            {
+                "study_id": hu_neovax.STUDY_ID,
+                "hu_output": str(hu_out),
+                "written_tables": len(written),
+                "reconciliation": recon["reconciliation"],
+                "accepted": recon["accepted"],
+                "epitope_spreading": recon["epitope_spreading"],
+                "review_queue": recon["review_queue"],
+                "combined": combined_summary,
+            },
+            indent=2,
+            default=str,
+        )
+    )
+    return 0
+
+
 def cmd_emit_tasks(args) -> int:
     tasks = []
     for source in sorted(args.source):
@@ -217,6 +350,14 @@ def main() -> int:
     )
     braun.add_argument("--milestone-dir", type=Path, default=Path("artifacts/milestone_5a"))
     braun.set_defaults(func=cmd_braun)
+    hu = sub.add_parser("import-hu-neovax")
+    hu.add_argument("--raw-dir", type=Path, default=Path("data/raw/hu_melanoma_2021"))
+    hu.add_argument("--output", type=Path, default=Path("outputs/event_b_hu"))
+    hu.add_argument("--improve-corpus", type=Path, default=Path("outputs/event_b_corpus"))
+    hu.add_argument("--braun-corpus", type=Path, default=Path("outputs/event_b_braun"))
+    hu.add_argument("--combined-output", type=Path, default=Path("outputs/event_b_corpus_combined"))
+    hu.add_argument("--milestone-dir", type=Path, default=Path("artifacts/milestone_5b1"))
+    hu.set_defaults(func=cmd_hu)
     tasks = sub.add_parser("emit-extraction-tasks")
     tasks.add_argument("--study-id", required=True)
     tasks.add_argument("--source", action="append", type=Path, required=True)

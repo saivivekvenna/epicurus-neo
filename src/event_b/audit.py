@@ -125,6 +125,12 @@ def corpus_audit(
     )
     if sufficient:
         decision = "SUFFICIENT_FOR_BASELINE_DIAGNOSTICS"
+    elif len(event_b_studies) >= minimum_event_b_studies and len(event_b_patients) > 0:
+        # Two or more independent Event-B studies now reconcile in one corpus, but the patient
+        # and positive-patient counts remain below the registered minimums. The study-diversity
+        # gate is met; the sample-size gate is not. Named distinctly so the multi-study milestone
+        # is not conflated with the single-study vertical slice below.
+        decision = "EVENT_B_MULTI_STUDY_CORPUS_VALIDATED_INSUFFICIENT_PATIENTS_FOR_GENERAL_MODEL"
     elif len(event_b_patients) > 0:
         # A validated but sub-threshold Event-B corpus: nonzero, provenance-backed, leakage-safe,
         # yet still below the registered minimums for even transparent recognition diagnostics.

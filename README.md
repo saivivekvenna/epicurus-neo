@@ -70,6 +70,18 @@ conservative verdict `EVENT_B_VERTICAL_SLICE_VALIDATED_NOT_YET_SUFFICIENT_FOR_GE
 [`docs/milestone_5a_braun_vertical_slice.md`](docs/milestone_5a_braun_vertical_slice.md); reproduce
 with `python scripts/event_b_corpus.py import-braun-rcc`.
 
+Milestone 5b.1 adds the second independent Event-B study — the Hu 2021 melanoma NeoVax follow-up
+(NCT01970358) — from its consolidated per-peptide CD8 (class-I minimal epitope) and CD4 (class-II
+assay peptide) ELISpot calls, reconciling patients 1–6 to Ott 2017's published totals (CD8 15/97
+exactly). Epitope spreading to non-vaccine neoantigens is kept strictly separate
+(`EPITOPE_SPREADING`, never a vaccine-candidate label), and distinct recognition channels carry
+distinct reliability metadata rather than one flattened strength. The combined IMPROVE + Braun + Hu
+audit reaches two Event-B studies and seventeen patients, tipping the verdict to
+`EVENT_B_MULTI_STUDY_CORPUS_VALIDATED_INSUFFICIENT_PATIENTS_FOR_GENERAL_MODEL`. See
+[`docs/milestone_5b1_hu_vertical_slice.md`](docs/milestone_5b1_hu_vertical_slice.md); the ~2.2 GB
+source is placed manually (`data/raw/MANUAL_SOURCES.md`), then `python scripts/event_b_corpus.py
+import-hu-neovax`.
+
 ## Benchmark roles
 
 - IMPROVE official five-fold patient CV: primary Event-A component/ranking regression.
