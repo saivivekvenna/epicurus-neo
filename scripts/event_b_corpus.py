@@ -52,6 +52,7 @@ from event_b.manifest import manifest_from_paths
 from event_b.registry import StudyRegistry
 from event_b.review import read_review_queue
 from event_b.splits import SplitType, generate_split_manifest
+from event_b.sufficiency import render_sufficiency_markdown, sufficiency_audit
 
 
 def cmd_improve(args) -> int:
@@ -460,6 +461,100 @@ def cmd_ingest_backbone(args) -> int:
     return 1 if failures else 0
 
 
+def _accepted_factory_corpora(registry, runner, raw_root: Path, *, rebuild: bool = False):
+    corpora = []
+    declarations = []
+    manifests = []
+    issues = []
+    summaries = []
+    for entry in registry.studies:
+        if entry.ingestion_status.value != "ACCEPTED":
+            continue
+        resolved = _factory_adapter(entry.canonical_study_id, raw_root)
+        if resolved is None:
+            continue
+        adapter, manifest = resolved
+        checkpoint, result = runner.ingest(entry, adapter, manifest, rebuild=rebuild)
+        output = Path(checkpoint.output_dir)
+        corpora.append(load_corpus_from_parquet(output))
+        declarations.append(adapter.declaration)
+        manifests.append(manifest)
+        issues.extend(read_review_queue(output / "review_queue.jsonl"))
+        summary = _checkpoint_summary(checkpoint)
+        summary["reused"] = result is None
+        summaries.append(summary)
+    return corpora, declarations, manifests, issues, summaries
+
+
+def _rebuild_combined(args):
+    registry = StudyRegistry.read(args.registry)
+    runner = EventBJobRunner(args.output_root)
+    corpora, declarations, manifests, issues, summaries = _accepted_factory_corpora(
+        registry, runner, args.raw_root, rebuild=args.rebuild
+    )
+    if not corpora:
+        raise RuntimeError("no accepted study corpora were built")
+    combined = combine_corpora(*corpora)
+    split_input = _split_input(combined)
+    split_manifests = []
+    for split_type in (SplitType.PATIENT_HOLDOUT, SplitType.STUDY_HOLDOUT):
+        try:
+            split_manifests.append(generate_split_manifest(split_input, split_type))
+        except ValueError:
+            pass
+    combined_output = args.output_root / "combined"
+    written = export_corpus(
+        combined,
+        combined_output,
+        review_queue=issues,
+        source_manifests=manifests,
+        split_manifests=split_manifests,
+        adapter_declarations=declarations,
+    )
+    return registry, combined, issues, summaries, combined_output, written
+
+
+def cmd_rebuild_combined(args) -> int:
+    registry, combined, issues, summaries, output, written = _rebuild_combined(args)
+    del registry
+    payload = {
+        "output": str(output),
+        "studies": summaries,
+        "study_n": int(combined.studies.study_id.nunique()),
+        "patient_n": int(combined.patients.patient_id.nunique()),
+        "review_queue_n": len(issues),
+        "written": sorted(written),
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_audit_sufficiency(args) -> int:
+    registry, combined, issues, summaries, output, written = _rebuild_combined(args)
+    audit = sufficiency_audit(combined, registry, issues)
+    audit_output = args.audit_output
+    audit_output.mkdir(parents=True, exist_ok=True)
+    (audit_output / "data_sufficiency_audit.json").write_text(
+        json.dumps(audit, indent=2, sort_keys=True, default=str) + "\n"
+    )
+    (audit_output / "data_sufficiency_audit.md").write_text(
+        render_sufficiency_markdown(audit)
+    )
+    (audit_output / "split_feasibility.json").write_text(
+        json.dumps(audit["split_feasibility"], indent=2, sort_keys=True) + "\n"
+    )
+    payload = {
+        "combined_output": str(output),
+        "audit_output": str(audit_output),
+        "verdict": audit["verdict"],
+        "required_counts": audit["required_counts"],
+        "studies": summaries,
+        "written": sorted(written),
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="event-b-corpus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -503,6 +598,25 @@ def main() -> int:
     backbone.add_argument("--resume", action="store_true", help="reuse checksum-matching outputs")
     backbone.add_argument("--rebuild", action="store_true")
     backbone.set_defaults(func=cmd_ingest_backbone)
+    combined = sub.add_parser("rebuild-combined")
+    combined.add_argument("--registry", type=Path, default=Path("configs/event_b_studies.yml"))
+    combined.add_argument("--raw-root", type=Path, default=Path("data/raw"))
+    combined.add_argument("--output-root", type=Path, default=Path("outputs/event_b_backbone"))
+    combined.add_argument("--rebuild", action="store_true")
+    combined.set_defaults(func=cmd_rebuild_combined)
+    sufficiency = sub.add_parser("audit-sufficiency")
+    sufficiency.add_argument(
+        "--registry", type=Path, default=Path("configs/event_b_studies.yml")
+    )
+    sufficiency.add_argument("--raw-root", type=Path, default=Path("data/raw"))
+    sufficiency.add_argument(
+        "--output-root", type=Path, default=Path("outputs/event_b_backbone")
+    )
+    sufficiency.add_argument(
+        "--audit-output", type=Path, default=Path("artifacts/milestone_5b")
+    )
+    sufficiency.add_argument("--rebuild", action="store_true")
+    sufficiency.set_defaults(func=cmd_audit_sufficiency)
     args = parser.parse_args()
     return args.func(args)
 

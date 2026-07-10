@@ -52,8 +52,15 @@ class SourceManifest:
     @classmethod
     def read(cls, path: str | Path) -> "SourceManifest":
         payload = json.loads(Path(path).read_text())
-        payload["documents"] = tuple(SourceDocument(**row) for row in payload["documents"])
-        return cls(**payload)
+        return cls.from_dict(payload)
+
+    @classmethod
+    def from_dict(cls, payload: dict) -> "SourceManifest":
+        normalized = dict(payload)
+        normalized["documents"] = tuple(
+            SourceDocument(**row) for row in normalized["documents"]
+        )
+        return cls(**normalized)
 
     @property
     def fingerprint(self) -> str:

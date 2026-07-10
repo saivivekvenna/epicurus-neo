@@ -10,6 +10,8 @@ recognition model.
 .venv/bin/python scripts/event_b_corpus.py ingest-study <study_id>
 .venv/bin/python scripts/event_b_corpus.py ingest-backbone --resume
 .venv/bin/python scripts/event_b_corpus.py ingest-study <study_id> --rebuild
+.venv/bin/python scripts/event_b_corpus.py rebuild-combined
+.venv/bin/python scripts/event_b_corpus.py audit-sufficiency
 ```
 
 The versioned registry is `configs/event_b_studies.yml`. A job checkpoint records the registry,
@@ -26,3 +28,11 @@ tree.
 Braun RCC and Hu melanoma reproduce through this factory without changing their accepted labels.
 The mandatory backbone studies are accepted only if public sources support the required patient
 and assay granularity; otherwise the registry and study note retain a reproducible blocker.
+
+## Final disposition
+
+mKRAS-VAX and PDAC NeoVax have candidate-resolved accepted adapters. Nous-209 is accepted only at
+patient level because patient-by-pool identities are absent. Fukuoka is blocked by source access and
+patient-overlap uncertainty. Together with Braun and Hu, the combined corpus contains 82 Event-B
+patients and 974 primary candidate labels. It supports a viable full-study holdout but does not meet
+the registered 100-patient minimum, yielding `INSUFFICIENT_PUBLIC_EVENT_B_DATA`.

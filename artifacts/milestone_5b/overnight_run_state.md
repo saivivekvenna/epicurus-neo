@@ -6,15 +6,17 @@
 - Completed studies: Braun RCC, Hu/NeoVax, mKRAS-VAX, PDAC NeoVax, and Nous-209
 - Blocked studies: Fukuoka (`BLOCKED_SOURCE_UNAVAILABLE`, zero labels)
 - Source files pinned: Braun, Hu, mKRAS, PDAC NeoVax, and Nous-209 source sets
-- Files currently being edited: registry, source notes, backbone audit implementation
-- Latest focused verification: Nous-209 export reconciled 37 patient-level observations, 0 candidate labels
-- Exact next task: rebuild combined corpus and generate sufficiency/split-feasibility audits
+- Files currently being edited: sufficiency audit and final documentation
+- Latest focused verification: combined audit built 82 patients, 974 primary labels; verdict insufficient
+- Exact next task: final full-suite verification and compaction review
 
 ## Reproduction
 
 ```bash
 .venv/bin/python scripts/event_b_corpus.py ingest-study braun_rcc_2025 --resume
 .venv/bin/python scripts/event_b_corpus.py ingest-backbone --resume
+.venv/bin/python scripts/event_b_corpus.py rebuild-combined
+.venv/bin/python scripts/event_b_corpus.py audit-sufficiency
 .venv/bin/python -m pytest -q
 .venv/bin/python -m ruff check .
 ```

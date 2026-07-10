@@ -1,0 +1,359 @@
+{
+  "coverage": {
+    "antigen_design": {
+      "PERSONALIZED": 902,
+      "SHARED": 72
+    },
+    "assay_type": {
+      "ELISPOT": 1398
+    },
+    "author_call_label_studies": [
+      "hu_neovax_2021",
+      "mkras_vax_2026",
+      "pdac_neovax_2023",
+      "nous_209_2025"
+    ],
+    "baseline_author_asserted_studies": [
+      "hu_neovax_2021"
+    ],
+    "baseline_unresolved_studies": [
+      "nous_209_2025"
+    ],
+    "baseline_verified_studies": [
+      "braun_rcc_2025",
+      "mkras_vax_2026",
+      "pdac_neovax_2023"
+    ],
+    "cancer_type": {
+      "Lynch syndrome carrier; no active invasive cancer": 37,
+      "clear cell renal cell carcinoma": 9,
+      "melanoma": 8,
+      "pancreatic ductal adenocarcinoma": 28
+    },
+    "hla_allele": {
+      "A01:01": 7,
+      "A01:03": 9,
+      "A02:01": 43,
+      "A02:02": 10,
+      "A03:01": 9,
+      "A23:01": 14,
+      "A24:02": 8,
+      "A25:01": 4,
+      "A66:01": 12,
+      "B07:02": 8,
+      "B08:01": 16,
+      "B15:01": 7,
+      "B18:01": 8,
+      "B27:02": 6,
+      "B27:05": 6,
+      "B35:01": 11,
+      "B38:01": 1,
+      "B40:02": 7,
+      "B41:02": 7,
+      "B44:02": 1,
+      "B56:01": 11,
+      "B57:01": 2
+    },
+    "mhc_class": {
+      "CLASS_I": 207,
+      "CLASS_II": 334,
+      "UNKNOWN": 433
+    },
+    "raw_measurement_label_studies": [
+      "braun_rcc_2025"
+    ],
+    "vaccine_platform": {
+      "heterologous GAd prime and MVA boost": 1,
+      "individualized mRNA-lipoplex neoantigen vaccine": 1,
+      "pooled synthetic long-peptide vaccine": 1,
+      "synthetic long peptide (SLP) + poly-ICLC": 2
+    }
+  },
+  "independence_and_dominance": {
+    "independent_cohort_n": 5,
+    "largest_study_negative_fraction": 0.5959595959595959,
+    "largest_study_observation_fraction": 0.4456366237482117,
+    "largest_study_patient_fraction": 0.45121951219512196,
+    "largest_study_positive_fraction": 0.47058823529411764,
+    "largest_study_primary_label_fraction": 0.555441478439425,
+    "patient_n": 82,
+    "peptide_n": 991,
+    "primary_label_n": 974,
+    "publication_overlap_entries": [
+      {
+        "overlap": [
+          "Long-term follow-up reuses the six patients first reported by Ott et al. 2017."
+        ],
+        "study_id": "hu_neovax_2021"
+      },
+      {
+        "overlap": [
+          "The 2025 long-term Nature follow-up reuses the same 16 vaccinated participants."
+        ],
+        "study_id": "pdac_neovax_2023"
+      },
+      {
+        "overlap": [
+          "One-year revaccination cohort is a subset and is not an independent cohort."
+        ],
+        "study_id": "nous_209_2025"
+      },
+      {
+        "overlap": [
+          "The four-patient 2023 hybrid-peptide analysis cites the earlier clinic cohort and may reuse patients.",
+          "The five-patient 2024 breast cohort is distinct by indication but has no public source dataset.",
+          "Single-patient ovarian and salivary reports may be included in the 2021 retrospective cohort."
+        ],
+        "study_id": "fukuoka_dc"
+      }
+    ],
+    "repeated_antigen_primary_label_fraction": 0.09958932238193019,
+    "study_n": 5
+  },
+  "label_quality": {
+    "ambiguous_candidate_labels": 9,
+    "candidate_resolved_primary_assays": 974,
+    "contradictions": 0,
+    "explicit_candidate_negatives": 693,
+    "inferred_negatives": 0,
+    "missing_provenance": 0,
+    "patient_level_only_responses": 37,
+    "pool_or_patient_level_only_event_b_assays": 38,
+    "unresolved_patient_mapping": 1
+  },
+  "per_study": [
+    {
+      "assay_observation_n": 129,
+      "event_b_positive_patient_n": 9,
+      "ingestion_status": "ACCEPTED",
+      "patient_level_only_event_b_n": 0,
+      "patient_n": 9,
+      "patients_with_tested_negative_n": 9,
+      "primary_label_n": 129,
+      "primary_positive_n": 61,
+      "primary_tested_negative_n": 68,
+      "primary_untested_n": 0,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "assay_observation_n": 0,
+      "event_b_positive_patient_n": 0,
+      "ingestion_status": "BLOCKED_SOURCE_UNAVAILABLE",
+      "patient_level_only_event_b_n": 0,
+      "patient_n": 0,
+      "patients_with_tested_negative_n": 0,
+      "primary_label_n": 0,
+      "primary_positive_n": 0,
+      "primary_tested_negative_n": 0,
+      "primary_untested_n": 0,
+      "study_id": "fukuoka_dc"
+    },
+    {
+      "assay_observation_n": 623,
+      "event_b_positive_patient_n": 8,
+      "ingestion_status": "ACCEPTED",
+      "patient_level_only_event_b_n": 0,
+      "patient_n": 8,
+      "patients_with_tested_negative_n": 8,
+      "primary_label_n": 541,
+      "primary_positive_n": 128,
+      "primary_tested_negative_n": 413,
+      "primary_untested_n": 0,
+      "study_id": "hu_neovax_2021"
+    },
+    {
+      "assay_observation_n": 144,
+      "event_b_positive_patient_n": 12,
+      "ingestion_status": "ACCEPTED",
+      "patient_level_only_event_b_n": 0,
+      "patient_n": 12,
+      "patients_with_tested_negative_n": 5,
+      "primary_label_n": 72,
+      "primary_positive_n": 60,
+      "primary_tested_negative_n": 12,
+      "primary_untested_n": 0,
+      "study_id": "mkras_vax_2026"
+    },
+    {
+      "assay_observation_n": 37,
+      "event_b_positive_patient_n": 37,
+      "ingestion_status": "ACCEPTED",
+      "patient_level_only_event_b_n": 37,
+      "patient_n": 37,
+      "patients_with_tested_negative_n": 0,
+      "primary_label_n": 0,
+      "primary_positive_n": 0,
+      "primary_tested_negative_n": 0,
+      "primary_untested_n": 0,
+      "study_id": "nous_209_2025"
+    },
+    {
+      "assay_observation_n": 465,
+      "event_b_positive_patient_n": 8,
+      "ingestion_status": "ACCEPTED",
+      "patient_level_only_event_b_n": 1,
+      "patient_n": 16,
+      "patients_with_tested_negative_n": 16,
+      "primary_label_n": 232,
+      "primary_positive_n": 23,
+      "primary_tested_negative_n": 200,
+      "primary_untested_n": 9,
+      "study_id": "pdac_neovax_2023"
+    }
+  ],
+  "registered_minimum": {
+    "class_i_and_class_ii_coverage": true,
+    "explicit_tested_negatives_available": true,
+    "label_comparability_for_primary_candidate_set": true,
+    "met": false,
+    "no_overwhelming_primary_label_dominance": true,
+    "study_holdout_feasible": true,
+    "thresholds": {
+      "event_b_patients": 100,
+      "event_b_positive_patients": 30,
+      "independent_event_b_studies": 2
+    }
+  },
+  "required_counts": {
+    "assay_observations": 1398,
+    "cd4_responses": 110,
+    "cd8_responses": 18,
+    "class_i_observations": 207,
+    "class_ii_observations": 334,
+    "epitope_spreading_observations": 82,
+    "event_a_observations": 304,
+    "event_b_assay_observations": 1012,
+    "event_b_patients": 82,
+    "event_b_positive_patients": 74,
+    "event_b_positives": 272,
+    "event_b_studies": 5,
+    "event_b_tested_negatives": 693,
+    "event_b_untested_candidates": 9,
+    "patients_with_explicit_tested_negatives": 38,
+    "personalized_antigen_observations": 902,
+    "primary_candidate_labels": 974,
+    "publications": 12,
+    "review_queue_size": 38,
+    "shared_antigen_observations": 72,
+    "total_studies": 5,
+    "unique_patient_candidate_pairs": 1072,
+    "unique_patients": 82,
+    "unknown_class_observations": 433,
+    "vaccine_components": 1072
+  },
+  "split_feasibility": {
+    "CANCER_TYPE_HOLDOUT": {
+      "feasible": true,
+      "label_counts": {
+        "evaluation": {
+          "POSITIVE": 61,
+          "TESTED_NEGATIVE": 68
+        },
+        "train": {
+          "POSITIVE": 211,
+          "TESTED_NEGATIVE": 625
+        }
+      },
+      "positive_patient_counts": {
+        "evaluation": 9,
+        "train": 28
+      },
+      "seed": 0
+    },
+    "HLA_HOLDOUT": {
+      "feasible": true,
+      "label_counts": {
+        "evaluation": {
+          "POSITIVE": 14,
+          "TESTED_NEGATIVE": 60
+        },
+        "train": {
+          "POSITIVE": 258,
+          "TESTED_NEGATIVE": 633
+        }
+      },
+      "positive_patient_counts": {
+        "evaluation": 5,
+        "train": 32
+      },
+      "seed": 0
+    },
+    "PATIENT_HOLDOUT": {
+      "feasible": true,
+      "label_counts": {
+        "evaluation": {
+          "POSITIVE": 59,
+          "TESTED_NEGATIVE": 119
+        },
+        "train": {
+          "POSITIVE": 213,
+          "TESTED_NEGATIVE": 574
+        }
+      },
+      "positive_patient_counts": {
+        "evaluation": 8,
+        "train": 29
+      },
+      "seed": 0
+    },
+    "PEPTIDE_CLUSTER_HOLDOUT": {
+      "feasible": true,
+      "label_counts": {
+        "evaluation": {
+          "POSITIVE": 41,
+          "TESTED_NEGATIVE": 125
+        },
+        "train": {
+          "POSITIVE": 231,
+          "TESTED_NEGATIVE": 568
+        }
+      },
+      "positive_patient_counts": {
+        "evaluation": 4,
+        "train": 33
+      },
+      "seed": 0
+    },
+    "SHARED_ANTIGEN_GROUP_HOLDOUT": {
+      "evaluation_group": "YKLVVVGAAGVGKSALTIQLI",
+      "feasible": true,
+      "label_counts": {
+        "evaluation": {
+          "POSITIVE": 11,
+          "TESTED_NEGATIVE": 1
+        },
+        "train": {
+          "POSITIVE": 261,
+          "TESTED_NEGATIVE": 692
+        }
+      },
+      "positive_patient_counts": {
+        "evaluation": 11,
+        "train": 37
+      }
+    },
+    "STUDY_HOLDOUT": {
+      "feasible": true,
+      "label_counts": {
+        "evaluation": {
+          "POSITIVE": 61,
+          "TESTED_NEGATIVE": 68
+        },
+        "train": {
+          "POSITIVE": 211,
+          "TESTED_NEGATIVE": 625
+        }
+      },
+      "positive_patient_counts": {
+        "evaluation": 9,
+        "train": 28
+      },
+      "seed": 0
+    },
+    "TEMPORAL_HOLDOUT": {
+      "feasible": false,
+      "reason": "fewer than two source-resolved candidate dates"
+    }
+  },
+  "verdict": "INSUFFICIENT_PUBLIC_EVENT_B_DATA"
+}
