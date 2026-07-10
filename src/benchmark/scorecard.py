@@ -38,6 +38,18 @@ def _entry(candidate: np.ndarray, baseline: np.ndarray) -> dict[str, Any]:
     }
 
 
+def pre_registered_verdict(primary: dict, co_primary: dict, clinical: dict) -> str:
+    """The registered ACCEPT/CONSISTENT/REJECT rule over (delta, delta_ci) entries."""
+    primary_significant = primary["delta_ci"][0] > 0.0
+    no_co_primary_regression = co_primary["delta_ci"][1] >= 0.0
+    no_clinical_regression = clinical["delta_ci"][1] >= 0.0
+    if primary_significant and no_co_primary_regression and no_clinical_regression:
+        return "ACCEPT"
+    if primary["delta_vs_baseline"] > 0.0 and primary["delta_ci"][0] <= 0.0 <= primary["delta_ci"][1]:
+        return "CONSISTENT_WITH_NO_EFFECT"
+    return "REJECT"
+
+
 def scorecard(
     df: pd.DataFrame,
     score_col: str,
@@ -105,20 +117,7 @@ def scorecard(
     except ValueError:
         report["mde_at_current_n"] = None
 
-    primary = report[primary_name]
-    co_primary = report["capture_fraction"]
-    clinical = report["p_at_least_one"]
-    primary_significant = primary["delta_ci"][0] > 0.0
-    no_co_primary_regression = co_primary["delta_ci"][1] >= 0.0
-    no_clinical_regression = clinical["delta_ci"][1] >= 0.0
-    if primary_significant and no_co_primary_regression and no_clinical_regression:
-        verdict = "ACCEPT"
-    elif (
-        primary["delta_vs_baseline"] > 0.0
-        and primary["delta_ci"][0] <= 0.0 <= primary["delta_ci"][1]
-    ):
-        verdict = "CONSISTENT_WITH_NO_EFFECT"
-    else:
-        verdict = "REJECT"
-    report["verdict"] = verdict
+    report["verdict"] = pre_registered_verdict(
+        report[primary_name], report["capture_fraction"], report["p_at_least_one"]
+    )
     return report
