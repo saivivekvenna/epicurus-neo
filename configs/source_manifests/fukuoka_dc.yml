@@ -1,0 +1,31 @@
+manifest_version: event-b-manual-source-1.0.0
+study_id: fukuoka_dc
+status: BLOCKED_SOURCE_UNAVAILABLE
+required_primary_source:
+  publication: >-
+    Morisaki et al. Efficacy of Intranodal Neoantigen Peptide-Pulsed Dendritic Cell Vaccine
+    Monotherapy in Patients With Advanced Solid Tumors: A Retrospective Analysis.
+  doi: 10.21873/anticanres.15213
+  cohort: 17 advanced solid-tumor patients
+  expected_files:
+    - full primary-article PDF
+    - all supplementary patient, peptide, vaccination, and pre/post ELISpot tables
+manual_placement:
+  directory: data/raw/fukuoka_dc_2021/manual
+  requirements:
+    - Obtain through lawful open access, institutional access, or directly from the authors.
+    - Do not bypass authentication, access controls, or publisher restrictions.
+    - Record the original URL, retrieval date, file size, detected media type, and SHA-256.
+    - Reject any HTML access page saved with a PDF or spreadsheet suffix.
+required_mapping_contract:
+  - Stable source patient ID across the 2021, 2023, 2024, and case-report publications.
+  - Every manufactured peptide sequence and HLA evidence type.
+  - Whether each peptide was screened before vaccination.
+  - Explicit peptide-level assay inclusion at baseline and after vaccination.
+  - Source positivity threshold and primary timepoint.
+  - Whether later vaccine doses were restricted to early ELISpot-positive peptides.
+  - Pool membership and deconvolution where applicable.
+  - Prospective versus retrospective selection and missing-follow-up mechanism.
+acceptance_gate: >-
+  No patient or peptide label may enter the primary Event-B corpus until the full denominator,
+  response-adaptive sampling mechanism, and cross-publication patient overlap are resolved.

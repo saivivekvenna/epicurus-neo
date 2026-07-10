@@ -30,3 +30,10 @@ Place the downloaded files EXACTLY here (names must match):
 
 The ingestion will checksum whatever is placed here, record it in the source manifest +
 fetch_record for reproducibility, and refuse to proceed (no fabrication) if a file is missing.
+
+## Fukuoka dendritic-cell vaccine cohort
+
+The 17-patient 2021 source is blocked pending lawful manual access and patient-overlap resolution.
+See `configs/source_manifests/fukuoka_dc.yml`. Place verified files only under
+`data/raw/fukuoka_dc_2021/manual/`; record checksums before any adapter work. Do not substitute later
+case reports or infer peptide negatives from the abstract.

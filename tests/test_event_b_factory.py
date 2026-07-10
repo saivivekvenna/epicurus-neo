@@ -74,6 +74,11 @@ def test_repository_registry_is_valid_and_ordered():
         "fukuoka_dc",
     ]
     assert registry.get("braun_rcc_2025").ingestion_status is StudyStatus.ACCEPTED
+    fukuoka = registry.get("fukuoka_dc")
+    assert fukuoka.ingestion_status is StudyStatus.BLOCKED_SOURCE_UNAVAILABLE
+    assert "DOI:10.21873/anticanres.15213" in fukuoka.publication_ids
+    assert all("15215" not in publication_id for publication_id in fukuoka.publication_ids)
+    assert "patient-by-peptide" in fukuoka.current_blocker
 
 
 def test_registry_rejects_blocked_entry_without_reason():

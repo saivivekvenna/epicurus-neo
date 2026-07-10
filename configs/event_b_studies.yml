@@ -92,21 +92,28 @@ studies:
       - Accepted records are patient-level only and yield zero candidate labels.
     current_blocker:
   - canonical_study_id: fukuoka_dc
-    cohort_id: fukuoka_publications_unresolved
+    cohort_id: fukuoka_advanced_solid_tumor_2021
     publication_ids:
-      - DOI:10.21873/anticanres.15215
+      - DOI:10.21873/anticanres.15213
       - DOI:10.3389/fimmu.2023.1223331
       - DOI:10.3390/cancers16244204
     trial_id:
     cancer_type: mixed advanced solid tumors and breast cancer
     vaccine_platform: peptide-pulsed dendritic-cell vaccine
     antigen_design: PERSONALIZED
-    source_availability: several retrospective publications; canonical dataset unresolved
+    source_availability: abstract and later open reports available; 2021 patient tables unavailable
     adapter_status: NOT_IMPLEMENTED
-    ingestion_status: SOURCES_PENDING
+    ingestion_status: BLOCKED_SOURCE_UNAVAILABLE
     expected_data_structures: [PDF, DOCX, XLSX]
     known_publication_overlap:
-      - Clinic publications may contain overlapping patients and must not be concatenated blindly.
+      - The four-patient 2023 hybrid-peptide analysis cites the earlier clinic cohort and may reuse patients.
+      - The five-patient 2024 breast cohort is distinct by indication but has no public source dataset.
+      - Single-patient ovarian and salivary reports may be included in the 2021 retrospective cohort.
     known_limitations:
       - The phrase Fukuoka dataset does not identify a single public patient-level source.
-    current_blocker:
+      - Retrospective selection and response-adaptive second-half vaccination complicate comparability.
+    current_blocker: >-
+      The canonical 17-patient 2021 paper's full patient-by-peptide vaccination and pre/post ELISpot
+      denominator is not available from an open primary source, and later open Fukuoka reports do not
+      provide a downloadable dataset or a safe cross-publication patient map. Manual source placement
+      and author-confirmed cohort overlap are required before labels can be accepted.
