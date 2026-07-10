@@ -427,6 +427,18 @@ class HuNeoVaxAdapter:
             "raw_elispot_replicates",
             "per_peptide_clinical_outcome",
         ),
+        canonical_study_id=STUDY_ID,
+        cohort_id="NCT01970358_long_term_followup",
+        source_files=(DATASET_FILE,),
+        supported_timepoints=("WEEK_16_POST_VACCINE", "YEAR_3_TO_4_5_FOLLOWUP"),
+        positivity_rules=("author-reported ELISpot call at >=2.5x DMSO control",),
+        baseline_semantics="De-novo response is author-asserted; no row-level baseline is public.",
+        vaccine_component_structure="Personalized synthetic long peptides.",
+        assay_target_structure="Class-I minimal epitopes and class-II overlapping assay peptides.",
+        candidate_identity_completeness="PATIENT_AND_ASSAY_PEPTIDE_RESOLVED",
+        unresolved_ambiguities=(
+            "Class-II restriction and patient HLA genotype are absent from the public workbook.",
+        ),
     )
 
     def __init__(self, raw_dir: str | Path):

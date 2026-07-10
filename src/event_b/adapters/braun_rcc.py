@@ -246,6 +246,17 @@ class BraunRCCAdapter:
             "UNKNOWN avoids imposing a spurious class-I length constraint on a >=20mer.",
         ),
         ("transcript", "wildtype_peptide", "patient_hla_genotype", "per_peptide_clinical_outcome"),
+        canonical_study_id=STUDY_ID,
+        cohort_id="NCT02950766_vaccinated_cohort",
+        source_files=tuple(sorted(EXPECTED_SHA256)),
+        supported_timepoints=("PRE_VACCINE", "WEEK_16_POST_VACCINE"),
+        positivity_rules=(
+            "two-sided t-test P<0.05 and mean stimulated spots >=3x no-stim control",
+        ),
+        baseline_semantics="Source states no pre-existing response; week-0 pool baseline checked.",
+        vaccine_component_structure="Personalized synthetic long peptides.",
+        assay_target_structure="Post-vaccine pool screen followed by long-peptide deconvolution.",
+        candidate_identity_completeness="PATIENT_AND_LONG_PEPTIDE_RESOLVED",
     )
 
     def __init__(self, raw_dir: str | Path):

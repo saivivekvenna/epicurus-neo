@@ -9,9 +9,17 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
-from event_b.adapters import BraunRCCAdapter, ImproveEventAAdapter
+from event_b.adapters import BraunRCCAdapter, HuNeoVaxAdapter, ImproveEventAAdapter
 from event_b.adapters import hu_neovax
-from event_b.adapters.braun_rcc import DOI, EXPECTED_SHA256, NCT, PMCID, STUDY_ID, SUPPL_URL
+from event_b.adapters.braun_rcc import (
+    DOI,
+    EXPECTED_SHA256,
+    NCT,
+    PMCID,
+    STUDY_ID,
+    SUPPL_URL,
+    braun_source_paths,
+)
 from event_b.audit import corpus_audit, render_audit_markdown
 from event_b.braun_pipeline import (
     build_braun_corpus,
@@ -22,6 +30,7 @@ from event_b.braun_pipeline import (
 )
 from event_b.export import export_corpus
 from event_b.extraction import ExtractionTask, emit_extraction_tasks
+from event_b.factory import EventBJobRunner
 from event_b.hu_pipeline import (
     assert_quality_gates as assert_hu_gates,
     build_hu_corpus,
@@ -30,6 +39,7 @@ from event_b.hu_pipeline import (
 )
 from event_b.ingest import ingest_source
 from event_b.manifest import manifest_from_paths
+from event_b.registry import StudyRegistry
 from event_b.review import read_review_queue
 from event_b.splits import SplitType, generate_split_manifest
 
@@ -334,6 +344,103 @@ def cmd_emit_tasks(args) -> int:
     return 0
 
 
+def _factory_adapter(study_id: str, raw_root: Path):
+    if study_id == STUDY_ID:
+        adapter = BraunRCCAdapter(raw_root / "braun_rcc_2025")
+        paths = braun_source_paths(raw_root / "braun_rcc_2025")
+    elif study_id == hu_neovax.STUDY_ID:
+        adapter = HuNeoVaxAdapter(raw_root / "hu_melanoma_2021")
+        paths = hu_neovax.hu_source_paths(raw_root / "hu_melanoma_2021")
+    else:
+        return None
+    return adapter, manifest_from_paths(
+        adapter.declaration.source_name,
+        adapter.declaration.source_version,
+        adapter.declaration.adapter_name,
+        adapter.declaration.adapter_version,
+        paths,
+    )
+
+
+def _checkpoint_summary(checkpoint) -> dict:
+    return {
+        "study_id": checkpoint.study_id,
+        "status": checkpoint.status,
+        "stage": checkpoint.stage,
+        "output_dir": checkpoint.output_dir,
+        "stale_reasons": list(checkpoint.stale_reasons),
+        "error": checkpoint.error,
+    }
+
+
+def cmd_ingest_study(args) -> int:
+    registry = StudyRegistry.read(args.registry)
+    entry = registry.get(args.study_id)
+    runner = EventBJobRunner(args.output_root)
+    resolved = _factory_adapter(entry.canonical_study_id, args.raw_root)
+    if resolved is None:
+        if entry.ingestion_status.value.startswith("BLOCKED_"):
+            checkpoint = runner.block(entry)
+            print(json.dumps(_checkpoint_summary(checkpoint), indent=2, sort_keys=True))
+            return 0
+        raise RuntimeError(
+            f"{entry.canonical_study_id} has no implemented adapter; "
+            f"registry status is {entry.ingestion_status.value}"
+        )
+    adapter, manifest = resolved
+    checkpoint, result = runner.ingest(entry, adapter, manifest, rebuild=args.rebuild)
+    summary = _checkpoint_summary(checkpoint)
+    summary["reused"] = result is None
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_ingest_backbone(args) -> int:
+    registry = StudyRegistry.read(args.registry)
+    summaries = []
+    failures = []
+    for entry in registry.backbone():
+        namespace = argparse.Namespace(
+            registry=args.registry,
+            study_id=entry.canonical_study_id,
+            output_root=args.output_root,
+            raw_root=args.raw_root,
+            rebuild=args.rebuild,
+        )
+        try:
+            resolved = _factory_adapter(entry.canonical_study_id, args.raw_root)
+            runner = EventBJobRunner(args.output_root)
+            if resolved is None:
+                if entry.ingestion_status.value.startswith("BLOCKED_"):
+                    summaries.append(_checkpoint_summary(runner.block(entry)))
+                else:
+                    failures.append(
+                        {
+                            "study_id": entry.canonical_study_id,
+                            "status": entry.ingestion_status.value,
+                            "error": "adapter not implemented",
+                        }
+                    )
+                continue
+            adapter, manifest = resolved
+            checkpoint, result = runner.ingest(
+                entry, adapter, manifest, rebuild=namespace.rebuild
+            )
+            row = _checkpoint_summary(checkpoint)
+            row["reused"] = result is None
+            summaries.append(row)
+        except Exception as error:  # continue to the next registered study
+            failures.append(
+                {
+                    "study_id": entry.canonical_study_id,
+                    "error": f"{type(error).__name__}: {error}",
+                }
+            )
+    payload = {"studies": summaries, "failures": failures}
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 1 if failures else 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="event-b-corpus")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -363,6 +470,20 @@ def main() -> int:
     tasks.add_argument("--source", action="append", type=Path, required=True)
     tasks.add_argument("--output", type=Path, required=True)
     tasks.set_defaults(func=cmd_emit_tasks)
+    factory = sub.add_parser("ingest-study")
+    factory.add_argument("study_id")
+    factory.add_argument("--registry", type=Path, default=Path("configs/event_b_studies.yml"))
+    factory.add_argument("--raw-root", type=Path, default=Path("data/raw"))
+    factory.add_argument("--output-root", type=Path, default=Path("outputs/event_b_backbone"))
+    factory.add_argument("--rebuild", action="store_true")
+    factory.set_defaults(func=cmd_ingest_study)
+    backbone = sub.add_parser("ingest-backbone")
+    backbone.add_argument("--registry", type=Path, default=Path("configs/event_b_studies.yml"))
+    backbone.add_argument("--raw-root", type=Path, default=Path("data/raw"))
+    backbone.add_argument("--output-root", type=Path, default=Path("outputs/event_b_backbone"))
+    backbone.add_argument("--resume", action="store_true", help="reuse checksum-matching outputs")
+    backbone.add_argument("--rebuild", action="store_true")
+    backbone.set_defaults(func=cmd_ingest_backbone)
     args = parser.parse_args()
     return args.func(args)
 

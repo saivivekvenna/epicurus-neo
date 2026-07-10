@@ -1,0 +1,105 @@
+registry_version: event-b-registry-1.0.0
+studies:
+  - canonical_study_id: braun_rcc_2025
+    cohort_id: NCT02950766_vaccinated_cohort
+    publication_ids: [DOI:10.1038/s41586-024-08507-5, PMCID:PMC11903305]
+    trial_id: NCT02950766
+    cancer_type: clear-cell renal-cell carcinoma
+    vaccine_platform: personalized synthetic long-peptide vaccine
+    antigen_design: PERSONALIZED
+    source_availability: open publication and checksum-pinned supplements
+    adapter_status: IMPLEMENTED
+    ingestion_status: ACCEPTED
+    expected_data_structures: [PDF, XLSX]
+    known_publication_overlap: []
+    known_limitations:
+      - Patient HLA genotypes and peptide-resolved CD4/CD8 attribution are not public.
+    current_blocker:
+  - canonical_study_id: hu_neovax_2021
+    cohort_id: NCT01970358_long_term_followup
+    publication_ids:
+      - DOI:10.1038/s41591-020-01206-4
+      - PMCID:PMC8273876
+      - DOI:10.1038/nature22991
+    trial_id: NCT01970358
+    cancer_type: melanoma
+    vaccine_platform: personalized synthetic long-peptide vaccine
+    antigen_design: PERSONALIZED
+    source_availability: open author manuscript; large supplement requires manual placement
+    adapter_status: IMPLEMENTED
+    ingestion_status: ACCEPTED
+    expected_data_structures: [PDF, DOCX, XLSX]
+    known_publication_overlap:
+      - Long-term follow-up reuses the six patients first reported by Ott et al. 2017.
+    known_limitations:
+      - Public workbook has author calls rather than raw ELISpot replicates.
+    current_blocker:
+  - canonical_study_id: mkras_vax_2026
+    cohort_id: NCT04117087_resected_pdac
+    publication_ids:
+      - DOI:10.1038/s41467-026-68324-4
+      - PMID:42336869
+    trial_id: NCT04117087
+    cancer_type: pancreatic ductal adenocarcinoma
+    vaccine_platform: pooled mutant-KRAS long-peptide vaccine plus checkpoint blockade
+    antigen_design: SHARED
+    source_availability: open primary publication; supplements under source review
+    adapter_status: NOT_IMPLEMENTED
+    ingestion_status: SOURCES_PENDING
+    expected_data_structures: [PDF, XLSX]
+    known_publication_overlap: []
+    known_limitations:
+      - Shared vaccine components must remain separate from patient tumor-KRAS identity.
+    current_blocker:
+  - canonical_study_id: pdac_neovax_2023
+    cohort_id: NCT04161755_phase1
+    publication_ids:
+      - DOI:10.1038/s41586-023-06063-y
+    trial_id: NCT04161755
+    cancer_type: pancreatic ductal adenocarcinoma
+    vaccine_platform: individualized mRNA-lipoplex neoantigen vaccine
+    antigen_design: PERSONALIZED
+    source_availability: open primary publication; supplements under source review
+    adapter_status: NOT_IMPLEMENTED
+    ingestion_status: SOURCES_PENDING
+    expected_data_structures: [PDF, XLSX]
+    known_publication_overlap: []
+    known_limitations:
+      - Long encoded antigens, assay peptides, and mapped minimal epitopes require distinct IDs.
+    current_blocker:
+  - canonical_study_id: nous_209_2025
+    cohort_id: NCT05078866_initial_vaccination
+    publication_ids:
+      - DOI:10.1038/s41591-025-04182-9
+    trial_id: NCT05078866
+    cancer_type: Lynch syndrome cancer-interception cohort
+    vaccine_platform: GAd prime and MVA boost encoding 209 shared frameshift peptides
+    antigen_design: SHARED
+    source_availability: open primary publication; supplements under source review
+    adapter_status: NOT_IMPLEMENTED
+    ingestion_status: SOURCES_PENDING
+    expected_data_structures: [PDF, XLSX]
+    known_publication_overlap:
+      - One-year revaccination cohort is a subset and is not an independent cohort.
+    known_limitations:
+      - Primary ELISpot uses 16 multi-antigen pools and cannot be decomposed without source data.
+    current_blocker:
+  - canonical_study_id: fukuoka_dc
+    cohort_id: fukuoka_publications_unresolved
+    publication_ids:
+      - DOI:10.21873/anticanres.15215
+      - DOI:10.3389/fimmu.2023.1223331
+      - DOI:10.3390/cancers16244204
+    trial_id:
+    cancer_type: mixed advanced solid tumors and breast cancer
+    vaccine_platform: peptide-pulsed dendritic-cell vaccine
+    antigen_design: PERSONALIZED
+    source_availability: several retrospective publications; canonical dataset unresolved
+    adapter_status: NOT_IMPLEMENTED
+    ingestion_status: SOURCES_PENDING
+    expected_data_structures: [PDF, DOCX, XLSX]
+    known_publication_overlap:
+      - Clinic publications may contain overlapping patients and must not be concatenated blindly.
+    known_limitations:
+      - The phrase Fukuoka dataset does not identify a single public patient-level source.
+    current_blocker:
