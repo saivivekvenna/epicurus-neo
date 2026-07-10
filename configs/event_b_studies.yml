@@ -80,14 +80,16 @@ studies:
     cancer_type: Lynch syndrome cancer-interception cohort
     vaccine_platform: GAd prime and MVA boost encoding 209 shared frameshift peptides
     antigen_design: SHARED
-    source_availability: open primary publication; supplements under source review
-    adapter_status: NOT_IMPLEMENTED
-    ingestion_status: SOURCES_PENDING
+    source_availability: open primary publication and checksum-pinned source workbooks
+    adapter_status: IMPLEMENTED
+    ingestion_status: ACCEPTED
     expected_data_structures: [PDF, XLSX]
     known_publication_overlap:
       - One-year revaccination cohort is a subset and is not an independent cohort.
     known_limitations:
       - Primary ELISpot uses 16 multi-antigen pools and cannot be decomposed without source data.
+      - Public source gives reactive-pool counts but not patient-by-pool identities.
+      - Accepted records are patient-level only and yield zero candidate labels.
     current_blocker:
   - canonical_study_id: fukuoka_dc
     cohort_id: fukuoka_publications_unresolved

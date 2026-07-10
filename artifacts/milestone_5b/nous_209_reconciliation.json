@@ -1,0 +1,23 @@
+{
+  "extracted": {
+    "fsp_identifiers": 115,
+    "patient_level_event_b_observations": 37,
+    "patients": 37,
+    "pool_entities": 16,
+    "primary_candidate_labels": 0,
+    "review_queue": 0
+  },
+  "material_discrepancies": [
+    "Patient-by-pool identities are not public; reactive-pool counts remain patient-level and produce zero candidate labels.",
+    "The 115-row deconvolution table lists no FSP for Pool15 and formats Pool7 once as 'Pool 7'; all 16 assay pools are preserved but Pool15 has no FSP membership edge."
+  ],
+  "reconciles": true,
+  "source_reported": {
+    "assay_pools": 16,
+    "deconvolved_immunogenic_fsp_identifiers": 115,
+    "encoded_fsps": 209,
+    "enrolled_patients": 45,
+    "immunogenicity_evaluable_patients": 37,
+    "positive_patients_at_peak": 37
+  }
+}
