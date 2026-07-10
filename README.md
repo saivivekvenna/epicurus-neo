@@ -5,8 +5,10 @@ target is vaccine-inducible response (Event B), not pre-existing T-cell reactivi
 generation remains the responsibility of pVACtools; Epicurus owns gating, calibrated ranking,
 portfolio selection, and patient-level abstention.
 
-The current milestone is instrumentation only. It trains no model, fits no ranker, proposes no
-feature, and does not touch the external TESLA, 2025 multimer, or Sijbrandij acceptance sets.
+Milestone 1 instrumentation is frozen in git. The next focused work is the candidate-reachability
+funnel: identify whether validated positives are lost at mutation calling, transcript selection,
+peptide generation, gating, HLA inclusion, presentation, ranking, or top-k selection. It trains no
+recognition model and does not touch the external TESLA, 2025 multimer, or Sijbrandij sets early.
 
 ## Registered evaluation contract
 
@@ -46,6 +48,11 @@ The frozen-score results are in
 [`docs/milestone_1_reaudit.md`](docs/milestone_1_reaudit.md). Historical research iterations remain
 in [`docs/benchmark_iterations.md`](docs/benchmark_iterations.md); they are a record, not the current
 evaluation contract.
+
+The next-stage evidence contract is in
+[`docs/milestone_3_funnel_spec.md`](docs/milestone_3_funnel_spec.md). Once complete stage exports are
+available, `epicurus funnel-report ledger.csv` reports per-stage candidate recall with confidence
+intervals and explicit bounds for missing evidence.
 
 ## Benchmark roles
 

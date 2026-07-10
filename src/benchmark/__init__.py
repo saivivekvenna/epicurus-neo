@@ -5,6 +5,7 @@ This package is deliberately independent of the historical
 """
 
 from benchmark.gates import prime_rule
+from benchmark.funnel import candidate_reachability_funnel
 from benchmark.labels import Label, validate_labels
 from benchmark.metrics import (
     capture_fraction,
@@ -19,6 +20,7 @@ from benchmark.stats import bootstrap_ci, mde, n_required, paired_bootstrap
 __all__ = [
     "Label",
     "bootstrap_ci",
+    "candidate_reachability_funnel",
     "capture_fraction",
     "hits_at_k",
     "mde",

@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from benchmark.scorecard import scorecard as build_scorecard
+from benchmark.funnel import candidate_reachability_funnel
 
 from epicurus_neo.benchmark import train_and_evaluate
 from epicurus_neo.auto_research import build_failure_report, write_research_artifacts
@@ -80,6 +81,21 @@ def cmd_score_report(args: argparse.Namespace) -> int:
         "k": args.k,
         "benchmarks": results,
     }
+    text = json.dumps(payload, indent=2)
+    if args.output:
+        Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.output).write_text(text + "\n")
+    print(text)
+    return 0
+
+
+def cmd_funnel_report(args: argparse.Namespace) -> int:
+    frame = _load_table(Path(args.table))
+    payload = candidate_reachability_funnel(
+        frame,
+        positive_id_col=args.positive_id_col,
+        patient_col=args.patient_col,
+    )
     text = json.dumps(payload, indent=2)
     if args.output:
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
@@ -629,6 +645,13 @@ def build_parser() -> argparse.ArgumentParser:
     score_report.add_argument("-k", type=int, default=20)
     score_report.add_argument("--output")
     score_report.set_defaults(func=cmd_score_report)
+
+    funnel_report = sub.add_parser("funnel-report")
+    funnel_report.add_argument("table")
+    funnel_report.add_argument("--positive-id-col", default="positive_id")
+    funnel_report.add_argument("--patient-col", default="patient_id")
+    funnel_report.add_argument("--output")
+    funnel_report.set_defaults(func=cmd_funnel_report)
 
     compare_metrics = sub.add_parser("compare-metrics")
     compare_metrics.add_argument("report", nargs="+")
