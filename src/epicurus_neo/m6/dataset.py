@@ -71,3 +71,33 @@ def load_label_frame(corpus_dir: str | Path = CORPUS_DIR) -> pd.DataFrame:
     frame["label"] = (frame.response_label == ResponseLabel.POSITIVE.value).astype(int)
     frame["hla_allele"] = frame.hla_alleles.map(_first_allele)
     return frame.drop(columns=["response_label"]).reset_index(drop=True)
+
+
+def completeness_report(frame: pd.DataFrame, *, k_cap: int = 20) -> pd.DataFrame:
+    """Characterize each patient's candidate denominator before any top-k metric.
+
+    ``n_eligible`` is the count of label-resolved candidates for the patient (this
+    frame is already restricted to POSITIVE/TESTED_NEGATIVE, so ``n_candidates`` is
+    ``n_eligible``). Selection is degenerate where ``n_eligible <= k_cap`` because
+    the top-k set is the whole list.
+    """
+    grouped = frame.groupby("patient_id", sort=True)
+    report = grouped.agg(
+        study_id=("study_id", "first"),
+        n_candidates=("candidate_id", "size"),
+        n_positive=("label", "sum"),
+    ).reset_index()
+    report["n_positive"] = report.n_positive.astype(int)
+    report["k_patient"] = report.n_candidates.clip(upper=k_cap).astype(int)
+    report["ranking_informative"] = report.n_candidates > k_cap
+    has_negative = (
+        frame.assign(is_neg=frame.label == 0)
+        .groupby("patient_id")["is_neg"]
+        .any()
+        .reindex(report.patient_id)
+        .to_numpy()
+    )
+    report["denominator_type"] = np.where(
+        has_negative, "COMPLETE_TESTED_SET", "POSITIVE_ENRICHED"
+    )
+    return report
