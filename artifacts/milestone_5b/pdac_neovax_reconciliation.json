@@ -1,0 +1,25 @@
+{
+  "extracted": {
+    "assay_observations": 465,
+    "patients": 16,
+    "pool_level_observations": 1,
+    "positive": 23,
+    "primary_candidate_labels": 232,
+    "review_queue": 0,
+    "tested_negative": 200,
+    "untested": 9,
+    "vaccine_targets": 232
+  },
+  "material_discrepancies": [
+    "The paper's 25 response entities comprise 23 single-target calls plus 2 positive combined pools; the seven pool members remain UNTESTED individually."
+  ],
+  "reconciles": true,
+  "source_reported": {
+    "no_data_candidates": 2,
+    "patients": 16,
+    "pool_only_candidates": 7,
+    "positive_combined_pools": 2,
+    "single_target_positive": 23,
+    "vaccine_targets": 232
+  }
+}

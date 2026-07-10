@@ -14,9 +14,11 @@ from event_b.adapters import (
     HuNeoVaxAdapter,
     ImproveEventAAdapter,
     MKRASVaxAdapter,
+    PDACNeoVaxAdapter,
 )
 from event_b.adapters import hu_neovax
 from event_b.adapters import mkras_vax
+from event_b.adapters import pdac_neovax
 from event_b.adapters.braun_rcc import (
     DOI,
     EXPECTED_SHA256,
@@ -360,6 +362,9 @@ def _factory_adapter(study_id: str, raw_root: Path):
     elif study_id == mkras_vax.STUDY_ID:
         adapter = MKRASVaxAdapter(raw_root / "mkras_vax_2026")
         paths = mkras_vax.stage_sources(raw_root / "mkras_vax_2026")
+    elif study_id == pdac_neovax.STUDY_ID:
+        adapter = PDACNeoVaxAdapter(raw_root / "pdac_neovax_2023")
+        paths = [pdac_neovax.stage_source(raw_root / "pdac_neovax_2023")]
     else:
         return None
     return adapter, manifest_from_paths(

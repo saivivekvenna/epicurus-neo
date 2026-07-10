@@ -56,17 +56,21 @@ studies:
     cohort_id: NCT04161755_phase1
     publication_ids:
       - DOI:10.1038/s41586-023-06063-y
+      - PMCID:PMC10171177
+      - DOI:10.1038/s41586-024-08508-4
     trial_id: NCT04161755
     cancer_type: pancreatic ductal adenocarcinoma
     vaccine_platform: individualized mRNA-lipoplex neoantigen vaccine
     antigen_design: PERSONALIZED
-    source_availability: open primary publication; supplements under source review
-    adapter_status: NOT_IMPLEMENTED
-    ingestion_status: SOURCES_PENDING
+    source_availability: open primary publication and checksum-pinned target workbook
+    adapter_status: IMPLEMENTED
+    ingestion_status: ACCEPTED
     expected_data_structures: [PDF, XLSX]
-    known_publication_overlap: []
+    known_publication_overlap:
+      - The 2025 long-term Nature follow-up reuses the same 16 vaccinated participants.
     known_limitations:
       - Long encoded antigens, assay peptides, and mapped minimal epitopes require distinct IDs.
+      - Seven targets occur only in two positive combined pools and remain individually UNTESTED.
     current_blocker:
   - canonical_study_id: nous_209_2025
     cohort_id: NCT05078866_initial_vaccination
