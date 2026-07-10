@@ -6,13 +6,14 @@ from pathlib import Path
 
 import pandas as pd
 
-from epicurus_neo.benchmark import evaluate_score_columns, train_and_evaluate
+from benchmark.scorecard import scorecard as build_scorecard
+
+from epicurus_neo.benchmark import train_and_evaluate
 from epicurus_neo.auto_research import build_failure_report, write_research_artifacts
 from epicurus_neo.data_manifest import load_dataset_manifest
 from epicurus_neo.download import dataset_file_plans, download_file
 from epicurus_neo.experiment import grouped_cross_validate, summarize_cross_validation
 from epicurus_neo.leakage import detect_exact_leakage, purge_train_overlaps
-from epicurus_neo.metrics import group_metrics, summarize_group_metrics
 from epicurus_neo.normalize import (
     normalize_bigmhc_table,
     normalize_candidate_table,
@@ -44,25 +45,38 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 def cmd_metrics(args: argparse.Namespace) -> int:
     frame = _load_table(Path(args.table))
-    per_group = group_metrics(frame, group_col=args.group_col, score_col=args.score_col, k=args.k)
-    print(json.dumps(summarize_group_metrics(per_group), indent=2))
+    baseline_col = args.baseline_col or args.score_col
+    report = build_scorecard(
+        frame,
+        args.score_col,
+        baseline_col,
+        group_col=args.group_col,
+        k=args.k,
+    )
+    print(json.dumps(report, indent=2))
     return 0
 
 
 def cmd_score_report(args: argparse.Namespace) -> int:
     frame = _load_table(Path(args.table))
+    baseline_col = args.baseline_col or args.score_col[0]
     results = [
-        {"score_col": item.score_col, "summary": item.summary}
-        for item in evaluate_score_columns(
-            frame,
-            group_col=args.group_col,
-            score_columns=args.score_col,
-            k=args.k,
-        )
+        {
+            "score_col": score_col,
+            "scorecard": build_scorecard(
+                frame,
+                score_col,
+                baseline_col,
+                group_col=args.group_col,
+                k=args.k,
+            ),
+        }
+        for score_col in args.score_col
     ]
     payload = {
         "table": args.table,
         "group_col": args.group_col,
+        "baseline_col": baseline_col,
         "k": args.k,
         "benchmarks": results,
     }
@@ -180,7 +194,11 @@ def cmd_download_plan(args: argparse.Namespace) -> int:
         output_dir=args.output_dir,
         dataset_key=args.dataset,
     )
-    print(json.dumps([plan.__dict__ | {"output_path": str(plan.output_path)} for plan in plans], indent=2))
+    print(
+        json.dumps(
+            [plan.__dict__ | {"output_path": str(plan.output_path)} for plan in plans], indent=2
+        )
+    )
     return 0
 
 
@@ -599,6 +617,7 @@ def build_parser() -> argparse.ArgumentParser:
     metrics.add_argument("table")
     metrics.add_argument("--group-col", default="patient_id")
     metrics.add_argument("--score-col", required=True)
+    metrics.add_argument("--baseline-col")
     metrics.add_argument("-k", type=int, default=20)
     metrics.set_defaults(func=cmd_metrics)
 
@@ -606,6 +625,7 @@ def build_parser() -> argparse.ArgumentParser:
     score_report.add_argument("table")
     score_report.add_argument("--group-col", default="patient_id")
     score_report.add_argument("--score-col", action="append", required=True)
+    score_report.add_argument("--baseline-col")
     score_report.add_argument("-k", type=int, default=20)
     score_report.add_argument("--output")
     score_report.set_defaults(func=cmd_score_report)

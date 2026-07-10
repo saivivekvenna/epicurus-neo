@@ -1,0 +1,100 @@
+{"amino_acid_changes": ["C>W"], "candidate_id": "8d8d77a441d4caa3", "condition": "A_UNMASKED", "gene": "AKR7L", "hla": "HLA-A24:02", "mutation_consequence": "M", "protein_position": "156,157,113"}
+{"amino_acid_changes": ["R>Q"], "candidate_id": "db70e4b3a71e19c5", "condition": "A_UNMASKED", "gene": "RP5", "hla": "HLA-A02:05", "mutation_consequence": "M", "protein_position": "21575"}
+{"amino_acid_changes": ["T>F", "V>R", "H>L"], "candidate_id": "7bae39fe3f60b51b", "condition": "A_UNMASKED", "gene": "FAM135B", "hla": "HLA-C06:02", "mutation_consequence": "F", "protein_position": "153153153"}
+{"amino_acid_changes": ["R>K", "F>Y"], "candidate_id": "854276219c2fbbb8", "condition": "A_UNMASKED", "gene": "CCPG1", "hla": "HLA-B18:01", "mutation_consequence": "F", "protein_position": "60660685606"}
+{"amino_acid_changes": ["P>S"], "candidate_id": "6b53c714b462cc41", "condition": "A_UNMASKED", "gene": "LAMA5", "hla": "HLA-B07:02", "mutation_consequence": "M", "protein_position": "1267"}
+{"amino_acid_changes": ["R>Q"], "candidate_id": "1fdfb0e1ff379485", "condition": "A_UNMASKED", "gene": "RGS6", "hla": "HLA-C06:02", "mutation_consequence": "M", "protein_position": "3.71443408443443e+41"}
+{"amino_acid_changes": ["P>L"], "candidate_id": "f347155f95490134", "condition": "A_UNMASKED", "gene": "ELOVL1", "hla": "HLA-C03:04", "mutation_consequence": "M", "protein_position": "28,28,28"}
+{"amino_acid_changes": ["R>T"], "candidate_id": "9dfcc1fd24c2da67", "condition": "A_UNMASKED", "gene": "WDPCP", "hla": "HLA-A01:01", "mutation_consequence": "M", "protein_position": "567408375375353984"}
+{"amino_acid_changes": ["S>L"], "candidate_id": "44967ffd2d5588a9", "condition": "A_UNMASKED", "gene": "SSH2", "hla": "HLA-A11:01", "mutation_consequence": "M", "protein_position": "720,747"}
+{"amino_acid_changes": ["A>F", "F>N", "L>P"], "candidate_id": "e1fd5f6975ae8b3a", "condition": "A_UNMASKED", "gene": "NEMP1", "hla": "HLA-C07:01", "mutation_consequence": "F", "protein_position": "377,304"}
+{"amino_acid_changes": ["E>G"], "candidate_id": "890b381654e5500d", "condition": "A_UNMASKED", "gene": "TMEM185A", "hla": "HLA-B44:02", "mutation_consequence": "M", "protein_position": "7,106,47,106,47"}
+{"amino_acid_changes": ["E>Q"], "candidate_id": "678157a13f8d0c9f", "condition": "A_UNMASKED", "gene": "PIEZO2", "hla": "HLA-A02:01", "mutation_consequence": "M", "protein_position": "2678269227416979968"}
+{"amino_acid_changes": ["E>K"], "candidate_id": "c1f98807ebbae6d1", "condition": "A_UNMASKED", "gene": "SLC7A14", "hla": "HLA-C03:04", "mutation_consequence": "M", "protein_position": "319"}
+{"amino_acid_changes": ["A>S"], "candidate_id": "fe3e5c145a724baa", "condition": "A_UNMASKED", "gene": "SORCS2", "hla": "HLA-A01:01", "mutation_consequence": "M", "protein_position": "921,21,1093"}
+{"amino_acid_changes": ["P>L"], "candidate_id": "fb113cd33e9e5890", "condition": "A_UNMASKED", "gene": "WASF1", "hla": "HLA-A02:01", "mutation_consequence": "M", "protein_position": "386,386,386,386,386"}
+{"amino_acid_changes": ["Q>E"], "candidate_id": "a6d97b7b335f1047", "condition": "A_UNMASKED", "gene": "ZNF83", "hla": "HLA-A26:01", "mutation_consequence": "M", "protein_position": "112,112,112,112,112"}
+{"amino_acid_changes": ["L>V", "L>Y", "P>G"], "candidate_id": "87b72431d9177e88", "condition": "A_UNMASKED", "gene": "RB1", "hla": "HLA-A24:02", "mutation_consequence": "F", "protein_position": "776"}
+{"amino_acid_changes": ["A>M", "K>Y", "E>V"], "candidate_id": "204eac692518a236", "condition": "A_UNMASKED", "gene": "REV1", "hla": "HLA-B38:01", "mutation_consequence": "F", "protein_position": "494949"}
+{"amino_acid_changes": ["R>W"], "candidate_id": "33ec8d5406c1503b", "condition": "A_UNMASKED", "gene": "TMEM143", "hla": "HLA-B27:05", "mutation_consequence": "M", "protein_position": "243,143,208"}
+{"amino_acid_changes": ["G>E"], "candidate_id": "95174c62ccdd71d5", "condition": "A_UNMASKED", "gene": "SETD1B", "hla": "HLA-B35:01", "mutation_consequence": "M", "protein_position": "249,249,249,249"}
+{"amino_acid_changes": ["G>V"], "candidate_id": "984837d7b365e4f6", "condition": "A_UNMASKED", "gene": "FAM53A", "hla": "HLA-A24:02", "mutation_consequence": "M", "protein_position": "37,37,37,37,37"}
+{"amino_acid_changes": ["V>L"], "candidate_id": "e02fab0497297e30", "condition": "A_UNMASKED", "gene": "POF1B", "hla": "HLA-A24:02", "mutation_consequence": "M", "protein_position": "173,173"}
+{"amino_acid_changes": ["E>K"], "candidate_id": "21523b3ac9ebac2b", "condition": "A_UNMASKED", "gene": "DHX30", "hla": "HLA-C04:01", "mutation_consequence": "M", "protein_position": "822850850878811"}
+{"amino_acid_changes": ["P>S"], "candidate_id": "36a4bf368c82a83d", "condition": "A_UNMASKED", "gene": "MGAT5B", "hla": "HLA-C07:01", "mutation_consequence": "M", "protein_position": "21,21,21"}
+{"amino_acid_changes": ["P>L"], "candidate_id": "f559e58fef817a43", "condition": "A_UNMASKED", "gene": "PLXNB2", "hla": "HLA-B40:01", "mutation_consequence": "M", "protein_position": "1197,1197"}
+{"amino_acid_changes": ["V>F"], "candidate_id": "db1a1d7cb769c80e", "condition": "A_UNMASKED", "gene": "ANO5", "hla": "HLA-A26:01", "mutation_consequence": "M", "protein_position": "473"}
+{"amino_acid_changes": ["G>R"], "candidate_id": "f3690924ff382253", "condition": "A_UNMASKED", "gene": "RP1L1", "hla": "HLA-A02:01", "mutation_consequence": "I", "protein_position": "1340"}
+{"amino_acid_changes": ["S>F"], "candidate_id": "21415a4b8f2d39ec", "condition": "A_UNMASKED", "gene": "SNX1", "hla": "HLA-C04:01", "mutation_consequence": "M", "protein_position": "23123113166"}
+{"amino_acid_changes": ["A>V"], "candidate_id": "0bd9c36126575042", "condition": "A_UNMASKED", "gene": "ACSM5", "hla": "HLA-B38:01", "mutation_consequence": "M", "protein_position": "30289"}
+{"amino_acid_changes": ["S>F"], "candidate_id": "6e93d4837e202755", "condition": "A_UNMASKED", "gene": "EFCAB8", "hla": "HLA-A24:02", "mutation_consequence": "M", "protein_position": "1226"}
+{"amino_acid_changes": ["L>K", "S>N", "L>F", "L>F"], "candidate_id": "2985a6df31c09987", "condition": "A_UNMASKED", "gene": "SLC45A4", "hla": "HLA-A02:01", "mutation_consequence": "F", "protein_position": "746"}
+{"amino_acid_changes": ["L>V"], "candidate_id": "85fa34c28c64ce09", "condition": "A_UNMASKED", "gene": "WDFY3", "hla": "HLA-B27:05", "mutation_consequence": "M", "protein_position": "1025"}
+{"amino_acid_changes": ["E>Q"], "candidate_id": "7018b7cd09189e2d", "condition": "A_UNMASKED", "gene": "PFKFB2", "hla": "HLA-B07:02", "mutation_consequence": "M", "protein_position": "184,184"}
+{"amino_acid_changes": ["R>W"], "candidate_id": "1c6ff84e7f3e3b44", "condition": "A_UNMASKED", "gene": "AMOT", "hla": "HLA-A11:01", "mutation_consequence": "M", "protein_position": "256,433,665,433,665"}
+{"amino_acid_changes": ["F>L"], "candidate_id": "5fd5429b65db4375", "condition": "A_UNMASKED", "gene": "OR5H2", "hla": "HLA-A02:01", "mutation_consequence": "M", "protein_position": "33,28"}
+{"amino_acid_changes": ["E>K"], "candidate_id": "dc0b0ee2ece5132c", "condition": "A_UNMASKED", "gene": "NEK7", "hla": "HLA-B40:01", "mutation_consequence": "M", "protein_position": "106,106"}
+{"amino_acid_changes": ["R>W"], "candidate_id": "309933dbaf8b296f", "condition": "A_UNMASKED", "gene": "STK11IP", "hla": "HLA-B44:02", "mutation_consequence": "M", "protein_position": "256,245"}
+{"amino_acid_changes": ["T>I"], "candidate_id": "0cf2844dc70a76f3", "condition": "A_UNMASKED", "gene": "ATP1A3", "hla": "HLA-A03:01", "mutation_consequence": "M", "protein_position": "372,372,383,385,342"}
+{"amino_acid_changes": ["E>Q"], "candidate_id": "3573c38150062764", "condition": "A_UNMASKED", "gene": "NUP205", "hla": "HLA-A02:01", "mutation_consequence": "M", "protein_position": "1010,68"}
+{"amino_acid_changes": ["L>S"], "candidate_id": "16c29a19bcc47a6b", "condition": "A_UNMASKED", "gene": "ASCC3", "hla": "HLA-C03:04", "mutation_consequence": "M", "protein_position": "1573"}
+{"amino_acid_changes": ["L>F"], "candidate_id": "d1eaa08249a3acd6", "condition": "A_UNMASKED", "gene": "HCRTR2", "hla": "HLA-A24:02", "mutation_consequence": "M", "protein_position": "160160"}
+{"amino_acid_changes": ["P>L"], "candidate_id": "f2ba7e65e19d3ffc", "condition": "A_UNMASKED", "gene": "AKAP9", "hla": "HLA-A01:01", "mutation_consequence": "M", "protein_position": "1796,1749,1807"}
+{"amino_acid_changes": ["A>T"], "candidate_id": "9e127eb6f7e40558", "condition": "A_UNMASKED", "gene": "PFAS", "hla": "HLA-B40:01", "mutation_consequence": "M", "protein_position": "925,29,40"}
+{"amino_acid_changes": ["S>I"], "candidate_id": "955b148197913232", "condition": "A_UNMASKED", "gene": "DST", "hla": "HLA-A32:01", "mutation_consequence": "M", "protein_position": "2.8763242528832e+19"}
+{"amino_acid_changes": ["R>W"], "candidate_id": "f2a53884599ba727", "condition": "A_UNMASKED", "gene": "DUOX2", "hla": "HLA-B40:02", "mutation_consequence": "M", "protein_position": "541541"}
+{"amino_acid_changes": ["Q>E"], "candidate_id": "8fd29197ece85184", "condition": "A_UNMASKED", "gene": "DCHS2", "hla": "HLA-B40:01", "mutation_consequence": "M", "protein_position": "1090,591,591"}
+{"amino_acid_changes": ["E>S"], "candidate_id": "cf1aba9748942243", "condition": "A_UNMASKED", "gene": "PHLDA1", "hla": "HLA-B07:02", "mutation_consequence": "F", "protein_position": "194,53,194"}
+{"amino_acid_changes": ["P>L"], "candidate_id": "e5e64898d1c4df77", "condition": "A_UNMASKED", "gene": "HACD3", "hla": "HLA-C04:01", "mutation_consequence": "M", "protein_position": "31,31"}
+{"amino_acid_changes": ["E>Q"], "candidate_id": "8a0e7ae0bf3a162a", "condition": "A_UNMASKED", "gene": "CCDC172", "hla": "HLA-B40:01", "mutation_consequence": "M", "protein_position": "131"}
+{"amino_acid_changes": ["L>S", "A>I"], "candidate_id": "87fa10764a73aa05", "condition": "A_UNMASKED", "gene": "ZNF417", "hla": "HLA-A24:02", "mutation_consequence": "F", "protein_position": "316,315"}
+{"candidate_id": "9fc3798ccf61868a", "condition": "B_MASKED", "hla": "HLA-A01:01", "mutant_peptide": "NNDDSGVEI", "wildtype_peptide": "NNDDSGAEI"}
+{"candidate_id": "ac50025847c79ce3", "condition": "B_MASKED", "hla": "HLA-A02:01", "mutant_peptide": "LIWKRVFIL", "wildtype_peptide": "LILKAVFGL"}
+{"candidate_id": "cd703ee0ca647fb4", "condition": "B_MASKED", "hla": "HLA-B18:01", "mutant_peptide": "PEHNMELAF", "wildtype_peptide": "PEHDMELAF"}
+{"candidate_id": "1404f90b9e95436d", "condition": "B_MASKED", "hla": "HLA-B44:02", "mutant_peptide": "IEPSGVLGRF", "wildtype_peptide": "IEPSGVLGKF"}
+{"candidate_id": "5c3e32bdf118c82b", "condition": "B_MASKED", "hla": "HLA-B35:01", "mutant_peptide": "FGAGWGWAY", "wildtype_peptide": "LGAGWGWAY"}
+{"candidate_id": "efe0d00c56dd479a", "condition": "B_MASKED", "hla": "HLA-A30:01", "mutant_peptide": "RVKKKRNK", "wildtype_peptide": "RVKEKRNK"}
+{"candidate_id": "8392ea6ff0321a81", "condition": "B_MASKED", "hla": "HLA-C07:02", "mutant_peptide": "SRYGIHDEY", "wildtype_peptide": "SRYGIHEEY"}
+{"candidate_id": "274657bad5cea8ab", "condition": "B_MASKED", "hla": "HLA-A24:02", "mutant_peptide": "GNYLTGSIIF", "wildtype_peptide": "GYTLRGSSIF"}
+{"candidate_id": "9b61bdd0c029ae40", "condition": "B_MASKED", "hla": "HLA-B15:01", "mutant_peptide": "GQTLTVTSW", "wildtype_peptide": "GQTLTVTSG"}
+{"candidate_id": "a7902532f5975e75", "condition": "B_MASKED", "hla": "HLA-A24:02", "mutant_peptide": "RFDAFVLFL", "wildtype_peptide": "RFHAFVLFL"}
+{"candidate_id": "cb8956c228456066", "condition": "B_MASKED", "hla": "HLA-A01:01", "mutant_peptide": "VTDESILSYS", "wildtype_peptide": "VTDESIPSYS"}
+{"candidate_id": "bd7ca53543b66d13", "condition": "B_MASKED", "hla": "HLA-A01:01", "mutant_peptide": "NVQFIHNGTY", "wildtype_peptide": "NMQFIHNGTY"}
+{"candidate_id": "194cd68d3dc30f5a", "condition": "B_MASKED", "hla": "HLA-B35:01", "mutant_peptide": "MANVLTLNL", "wildtype_peptide": "MAKVLTLEL"}
+{"candidate_id": "a512b7a2f92dace0", "condition": "B_MASKED", "hla": "HLA-B35:01", "mutant_peptide": "LPSILILAM", "wildtype_peptide": NaN}
+{"candidate_id": "8616df65598422a5", "condition": "B_MASKED", "hla": "HLA-A03:01", "mutant_peptide": "GLPNVFGLGR", "wildtype_peptide": "GLPNVFGLGG"}
+{"candidate_id": "9a589aa8bddbabee", "condition": "B_MASKED", "hla": "HLA-A31:01", "mutant_peptide": "GCKHSNFLR", "wildtype_peptide": "GRKHSNFLR"}
+{"candidate_id": "149465f07ecbbbf7", "condition": "B_MASKED", "hla": "HLA-C06:02", "mutant_peptide": "IYHQPTHLW", "wildtype_peptide": "IYHQPTHTN"}
+{"candidate_id": "84a2f2131343de5f", "condition": "B_MASKED", "hla": "HLA-B07:02", "mutant_peptide": "SPTSISSFAA", "wildtype_peptide": "SPTSISSSAA"}
+{"candidate_id": "0aa13419076da356", "condition": "B_MASKED", "hla": "HLA-C06:02", "mutant_peptide": "SRPLPVAAV", "wildtype_peptide": "ARPLPVAFV"}
+{"candidate_id": "8352a12da223b2d9", "condition": "B_MASKED", "hla": "HLA-A24:02", "mutant_peptide": "LHLAQHWRI", "wildtype_peptide": "SHLAQHWRI"}
+{"candidate_id": "e4e8803ca6c63fe4", "condition": "B_MASKED", "hla": "HLA-A01:01", "mutant_peptide": "MGDLFAFRFY", "wildtype_peptide": "MGDLLAFRFY"}
+{"candidate_id": "3ab0de55cdd82e83", "condition": "B_MASKED", "hla": "HLA-B07:02", "mutant_peptide": "FPGGGSTIYSI", "wildtype_peptide": "FPGGGSTIYSM"}
+{"candidate_id": "11376222e28dfc48", "condition": "B_MASKED", "hla": "HLA-B07:02", "mutant_peptide": "APITKHIRL", "wildtype_peptide": "GPITKHIRL"}
+{"candidate_id": "c7b856ed121099d9", "condition": "B_MASKED", "hla": "HLA-A02:01", "mutant_peptide": "FLDPDLTNI", "wildtype_peptide": "SLDPDLTNI"}
+{"candidate_id": "f1f9bf0701a3ca21", "condition": "B_MASKED", "hla": "HLA-C06:02", "mutant_peptide": "LRSVSPWTY", "wildtype_peptide": "LRSVSPWAY"}
+{"candidate_id": "e1b769402d5ff1e8", "condition": "B_MASKED", "hla": "HLA-C07:02", "mutant_peptide": "IKMDGTALY", "wildtype_peptide": "INMDGTALY"}
+{"candidate_id": "993daeaaa473821e", "condition": "B_MASKED", "hla": "HLA-C04:01", "mutant_peptide": "LYDQGYTSL", "wildtype_peptide": "LYDRGYTSL"}
+{"candidate_id": "e0bff3ed58aa8ebf", "condition": "B_MASKED", "hla": "HLA-A31:01", "mutant_peptide": "EASGGLRFR", "wildtype_peptide": "EASGGLRFG"}
+{"candidate_id": "cf6da84081de2877", "condition": "B_MASKED", "hla": "HLA-C07:02", "mutant_peptide": "DFIMAPTSF", "wildtype_peptide": "DFVMAPTSF"}
+{"candidate_id": "a2fc1a171e39642f", "condition": "B_MASKED", "hla": "HLA-C07:01", "mutant_peptide": "QFFNALVQF", "wildtype_peptide": "QFFNASVQF"}
+{"candidate_id": "76fcc30148da70de", "condition": "B_MASKED", "hla": "HLA-B27:05", "mutant_peptide": "GREVITKILLL", "wildtype_peptide": NaN}
+{"candidate_id": "e896d3984734d2d5", "condition": "B_MASKED", "hla": "HLA-A11:01", "mutant_peptide": "AVSPREALMK", "wildtype_peptide": "AVSPREALME"}
+{"candidate_id": "0212b3bc6af8d2d4", "condition": "B_MASKED", "hla": "HLA-B18:01", "mutant_peptide": "VETDGFIF", "wildtype_peptide": "VETDGFIS"}
+{"candidate_id": "61f43a80d8f26cd8", "condition": "B_MASKED", "hla": "HLA-A01:01", "mutant_peptide": "KPDFTDLKGPY", "wildtype_peptide": "KPDFTGLKGPY"}
+{"candidate_id": "8a5ea412bb3f516c", "condition": "B_MASKED", "hla": "HLA-A02:01", "mutant_peptide": "GIENLVFTL", "wildtype_peptide": "GIENSVFTL"}
+{"candidate_id": "ba767fa8711a273b", "condition": "B_MASKED", "hla": "HLA-C07:02", "mutant_peptide": "SRDSSPTSM", "wildtype_peptide": "SRDSSPRSM"}
+{"candidate_id": "f6e03b8123647551", "condition": "B_MASKED", "hla": "HLA-A68:01", "mutant_peptide": "FIHSNYVAK", "wildtype_peptide": "FIPSNYVAK"}
+{"candidate_id": "5e66cebeb0761492", "condition": "B_MASKED", "hla": "HLA-C06:02", "mutant_peptide": "KRNSSGPDLF", "wildtype_peptide": "KRNSSGPDLS"}
+{"candidate_id": "5a22b7986375e123", "condition": "B_MASKED", "hla": "HLA-B07:02", "mutant_peptide": "STWAGGLGL", "wildtype_peptide": "STRAGGLGL"}
+{"candidate_id": "7c59732bea09c318", "condition": "B_MASKED", "hla": "HLA-B15:01", "mutant_peptide": "SLYALFAQF", "wildtype_peptide": "SLYALFSQF"}
+{"candidate_id": "9be7eb48551788d0", "condition": "B_MASKED", "hla": "HLA-B40:01", "mutant_peptide": "MEWNGMEWNGM", "wildtype_peptide": "MKWNGMEWNGM"}
+{"candidate_id": "7522eb529e3a2991", "condition": "B_MASKED", "hla": "HLA-A01:01", "mutant_peptide": "SDLLKGMLQY", "wildtype_peptide": "SDLLKGMLEY"}
+{"candidate_id": "8a4eff69cc10a005", "condition": "B_MASKED", "hla": "HLA-A02:01", "mutant_peptide": "RLMNAFMLFA", "wildtype_peptide": "RPMNAFMLFA"}
+{"candidate_id": "eb413adf49281223", "condition": "B_MASKED", "hla": "HLA-B44:02", "mutant_peptide": "HERTHTKARF", "wildtype_peptide": "HERTHTKTRF"}
+{"candidate_id": "ef9e930edaececeb", "condition": "B_MASKED", "hla": "HLA-A02:01", "mutant_peptide": "SLIIQFTSFV", "wildtype_peptide": "SLITQFTSFV"}
+{"candidate_id": "82f8b98b3d626a4a", "condition": "B_MASKED", "hla": "HLA-B40:01", "mutant_peptide": "KEQGATKKA", "wildtype_peptide": "KEEGATKKA"}
+{"candidate_id": "995fea24ae2dbac8", "condition": "B_MASKED", "hla": "HLA-B38:01", "mutant_peptide": "EHIVLEFEKM", "wildtype_peptide": "ERIVLEFEKM"}
+{"candidate_id": "d6b6fd365647c3c0", "condition": "B_MASKED", "hla": "HLA-B07:02", "mutant_peptide": "FTYDPPTLL", "wildtype_peptide": "LTYDPPTLL"}
+{"candidate_id": "e593d8340e00c437", "condition": "B_MASKED", "hla": "HLA-B07:02", "mutant_peptide": "APNTAPTPTA", "wildtype_peptide": "APLAADTPTA"}
+{"candidate_id": "8a58862a7b4c3041", "condition": "B_MASKED", "hla": "HLA-A24:02", "mutant_peptide": "AFQIAMKLL", "wildtype_peptide": "AFQIAMKWL"}

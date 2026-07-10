@@ -1,98 +1,60 @@
 # Epicurus Neo
 
-Epicurus Neo is a competition-grade neoantigen ranking system for the prescribed
-hackathon task: given patient tumor data, rank candidate neoantigens so the final
-submitted peptide set maximizes experimentally validated T-cell responses.
+Epicurus prioritizes at most 20 neoantigen candidates for a personalized cancer vaccine. The product
+target is vaccine-inducible response (Event B), not pre-existing T-cell reactivity. Candidate
+generation remains the responsibility of pVACtools; Epicurus owns gating, calibrated ranking,
+portfolio selection, and patient-level abstention.
 
-This repository starts with the hard part: a fair benchmark and training harness.
-The first target is not a UI or report generator. It is a leakage-controlled,
-top-k-optimized model development loop that can prove whether a method beats
-existing neoantigen ranking baselines.
+The current milestone is instrumentation only. It trains no model, fits no ranker, proposes no
+feature, and does not touch the external TESLA, 2025 multimer, or Sijbrandij acceptance sets.
 
-## Quantitative Goal
+## Registered evaluation contract
 
-Primary goal:
+- Primary: patient-level mean `hits@20`, including zero-positive patients as zero.
+- Co-primary: capture fraction, excluding zero-positive patients as unevaluable.
+- Clinical gate and eventual headline: `P(≥1 hit in top 20)`.
+- Diagnostics: `precision@20`, MRR, unreachable patients, candidate-list random expectation, and
+  reranking headroom.
+- Every result carries a 20,000-resample paired bootstrap interval against a named baseline.
+- Ties always break on `md5(mutant_peptide|hla_allele)`; source row order never decides membership.
+- Labels have three states: `POSITIVE`, `TESTED_NEGATIVE`, and `UNTESTED`.
+- A hand-reasoned or LLM-derived rule cannot ship unless it beats PRIME on the same rows with a paired
+  confidence interval excluding zero.
 
-```text
-Improve validated hits@20 and precision@20 over strong public baselines on
-locked held-out neoantigen immunogenicity benchmarks.
+`benchmark.scorecard.scorecard()` is the reporting path. It emits all five metrics, paired deltas,
+retained sample sizes, the candidate-universe fingerprint and random baseline, unreachable-patient
+count, current-n MDE, and a computed `ACCEPT`, `CONSISTENT_WITH_NO_EFFECT`, or `REJECT` verdict.
+
+## Reproduce Milestone 1
+
+The official IMPROVE repository contains both required archives. A normal clone is sufficient:
+
+```bash
+git clone https://github.com/SRHgroup/IMPROVE_paper.git /tmp/IMPROVE_paper
+python scripts/milestone_1.py /tmp/IMPROVE_paper verify
+pytest -q
 ```
 
-Primary locked benchmarks:
+Generate the ten blind masking-ablation question sets with:
 
-- TESLA / Wells et al. 2020
-- Gartner/NCI official held-out sets
-- External held-out datasets such as BigMHC `im_test`, ITSNdb-style sets, or
-  study-level CEDAR/NEPdb/dbPepNeo holdouts after strict deduplication
+```bash
+python scripts/milestone_1.py /tmp/IMPROVE_paper generate-ablation \
+  artifacts/milestone_1/masking_ablation
+```
 
-Primary metrics:
+The frozen-score results are in
+[`docs/milestone_1_reaudit.md`](docs/milestone_1_reaudit.md). Historical research iterations remain
+in [`docs/benchmark_iterations.md`](docs/benchmark_iterations.md); they are a record, not the current
+evaluation contract.
 
-- `hits@20`
-- `precision@20`
-- `recall@20`
-- `ndcg@20`
-- `mrr`
-- calibration error for reported probabilities
+## Benchmark roles
 
-AUC is tracked only as a secondary diagnostic because the deliverable is a
-ranked peptide list, not a generic binary classifier.
+- IMPROVE official five-fold patient CV: primary Event-A component/ranking regression.
+- BigMHC `im_test`: HLA-grouped component regression only.
+- Gartner/NCI Nmers: frozen TIL-reactivity component regression.
+- TESLA and the 2025 multimer screen: external domain-shift sets, opened once per later milestone.
+- Curated vaccine trials: Event-B validation target.
+- Sijbrandij: end-to-end acceptance test only; never fitted and never treated as a patient benchmark.
 
-## Method Thesis
-
-The core bet is not another single immunogenicity predictor. Epicurus Neo trains
-a top-k ranker that learns when existing predictors fail.
-
-Initial model stack:
-
-1. Presentation gate
-2. Immunogenicity ranker
-3. False-positive / dud detector
-4. Probability calibrator
-5. Final top-20 selector
-
-The highest-priority feature families are:
-
-- existing predictor scores: NetMHCpan/MHCflurry/BigMHC/PRIME/DeepImmuno/pVAC-style
-- expression and clonality
-- mutant-vs-wildtype binding and embedding deltas
-- self-similarity / foreignness
-- known reactive and known failed epitope neighborhoods
-- anchor-vs-TCR-facing mutation position
-- model disagreement and out-of-domain indicators
-
-## Non-Negotiables
-
-- No random row splits for headline claims.
-- Unknown/unassayed candidates are not negatives.
-- Locked test sets are not used for feature search, threshold tuning, or model
-  selection.
-- Report top-k patient/group-level metrics, not just pooled AUC.
-- Every benchmark run records data versions, split definitions, feature set, and
-  model config.
-
-## Current Hard-Part Status
-
-Implemented:
-
-- canonical schema validation
-- grouped top-k metrics
-- exact train/test leakage checks
-- baseline score generation
-- first-pass immunogenicity ranker and dud-risk model
-- mutant-vs-wildtype contrastive features
-- top-k portfolio selection
-- grouped cross-validation
-- public dataset manifest and source-table normalizers
-
-See [docs/data_workflow.md](docs/data_workflow.md) for the data ingestion and
-benchmark commands.
-
-See [docs/download_checklist.md](docs/download_checklist.md) for exact source
-links and [docs/auto_research.md](docs/auto_research.md) for the LLM-guided
-experiment loop.
-
-See [docs/system_architecture.md](docs/system_architecture.md) for the full
-WES/RNA-to-top-20 product boundary and benchmark hierarchy.
-
-Current benchmark iterations are tracked in
-[docs/benchmark_iterations.md](docs/benchmark_iterations.md).
+See [`docs/system_architecture.md`](docs/system_architecture.md) for the product boundary and
+[`docs/data_workflow.md`](docs/data_workflow.md) for the legacy ingestion commands.

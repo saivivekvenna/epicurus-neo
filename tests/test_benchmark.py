@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import pytest
 
@@ -204,6 +206,8 @@ def test_score_report_cli_writes_multiple_scores(tmp_path):
     table = pd.DataFrame(
         {
             "patient_id": ["p1", "p1", "p1"],
+            "mutant_peptide": ["AAAAAAAAA", "CCCCCCCCC", "DDDDDDDDD"],
+            "hla_allele": ["HLA-A*02:01"] * 3,
             "label": ["positive", "negative", "positive"],
             "score_a": [0.9, 0.1, 0.8],
             "score_b": [0.1, 0.9, 0.8],
@@ -228,4 +232,6 @@ def test_score_report_cli_writes_multiple_scores(tmp_path):
     )
     assert cmd_score_report(args) == 0
     assert output_path.exists()
-    assert "score_a" in output_path.read_text()
+    payload = json.loads(output_path.read_text())
+    assert payload["baseline_col"] == "score_a"
+    assert payload["benchmarks"][1]["scorecard"]["hits@20"]["delta_ci"]
