@@ -517,7 +517,13 @@ def test_audit_reports_peptide_patient_study_counts_and_insufficient_data():
     assert audit["sample_sizes"]["study_n"] == 1
     assert audit["patients_with_event_b_positive"] == 1
     assert audit["candidates_where_event_a_and_b_differ"] == 0
-    assert audit["model_readiness"]["decision"] == "INSUFFICIENT_DATA_DO_NOT_FIT_RECOGNITION_MODEL"
+    # A nonzero-but-sub-threshold Event-B corpus resolves to the intermediate verdict, not the
+    # zero-Event-B "insufficient" state, and is still not sufficient for a general model.
+    assert (
+        audit["model_readiness"]["decision"]
+        == "EVENT_B_VERTICAL_SLICE_VALIDATED_NOT_YET_SUFFICIENT_FOR_GENERAL_MODEL"
+    )
+    assert audit["model_readiness"]["sufficient_for_recognition_model_development"] is False
     assert "not proof of clinical benefit" in render_audit_markdown(audit)
 
 

@@ -1,0 +1,746 @@
+{
+  "adapter_coverage": [
+    {
+      "adapter_name": "improve_event_a",
+      "adapter_version": "1.0.0",
+      "known_limitations": [
+        "Event-A pre-existing reactivity only; not vaccine-inducible Event B"
+      ],
+      "mapping_assumptions": [
+        "response=0 is an explicitly screened non-reactive candidate"
+      ],
+      "missing_fields": [
+        "vaccine",
+        "clinical_outcome",
+        "vaccination schedule"
+      ],
+      "source_name": "IMPROVE official CV",
+      "source_version": "paper-release",
+      "supported_entities": [
+        "studies",
+        "patients",
+        "candidates",
+        "assays",
+        "provenance"
+      ],
+      "supported_event_types": [
+        "EVENT_A_PREEXISTING_REACTIVITY"
+      ]
+    },
+    {
+      "adapter_name": "braun_rcc_event_b",
+      "adapter_version": "1.0.0",
+      "known_limitations": [
+        "Per-peptide HLA restriction is a prediction (best short epitope), not experimentally deconvolved; it is not stored as the assay restriction.",
+        "Immunogenicity is measured after in vitro peptide stimulation and pool deconvolution of the post-vaccine (week-16) leukapheresis: one post-vaccine readout per peptide.",
+        "Patient HLA genotypes are absent from the public supplement; patient hla_alleles left empty (the HLA-subset check is thereby skipped rather than fabricated).",
+        "CD4 vs CD8 attribution is pool-level (Extended Data Fig. 4), not per-peptide; the long vaccine peptide's mhc_class is left UNKNOWN.",
+        "Absolute vaccination/sample calendar dates are de-identified (relative months only)."
+      ],
+      "mapping_assumptions": [
+        "A peptide is POSITIVE iff P<0.05 two-sided t-test AND mean IFN-gamma spot count is at least 3x the no-stim DMSO control (the paper's rule); every other assayed peptide is TESTED_NEGATIVE because it was explicitly in the deconvolution denominator.",
+        "All assayed vaccine peptides are EVENT_B de-novo: the paper states 'no pre-existing immune responses were detected' and ex-vivo week-0 baselines are background.",
+        "The long synthetic vaccine peptide is the tested entity (mutant_peptide); mhc_class UNKNOWN avoids imposing a spurious class-I length constraint on a >=20mer."
+      ],
+      "missing_fields": [
+        "transcript",
+        "wildtype_peptide",
+        "patient_hla_genotype",
+        "per_peptide_clinical_outcome"
+      ],
+      "source_name": "Braun 2025 RCC NeoVax personalized neoantigen vaccine",
+      "source_version": "PMC11903305/Nature-2025",
+      "supported_entities": [
+        "studies",
+        "patients",
+        "vaccines",
+        "candidates",
+        "assays",
+        "provenance"
+      ],
+      "supported_event_types": [
+        "EVENT_B_VACCINE_INDUCED_RESPONSE"
+      ]
+    }
+  ],
+  "assay_type_breakdown": {
+    "ELISPOT": 129,
+    "OTHER": 17082
+  },
+  "cancer_type_coverage": {
+    "Basket": 20,
+    "bladder": 24,
+    "clear cell renal cell carcinoma": 9,
+    "melanoma": 26
+  },
+  "candidate_linkage_rate": 1.0,
+  "candidates_tested_by_multiple_assays": 0,
+  "candidates_where_event_a_and_b_differ": 0,
+  "candidates_with_conflicting_assays": 0,
+  "event_counts": {
+    "EVENT_A_PREEXISTING_REACTIVITY": 17082,
+    "EVENT_B_VACCINE_INDUCED_RESPONSE": 129
+  },
+  "evidence_source_coverage": {},
+  "funnel_linkage_rate": 0.0073654390934844195,
+  "hla_coverage": {
+    "HLA-A01:01": 794,
+    "HLA-A02:01": 1560,
+    "HLA-A02:05": 70,
+    "HLA-A03:01": 1243,
+    "HLA-A11:01": 434,
+    "HLA-A24:02": 912,
+    "HLA-A26:01": 551,
+    "HLA-A30:01": 276,
+    "HLA-A30:02": 62,
+    "HLA-A31:01": 603,
+    "HLA-A32:01": 342,
+    "HLA-A68:01": 206,
+    "HLA-B07:02": 1778,
+    "HLA-B08:01": 853,
+    "HLA-B13:02": 114,
+    "HLA-B15:01": 238,
+    "HLA-B18:01": 229,
+    "HLA-B27:05": 354,
+    "HLA-B35:01": 444,
+    "HLA-B35:03": 199,
+    "HLA-B37:01": 30,
+    "HLA-B38:01": 681,
+    "HLA-B40:01": 798,
+    "HLA-B40:02": 193,
+    "HLA-B44:02": 597,
+    "HLA-B44:03": 301,
+    "HLA-B44:05": 45,
+    "HLA-B51:01": 206,
+    "HLA-B57:01": 38,
+    "HLA-C02:02": 515,
+    "HLA-C03:04": 442,
+    "HLA-C04:01": 665,
+    "HLA-C05:01": 25,
+    "HLA-C06:02": 368,
+    "HLA-C07:01": 900,
+    "HLA-C07:02": 454
+  },
+  "mhc_class_breakdown": {
+    "CLASS_I": 17520,
+    "UNKNOWN": 130
+  },
+  "missing_data_rates": {
+    "assays": {
+      "assay_id": 0.0,
+      "assay_type": 0.0,
+      "candidate_id": 0.0,
+      "event_type": 0.0,
+      "explicit_assay_inclusion": 0.0,
+      "patient_id": 0.0,
+      "positivity_threshold": 0.9925047934460519,
+      "provenance_id": 0.0,
+      "qualitative_result": 0.9925047934460519,
+      "quantitative_result": 0.9925047934460519,
+      "relative_to_vaccine": 0.0,
+      "replicate_information": 0.9925047934460519,
+      "response_label": 0.0,
+      "result_units": 0.9925047934460519,
+      "review_status": 0.0,
+      "sample_date": 1.0,
+      "sample_type": 0.9925047934460519,
+      "schema_version": 0.0,
+      "source_interpretation": 0.0,
+      "stimulation_protocol": 0.9925047934460519,
+      "study_id": 0.0,
+      "timepoint": 0.0,
+      "vaccine_id": 0.9925047934460519
+    },
+    "candidate_funnel_links": {
+      "candidate_id": 0.0,
+      "functional_assay": 0.0,
+      "funnel_link_id": 0.0,
+      "hla_included": 0.0,
+      "mutation_called": 0.0,
+      "patient_id": 0.0,
+      "peptide_generated": 0.0,
+      "presentation_candidate": 0.0,
+      "provenance_id": 0.0,
+      "ranking_stage": 0.0,
+      "recognition_scored": 0.0,
+      "schema_version": 0.0,
+      "study_id": 0.0,
+      "survives_gating": 0.0,
+      "top_k": 0.0,
+      "transcript_represented": 0.0,
+      "vaccine_inclusion": 0.0
+    },
+    "candidates": {
+      "candidate_id": 0.0,
+      "candidate_source": 0.0,
+      "gene": 0.0,
+      "generation_provenance": 1.0,
+      "genomic_variant": 0.0,
+      "hla_alleles": 0.0073654390934844195,
+      "mhc_class": 0.0,
+      "mutant_peptide": 0.0,
+      "mutant_wildtype_verified": 0.0,
+      "patient_id": 0.0,
+      "peptide_length": 0.0,
+      "protein_change": 0.0,
+      "provenance_id": 0.0,
+      "sample_date": 1.0,
+      "sample_id": 0.0073654390934844195,
+      "schema_version": 0.0,
+      "study_id": 0.0,
+      "timepoint": 1.0,
+      "transcript": 0.0073654390934844195,
+      "vaccine_inclusion": 0.0,
+      "vaccine_inclusion_origin": 0.0,
+      "wildtype_peptide": 0.0073654390934844195
+    },
+    "clinical_outcomes": {
+      "assessment_date": 1.0,
+      "outcome_id": 1.0,
+      "outcome_type": 1.0,
+      "outcome_value": 1.0,
+      "overall_survival": 1.0,
+      "patient_id": 1.0,
+      "progression_free_survival": 1.0,
+      "provenance_id": 1.0,
+      "recurrence": 1.0,
+      "response_criteria": 1.0,
+      "schema_version": 1.0,
+      "study_id": 1.0
+    },
+    "patients": {
+      "cancer_type": 0.0,
+      "disease_stage": 0.8860759493670886,
+      "hla_alleles": 0.11392405063291139,
+      "patient_id": 0.0,
+      "prior_therapies": 1.0,
+      "provenance_id": 0.0,
+      "schema_version": 0.0,
+      "source_patient_id": 0.0,
+      "study_id": 0.0,
+      "treatment_context": 0.8860759493670886,
+      "tumor_context": 1.0
+    },
+    "provenance": {
+      "column": 1.0,
+      "entity_id": 0.0,
+      "entity_type": 0.0,
+      "extraction_confidence": 0.0,
+      "extraction_method": 0.0,
+      "field_name": 0.0,
+      "figure": 1.0,
+      "page": 1.0,
+      "provenance_id": 0.0,
+      "review_status": 0.0,
+      "row": 0.0,
+      "schema_version": 0.0,
+      "source_document": 0.0,
+      "source_fragment": 0.0,
+      "supplementary_file": 1.0,
+      "table": 0.9884853603603604,
+      "value_origin": 0.0
+    },
+    "recognition_evidence": {
+      "assay_directness": 1.0,
+      "assay_or_model_version": 1.0,
+      "availability_status": 1.0,
+      "candidate_id": 1.0,
+      "candidate_specificity": 1.0,
+      "directionality": 1.0,
+      "evidence_family": 1.0,
+      "evidence_id": 1.0,
+      "evidence_quality": 1.0,
+      "functional_relevance": 1.0,
+      "information_timing": 1.0,
+      "measured_or_predicted": 1.0,
+      "patient_id": 1.0,
+      "patient_specificity": 1.0,
+      "provenance_id": 1.0,
+      "replication_status": 1.0,
+      "schema_version": 1.0,
+      "source_completeness": 1.0,
+      "source_dataset": 1.0,
+      "temporal_clarity": 1.0,
+      "uncertainty": 1.0,
+      "units": 1.0,
+      "vaccine_relevance": 1.0,
+      "value": 1.0
+    },
+    "studies": {
+      "adjuvant": 0.5,
+      "cancer_type": 0.0,
+      "provenance_id": 0.0,
+      "publication_ids": 0.5,
+      "schema_version": 0.0,
+      "source_checksums": 0.0,
+      "source_manifest_id": 0.0,
+      "source_paths": 0.0,
+      "source_urls": 0.5,
+      "study_id": 0.0,
+      "title": 0.0,
+      "trial_id": 0.5,
+      "vaccination_schedule": 0.5,
+      "vaccine_platform": 0.5
+    },
+    "vaccines": {
+      "candidate_count": 0.0,
+      "concurrent_therapy": 0.0,
+      "dose": 1.0,
+      "formulation": 0.0,
+      "mhc_class_intent": 0.0,
+      "patient_id": 0.0,
+      "provenance_id": 0.0,
+      "relative_schedule": 1.0,
+      "schema_version": 0.0,
+      "study_id": 0.0,
+      "vaccination_dates": 1.0,
+      "vaccine_id": 0.0,
+      "vaccine_platform": 0.0
+    }
+  },
+  "model_readiness": {
+    "decision": "EVENT_B_VERTICAL_SLICE_VALIDATED_NOT_YET_SUFFICIENT_FOR_GENERAL_MODEL",
+    "event_b_patient_n": 9,
+    "event_b_positive_patient_n": 9,
+    "event_b_study_n": 1,
+    "registered_minimums": {
+      "event_b_patients": 100,
+      "event_b_studies": 2,
+      "positive_patients": 30
+    },
+    "sufficient_for_recognition_model_development": false
+  },
+  "patient_label_counts": [
+    {
+      "POSITIVE": 5,
+      "TESTED_NEGATIVE": 7,
+      "patient_id": "braun_rcc_2025:101"
+    },
+    {
+      "POSITIVE": 2,
+      "TESTED_NEGATIVE": 6,
+      "patient_id": "braun_rcc_2025:102"
+    },
+    {
+      "POSITIVE": 3,
+      "TESTED_NEGATIVE": 13,
+      "patient_id": "braun_rcc_2025:104"
+    },
+    {
+      "POSITIVE": 14,
+      "TESTED_NEGATIVE": 5,
+      "patient_id": "braun_rcc_2025:105"
+    },
+    {
+      "POSITIVE": 5,
+      "TESTED_NEGATIVE": 11,
+      "patient_id": "braun_rcc_2025:106"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 5,
+      "patient_id": "braun_rcc_2025:107"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 8,
+      "patient_id": "braun_rcc_2025:108"
+    },
+    {
+      "POSITIVE": 10,
+      "TESTED_NEGATIVE": 6,
+      "patient_id": "braun_rcc_2025:109"
+    },
+    {
+      "POSITIVE": 8,
+      "TESTED_NEGATIVE": 7,
+      "patient_id": "braun_rcc_2025:110"
+    },
+    {
+      "POSITIVE": 3,
+      "TESTED_NEGATIVE": 180,
+      "patient_id": "improve:BC-1233"
+    },
+    {
+      "POSITIVE": 2,
+      "TESTED_NEGATIVE": 194,
+      "patient_id": "improve:BC-1249"
+    },
+    {
+      "POSITIVE": 15,
+      "TESTED_NEGATIVE": 181,
+      "patient_id": "improve:BC-1849"
+    },
+    {
+      "POSITIVE": 3,
+      "TESTED_NEGATIVE": 114,
+      "patient_id": "improve:BC-1994"
+    },
+    {
+      "POSITIVE": 11,
+      "TESTED_NEGATIVE": 398,
+      "patient_id": "improve:BC-2131"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 193,
+      "patient_id": "improve:BC-2278"
+    },
+    {
+      "POSITIVE": 5,
+      "TESTED_NEGATIVE": 198,
+      "patient_id": "improve:BC-2389"
+    },
+    {
+      "POSITIVE": 6,
+      "TESTED_NEGATIVE": 408,
+      "patient_id": "improve:BC-2849"
+    },
+    {
+      "POSITIVE": 11,
+      "TESTED_NEGATIVE": 300,
+      "patient_id": "improve:BC-2937"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 185,
+      "patient_id": "improve:BC-3529"
+    },
+    {
+      "POSITIVE": 5,
+      "TESTED_NEGATIVE": 571,
+      "patient_id": "improve:BC-40"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 198,
+      "patient_id": "improve:BC-471"
+    },
+    {
+      "POSITIVE": 13,
+      "TESTED_NEGATIVE": 563,
+      "patient_id": "improve:BC-5037"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 180,
+      "patient_id": "improve:BC-5122"
+    },
+    {
+      "POSITIVE": 4,
+      "TESTED_NEGATIVE": 193,
+      "patient_id": "improve:BC-522"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 189,
+      "patient_id": "improve:BC-5338"
+    },
+    {
+      "POSITIVE": 19,
+      "TESTED_NEGATIVE": 227,
+      "patient_id": "improve:BC-6229"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 183,
+      "patient_id": "improve:BC-6428"
+    },
+    {
+      "POSITIVE": 6,
+      "TESTED_NEGATIVE": 207,
+      "patient_id": "improve:BC-6800"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 188,
+      "patient_id": "improve:BC-7577"
+    },
+    {
+      "POSITIVE": 6,
+      "TESTED_NEGATIVE": 191,
+      "patient_id": "improve:BC-7729"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 189,
+      "patient_id": "improve:BC-8728"
+    },
+    {
+      "POSITIVE": 9,
+      "TESTED_NEGATIVE": 245,
+      "patient_id": "improve:BC-9517"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 155,
+      "patient_id": "improve:BC-9723"
+    },
+    {
+      "POSITIVE": 2,
+      "TESTED_NEGATIVE": 198,
+      "patient_id": "improve:Neye-01"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 199,
+      "patient_id": "improve:Neye-02"
+    },
+    {
+      "POSITIVE": 6,
+      "TESTED_NEGATIVE": 405,
+      "patient_id": "improve:Neye-03"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 200,
+      "patient_id": "improve:Neye-06"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 200,
+      "patient_id": "improve:Neye-11"
+    },
+    {
+      "POSITIVE": 12,
+      "TESTED_NEGATIVE": 188,
+      "patient_id": "improve:Neye-14"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 248,
+      "patient_id": "improve:Neye-15"
+    },
+    {
+      "POSITIVE": 2,
+      "TESTED_NEGATIVE": 198,
+      "patient_id": "improve:Neye-16"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 193,
+      "patient_id": "improve:Neye-17"
+    },
+    {
+      "POSITIVE": 12,
+      "TESTED_NEGATIVE": 573,
+      "patient_id": "improve:Neye-22"
+    },
+    {
+      "POSITIVE": 6,
+      "TESTED_NEGATIVE": 194,
+      "patient_id": "improve:Neye-24"
+    },
+    {
+      "POSITIVE": 8,
+      "TESTED_NEGATIVE": 192,
+      "patient_id": "improve:Neye-25"
+    },
+    {
+      "POSITIVE": 26,
+      "TESTED_NEGATIVE": 268,
+      "patient_id": "improve:Neye-26"
+    },
+    {
+      "POSITIVE": 3,
+      "TESTED_NEGATIVE": 148,
+      "patient_id": "improve:Neye-27"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 199,
+      "patient_id": "improve:Neye-29"
+    },
+    {
+      "POSITIVE": 16,
+      "TESTED_NEGATIVE": 184,
+      "patient_id": "improve:Neye-31"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 193,
+      "patient_id": "improve:Neye-34"
+    },
+    {
+      "POSITIVE": 9,
+      "TESTED_NEGATIVE": 151,
+      "patient_id": "improve:Neye-35"
+    },
+    {
+      "POSITIVE": 16,
+      "TESTED_NEGATIVE": 184,
+      "patient_id": "improve:Neye-36"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 199,
+      "patient_id": "improve:Neye-37"
+    },
+    {
+      "POSITIVE": 13,
+      "TESTED_NEGATIVE": 187,
+      "patient_id": "improve:Neye-40"
+    },
+    {
+      "POSITIVE": 20,
+      "TESTED_NEGATIVE": 294,
+      "patient_id": "improve:Neye-42"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 158,
+      "patient_id": "improve:Neye-43"
+    },
+    {
+      "POSITIVE": 19,
+      "TESTED_NEGATIVE": 180,
+      "patient_id": "improve:Neye-45"
+    },
+    {
+      "POSITIVE": 2,
+      "TESTED_NEGATIVE": 198,
+      "patient_id": "improve:Neye-46"
+    },
+    {
+      "POSITIVE": 14,
+      "TESTED_NEGATIVE": 186,
+      "patient_id": "improve:Neye-47"
+    },
+    {
+      "POSITIVE": 5,
+      "TESTED_NEGATIVE": 281,
+      "patient_id": "improve:RH-08"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 172,
+      "patient_id": "improve:RH-10"
+    },
+    {
+      "POSITIVE": 17,
+      "TESTED_NEGATIVE": 816,
+      "patient_id": "improve:RH-11"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 234,
+      "patient_id": "improve:RH-13"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 70,
+      "patient_id": "improve:RH-15"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 195,
+      "patient_id": "improve:RH-16"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 209,
+      "patient_id": "improve:RH-17"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 174,
+      "patient_id": "improve:RH-18"
+    },
+    {
+      "POSITIVE": 3,
+      "TESTED_NEGATIVE": 438,
+      "patient_id": "improve:RH-19"
+    },
+    {
+      "POSITIVE": 2,
+      "TESTED_NEGATIVE": 343,
+      "patient_id": "improve:RH-21"
+    },
+    {
+      "POSITIVE": 0,
+      "TESTED_NEGATIVE": 79,
+      "patient_id": "improve:RH-22"
+    },
+    {
+      "POSITIVE": 7,
+      "TESTED_NEGATIVE": 85,
+      "patient_id": "improve:RH-24"
+    },
+    {
+      "POSITIVE": 8,
+      "TESTED_NEGATIVE": 67,
+      "patient_id": "improve:RH-25"
+    },
+    {
+      "POSITIVE": 4,
+      "TESTED_NEGATIVE": 71,
+      "patient_id": "improve:RH-27"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 82,
+      "patient_id": "improve:RH-29"
+    },
+    {
+      "POSITIVE": 1,
+      "TESTED_NEGATIVE": 74,
+      "patient_id": "improve:RH-30"
+    },
+    {
+      "POSITIVE": 16,
+      "TESTED_NEGATIVE": 1075,
+      "patient_id": "improve:RH-31"
+    },
+    {
+      "POSITIVE": 29,
+      "TESTED_NEGATIVE": 427,
+      "patient_id": "improve:RH-33"
+    },
+    {
+      "POSITIVE": 6,
+      "TESTED_NEGATIVE": 66,
+      "patient_id": "improve:RH-34"
+    },
+    {
+      "POSITIVE": 5,
+      "TESTED_NEGATIVE": 119,
+      "patient_id": "improve:RH-35"
+    }
+  ],
+  "patients_with_event_b_positive": 9,
+  "patients_with_only_tested_negatives": 0,
+  "patients_without_candidate_resolved_assays": 0,
+  "response_counts": {
+    "POSITIVE": 519,
+    "TESTED_NEGATIVE": 16692
+  },
+  "review_queue_n": 439,
+  "review_status_counts": {
+    "ACCEPTED": 17211
+  },
+  "sample_sizes": {
+    "assay_n": 17211,
+    "candidate_n": 17650,
+    "patient_n": 79,
+    "peptide_n": 15423,
+    "study_n": 2,
+    "vaccine_n": 9
+  },
+  "study_label_counts": [
+    {
+      "POSITIVE": 61,
+      "TESTED_NEGATIVE": 68,
+      "study_id": "braun_rcc_2025"
+    },
+    {
+      "POSITIVE": 458,
+      "TESTED_NEGATIVE": 16624,
+      "study_id": "improve"
+    }
+  ],
+  "unresolved_contradictions": 0,
+  "vaccine_timepoint_coverage": {
+    "POST_VACCINE": 129,
+    "UNKNOWN": 17082
+  }
+}

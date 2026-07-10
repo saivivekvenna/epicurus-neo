@@ -123,6 +123,14 @@ def corpus_audit(
         and len(event_b_studies) >= minimum_event_b_studies
         and len(positive_patients) >= minimum_positive_patients
     )
+    if sufficient:
+        decision = "SUFFICIENT_FOR_BASELINE_DIAGNOSTICS"
+    elif len(event_b_patients) > 0:
+        # A validated but sub-threshold Event-B corpus: nonzero, provenance-backed, leakage-safe,
+        # yet still below the registered minimums for even transparent recognition diagnostics.
+        decision = "EVENT_B_VERTICAL_SLICE_VALIDATED_NOT_YET_SUFFICIENT_FOR_GENERAL_MODEL"
+    else:
+        decision = "INSUFFICIENT_DATA_DO_NOT_FIT_RECOGNITION_MODEL"
     return {
         "sample_sizes": {
             "peptide_n": int(candidates.mutant_peptide.nunique()),
@@ -176,11 +184,7 @@ def corpus_audit(
                 "event_b_studies": minimum_event_b_studies,
                 "positive_patients": minimum_positive_patients,
             },
-            "decision": (
-                "SUFFICIENT_FOR_BASELINE_DIAGNOSTICS"
-                if sufficient
-                else "INSUFFICIENT_DATA_DO_NOT_FIT_RECOGNITION_MODEL"
-            ),
+            "decision": decision,
         },
     }
 

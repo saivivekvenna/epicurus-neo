@@ -21,3 +21,18 @@ jobs:
         run: pytest -q tests/test_milestone1_benchmark.py
       - name: Run repository regression suite
         run: pytest -q
+
+  milestone-5a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install Epicurus
+        run: python -m pip install -e '.[dev]'
+      - name: Ingest Braun RCC Event-B slice (fetches open-access supplements)
+        run: python scripts/event_b_corpus.py import-braun-rcc
+      - name: Enforce Braun Event-B reconciliation and label-integrity gates
+        run: pytest -q tests/test_braun_rcc_event_b.py

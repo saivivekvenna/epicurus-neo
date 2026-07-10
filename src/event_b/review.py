@@ -30,3 +30,8 @@ def write_review_queue(issues: list[ReviewIssue], path: str | Path) -> None:
     rows = sorted((asdict(issue) for issue in issues), key=lambda row: row["issue_id"])
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     Path(path).write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows))
+
+
+def read_review_queue(path: str | Path) -> list[ReviewIssue]:
+    text = Path(path).read_text() if Path(path).exists() else ""
+    return [ReviewIssue(**json.loads(line)) for line in text.splitlines() if line.strip()]
