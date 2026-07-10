@@ -58,6 +58,10 @@ def render_transfer_audit_markdown(audit: dict) -> str:
         f"- Frozen Event-A teacher: `{teacher['model']}` on the `{teacher['tier']}` tier, trained on "
         f"{teacher['n_event_a']} IMPROVE Event-A rows ({teacher['n_event_a_positive']} positive). "
         "Labels never merged; the teacher never sees an Event-B row.",
+        f"- Sanity: in-distribution 5-fold AUROC on Event-A = "
+        f"{_fmt(teacher.get('in_distribution_auroc'))} (a genuine teacher); its score pools to AUROC = "
+        f"{_fmt(teacher.get('event_b_pooled_auroc'))} on Event-B. Real Event-A signal that does not "
+        "generalize to Event-B - not a weak teacher.",
         "- Event-A is short class-I (8-11mer); most Event-B is long SLP. The teacher score is added as "
         "one feature to the Event-B-only model and is the sole candidate-vs-baseline difference.",
     ]

@@ -24,4 +24,5 @@ Baseline = frozen M6A `logistic(core)`; candidate = `logistic(core + event_a_tea
 
 ## Teacher
 - Frozen Event-A teacher: `logistic` on the `core` tier, trained on 17082 IMPROVE Event-A rows (458 positive). Labels never merged; the teacher never sees an Event-B row.
+- Sanity: in-distribution 5-fold AUROC on Event-A = 0.6425 (a genuine teacher); its score pools to AUROC = 0.4716 on Event-B. Real Event-A signal that does not generalize to Event-B - not a weak teacher.
 - Event-A is short class-I (8-11mer); most Event-B is long SLP. The teacher score is added as one feature to the Event-B-only model and is the sole candidate-vs-baseline difference.

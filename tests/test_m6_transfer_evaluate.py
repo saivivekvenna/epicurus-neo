@@ -20,6 +20,9 @@ def test_transfer_track_reports_declared_gate_and_per_fold_auroc():
     assert 0 <= result["folds_improved"] <= 4
     # The candidate differs from the baseline by exactly the one Event-A teacher feature.
     assert result["teacher"]["n_event_a"] == 17082
+    # The teacher must be genuine in its own domain, else "no transfer" is trivial.
+    assert result["teacher"]["in_distribution_auroc"] > 0.5
+    assert "event_b_pooled_auroc" in result["teacher"]
     assert "macro_delta_hits_at_k" in result
 
 

@@ -13,6 +13,8 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import StratifiedKFold
 
 from epicurus_neo.m6.dataset import completeness_report
 from epicurus_neo.m6.evaluate import macro_paired_delta
@@ -106,6 +108,44 @@ def _transfer_verdict(
     return "CONSISTENT_WITH_NO_EFFECT_TRANSFER"
 
 
+def _teacher_diagnostics(
+    event_a_frame: pd.DataFrame,
+    teacher: FrozenTeacher,
+    scored_event_b: pd.DataFrame,
+    *,
+    tier: str,
+    model_name: str,
+    seed: int,
+) -> dict:
+    """Qualify the null: is the teacher real in its own domain, and does its score transfer at all?
+
+    ``in_distribution_auroc`` (5-fold CV on Event-A) separates "weak teacher" from "genuine teacher
+    that fails to generalize"; ``event_b_pooled_auroc`` is the teacher score's raw discrimination on
+    Event-B.
+    """
+    matrix = build_feature_matrix(event_a_frame, tier)
+    cols = list(teacher.feature_cols)
+    y = event_a_frame.label.to_numpy()
+    aucs = []
+    for train_idx, test_idx in StratifiedKFold(n_splits=5, shuffle=True, random_state=seed).split(
+        matrix[cols], y
+    ):
+        model = _teacher_model(model_name, seed)
+        model.fit(matrix.iloc[train_idx][cols], y[train_idx])
+        proba = model.predict_proba(matrix.iloc[test_idx][cols])[:, 1]
+        aucs.append(roc_auc_score(y[test_idx], proba))
+    try:
+        event_b_auroc = float(
+            roc_auc_score(scored_event_b.label.to_numpy(), scored_event_b[TEACHER_SCORE_COLUMN])
+        )
+    except ValueError:
+        event_b_auroc = float("nan")
+    return {
+        "in_distribution_auroc": float(np.mean(aucs)),
+        "event_b_pooled_auroc": event_b_auroc,
+    }
+
+
 def evaluate_transfer_track(
     event_b_frame: pd.DataFrame,
     event_a_frame: pd.DataFrame,
@@ -124,6 +164,9 @@ def evaluate_transfer_track(
     assert_no_event_a_leakage(event_a_frame, event_b_frame)
     teacher = train_frozen_teacher(event_a_frame, tier=tier, model_name=model_name, seed=seed)
     scored_frame = add_teacher_score(event_b_frame, teacher)
+    teacher_diag = _teacher_diagnostics(
+        event_a_frame, teacher, scored_frame, tier=tier, model_name=model_name, seed=seed
+    )
 
     report = completeness_report(scored_frame, k_cap=k_cap)
     rankable_patients = set(
@@ -190,5 +233,6 @@ def evaluate_transfer_track(
             "tier": tier,
             "n_event_a": int(len(event_a_frame)),
             "n_event_a_positive": int((event_a_frame.label == 1).sum()),
+            **teacher_diag,
         },
     }

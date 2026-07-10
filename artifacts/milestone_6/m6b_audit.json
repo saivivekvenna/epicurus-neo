@@ -60,6 +60,8 @@
     "question": "Does Event-A information improve Event-B transfer beyond the Event-B-only model?",
     "ranking_informative_patients": 8,
     "teacher": {
+      "event_b_pooled_auroc": 0.471593561667091,
+      "in_distribution_auroc": 0.6424868718610645,
       "model": "logistic",
       "n_event_a": 17082,
       "n_event_a_positive": 458,
