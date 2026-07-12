@@ -1,0 +1,138 @@
+{
+  "policy_id": "lossless-peptide-generation-1.0.0",
+  "router_policy_id": "epicurus-evidence-router-1.0.0",
+  "mode": "online",
+  "status": "post_hoc_reachability_diagnostic_not_independent_validation",
+  "prime_commit": "7b18d4e11042141e7102f7c69be2b0e03d138dab",
+  "hla_panel": [
+    "HLA-A*01:01",
+    "HLA-B*08:01",
+    "HLA-B*27:05",
+    "HLA-C*01:02",
+    "HLA-C*07:01"
+  ],
+  "generation": {
+    "per_variant": {
+      "ASPM": {
+        "n_windows": 77,
+        "n_unique_peptides": 77,
+        "n_peptide_hla_pairs": 385,
+        "positive_control": false,
+        "best_prime_rank": 0.088
+      },
+      "MAP2": {
+        "n_windows": 259,
+        "n_unique_peptides": 259,
+        "n_peptide_hla_pairs": 1295,
+        "positive_control": false,
+        "best_prime_rank": 0.01
+      },
+      "DYNC1H1": {
+        "n_windows": 77,
+        "n_unique_peptides": 77,
+        "n_peptide_hla_pairs": 385,
+        "positive_control": true,
+        "best_prime_rank": 0.002
+      }
+    },
+    "n_recovered_pairs": 2065,
+    "n_recovered_scored": 2065
+  },
+  "candidate_universe": {
+    "n_pvac_candidates": 14780,
+    "n_union_candidates": 7565
+  },
+  "recall": {
+    "candidate_generation": {
+      "pvac_only": {
+        "n": 1,
+        "of": 3,
+        "mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "augmented": {
+        "n": 3,
+        "of": 3,
+        "mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529",
+          "MAP2-chr2-209694772"
+        ]
+      }
+    },
+    "rankable": {
+      "pvac_only": {
+        "n": 1,
+        "of": 3,
+        "mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "augmented": {
+        "n": 3,
+        "of": 3,
+        "mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529",
+          "MAP2-chr2-209694772"
+        ]
+      }
+    }
+  },
+  "top20_coverage": {
+    "pure_prime": {
+      "pvac_only": {
+        "n": 1,
+        "of": 3,
+        "mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "augmented": {
+        "n": 3,
+        "of": 3,
+        "mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529",
+          "MAP2-chr2-209694772"
+        ]
+      }
+    },
+    "route_aware": {
+      "pvac_only": {
+        "n": 1,
+        "of": 3,
+        "mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "augmented": {
+        "n": 3,
+        "of": 3,
+        "mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529",
+          "MAP2-chr2-209694772"
+        ]
+      }
+    }
+  },
+  "content_hash": "74bbd8fd6947275d61c51b0ab3f8e88d5f6b133026c667719871e21ec6e183e1",
+  "ensembl_provenance": {
+    "ASPM": {
+      "vep": "8fee3cf026066c918ea40dfdf5ad9064f5c2e966cbd0c6c46300387058e3901a",
+      "protein": "b5e7bbbc48b13f9e3fbdcbb6c31ab431caf063ea1da90231c7d6f86dfe03fcb5"
+    },
+    "MAP2": {
+      "vep": "f523839e7b62dcf9617828b1f91c4a985d434ca1a09c76defb0780327a8ac158",
+      "cds": "5e978372b4eb5c95179915b2255a66cd8a0e22007430f62da43e65b9f0bddbce",
+      "protein": "c33179dd33b21fe076d408de69793d4bafba31f76f1cc6e6244180ecc7919ade"
+    },
+    "DYNC1H1": {
+      "vep": "f296450be74266dbf81ebc6e377139f2dbe5550b730e4ed443157ba0e53af808",
+      "protein": "92f640ad8e77ee6436ac3cfac733c0e318e00e988978ac23e0d8ea6c85669431"
+    }
+  },
+  "interpretation": "Post-hoc reachability fix on the motivating patient. NOT a claim that Epicurus beats PRIME: the selection score IS genuine PRIME (genuine_prime = -PRIME %rank); better candidate GENERATION lets genuine PRIME score targets it previously never received. A benefit claim needs a future untouched cohort."
+}
