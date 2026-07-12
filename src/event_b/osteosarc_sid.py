@@ -840,11 +840,14 @@ def _adjudicate(hudson_rows, vafs_idx, pv_genes, cat_by_id) -> dict:
     out[("MAP2", "GYCVFNKYTV868FS")] = (
         f"MAP2 frameshift (Hudson label p.GYCVFNKYTV868fs, recognized May): the site carries two "
         f"overlapping frameshift annotations {labels} 4bp apart. They have different genomic alleles and "
-        f"different neo-frame sequences, so they remain distinct records. The "
+        f"remain distinct variant records. Ensembl VEP for the Gly868 allele (MANE ENST00000682079, "
+        f"c.2603_2630del, p.Gly868AlafsTer38) predicts a mutant ORF sharing "
+        f"HCHHLFKTVRIYQGRVVPFTKAL with the Leu867-associated construct. The "
         f"vaccine (JLF V1/V2/V3) + ELISPOT-strong record is on MAP2-chr2-209694768 (p.Leu867fs); "
         f"the Hudson '868fs' label position-matches MAP2-chr2-209694772 (p.Gly868fs, no vaccine/experiments). "
-        f"The Hudson neo-frame GYCVFNKYTV differs from the Leu867fs vaccine neo-frame (RVVPFTKAL), "
-        f"supporting the Gly868fs mapping. BOTH are called by DRAGEN/Sarek/oncoanalyser and absent from pVACtools "
+        f"VEP identifies GYCVFNKYTV as the reference amino-acid context, so interpreting the Hudson label "
+        f"as reference-context naming rather than a mutant epitope is an inference, not an assay fact. "
+        f"BOTH variants are called by DRAGEN/Sarek/oncoanalyser and absent from pVACtools "
         f"2025 candidate universe -> lost at candidate generation. The prior 'low-TPM expression-filter drop' "
         f"attribution is not confirmable from these files (MAP2 is simply absent from the pVACtools output).")
     return out

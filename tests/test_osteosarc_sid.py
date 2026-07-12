@@ -93,7 +93,8 @@ def test_full_cached_reconstruction_passes_frozen_headline_invariants(tmp_path):
     assert hudson_map2["target_id"] == "MAP2-chr2-209694772"
     assert hudson_map2["in_vaccine"] == "false"
     assert hudson_map2["has_site_elispot"] == "false"
-    assert "differs from the Leu867fs vaccine neo-frame" in hudson_map2["adjudication"]
+    assert "mutant ORF sharing HCHHLFKTVRIYQGRVVPFTKAL" in hudson_map2["adjudication"]
+    assert "reference amino-acid context" in hudson_map2["adjudication"]
     assert site_map2["target_id"] == "MAP2-chr2-209694768"
     assert hudson_aspm["in_vaccine"] == "false"
     assert hudson_aspm["has_site_elispot"] == "false"
