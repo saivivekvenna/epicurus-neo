@@ -161,6 +161,16 @@ def test_nnlogistic_coef_nonnegative_and_apply_path():
     assert (nr.nnlogistic_score(Xup, b0, coef) >= s - 1e-9).all()
 
 
+def test_nnlogistic_fails_closed_on_optimizer_failure(monkeypatch):
+    # if the optimizer reports failure / non-finite, fit_nnlogistic must return zeros (KEEP-all), not garbage
+    class _Bad:
+        success = False
+        x = np.array([np.nan, np.nan, np.nan])
+    monkeypatch.setattr(nr, "minimize", lambda *a, **k: _Bad())
+    b0, coef = nr.fit_nnlogistic(np.ones((5, 2)), np.array([1, 0, 1, 0, 1]), np.ones(5), C=1.0)
+    assert b0 == 0.0 and coef.shape == (2,) and np.all(coef == 0.0) and np.all(np.isfinite(coef))
+
+
 def test_nnlogistic_recovers_sign_against_anti_signal():
     # if the data actually wanted a NEGATIVE coefficient, the constraint pins it at 0 (never negative)
     rng = np.random.default_rng(2)

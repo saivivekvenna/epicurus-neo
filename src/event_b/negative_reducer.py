@@ -147,6 +147,9 @@ def fit_nnlogistic(X: np.ndarray, y: np.ndarray, w: np.ndarray, C: float):
     bounds = [(None, None)] + [(0.0, None)] * d
     res = minimize(obj, np.zeros(d + 1), jac=True, method="L-BFGS-B", bounds=bounds,
                    options={"maxiter": 500, "ftol": 1e-12})
+    if not res.success or not np.all(np.isfinite(res.x)):
+        # FAIL CLOSED: a constant keep-score (zero coef) => the gate removes nothing (KEEP-all), never garbage
+        return 0.0, np.zeros(d)
     return float(res.x[0]), res.x[1:].copy()
 
 
