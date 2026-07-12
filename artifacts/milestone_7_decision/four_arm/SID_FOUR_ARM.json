@@ -15,8 +15,111 @@
     "pvac_candidates",
     "router_features"
   ],
-  "primary_frozen_epicurus": {
-    "el_feature": "NetMHCpan-EL MT %rank (frozen Epicurus feature); MISSING on lossless-recovered candidates -> NaN -> 0.5 percentile (frozen policy)",
+  "feature_provenance": {
+    "epicurus_features": "prime = genuine PRIME %rank; el = presentation %rank (see each variant); expr = RSEM gene TPM. Frozen formula prime+el+expr only.",
+    "netmhcpan_available_locally": false,
+    "netmhcpan_agreement": {
+      "n_pvac_rows_with_both": 5710,
+      "spearman_netmhcpan_vs_mhcflurry": 0.518,
+      "caveat": "MHCflurry-EL is an independent presentation predictor substituting for the unavailable NetMHCpan-EL; moderate agreement means the fair run APPROXIMATES the frozen NetMHCpan-EL feature, it does not reproduce it exactly."
+    }
+  },
+  "primary_genuine_mhcflurry_el": {
+    "el_feature": "GENUINE MHCflurry presentation %rank for ALL candidates (independent learned predictor; recovered candidates get real presentation evidence, no 0.5 impute). Fair four-arm attribution.",
+    "arms": {
+      "pvac_prime": {
+        "arm_id": "pvac_prime",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 1,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 1,
+          "of": 3
+        },
+        "hits_at_20": 1,
+        "recall_at_20": 0.3333,
+        "n_selected": 20,
+        "covered_mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "lossless_prime": {
+        "arm_id": "lossless_prime",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 3,
+        "recall_at_20": 1.0,
+        "n_selected": 20,
+        "covered_mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529",
+          "MAP2-chr2-209694772"
+        ]
+      },
+      "lossless_epicurus": {
+        "arm_id": "lossless_epicurus",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 2,
+        "recall_at_20": 0.6667,
+        "n_selected": 20,
+        "covered_mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "full_epicurus": {
+        "arm_id": "full_epicurus",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 2,
+        "recall_at_20": 0.6667,
+        "n_selected": 20,
+        "covered_mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529"
+        ]
+      }
+    },
+    "stage_attribution": {
+      "evaluable": true,
+      "generation": 2,
+      "scorer": -1,
+      "selection": 0,
+      "total": 1,
+      "hits": {
+        "pvac_prime": 1,
+        "lossless_prime": 3,
+        "lossless_epicurus": 2,
+        "full_epicurus": 2
+      }
+    }
+  },
+  "reference_frozen_netmhcpan_el": {
+    "el_feature": "Literal frozen NetMHCpan-EL for pVAC candidates; MISSING on recovered -> 0.5 impute (shows the imputation artifact the fair run removes).",
     "arms": {
       "pvac_prime": {
         "arm_id": "pvac_prime",
@@ -108,7 +211,7 @@
     }
   },
   "sensitivity_mixmhcpred_el": {
-    "el_feature": "MixMHCpred %rank for ALL candidates (present on recovered rows too). NON-FROZEN sensitivity: isolates the missing-EL-feature confound on recovered rows.",
+    "el_feature": "MixMHCpred %rank (PRIME's backbone) for all candidates \u2014 secondary sanity.",
     "arms": {
       "pvac_prime": {
         "arm_id": "pvac_prime",
@@ -211,5 +314,5 @@
     "note": "Frozen Epicurus v0.1 was fit on cd8_multimer; Sid shares no patient with it. PRIME training overlap is reported at candidate granularity; the 3 measured-positive mutations are never a model input.",
     "_hudson_pep_in_prime": null
   },
-  "interpretation": "Generation recovers all 3 recognized mutations (recall 1/3 -> 3/3; +2 top-20 hits under genuine PRIME). Under the FROZEN Epicurus scorer the recovered ASPM+MAP2 fall back out of the top-20 (scorer stage -2, net 0) \u2014 but this is partly a missing-EL-feature artifact: the sensitivity arm (EL populated for recovered rows) recovers ASPM (scorer -1, net +1). Low-expression MAP2 still drops under Epicurus (a real expression-reweighting effect, consistent with prior cohorts where a learned recognition score on top of presentation hurts). Net: the RELIABLE, reproducible win here is candidate GENERATION feeding genuine PRIME; the Epicurus scorer neither clearly helps nor is fairly testable until presentation features are computed on recovered candidates. n=3, post-hoc \u2014 not a gate."
+  "interpretation": "L1 reachability: generation recovers all 3 recognized mutations (recall 1/3 -> 3/3; +2 top-20 hits under genuine PRIME = the protected lossless_prime incumbent). L3 end-to-end: with GENUINE presentation features computed on recovered candidates (MHCflurry, no impute), the frozen Epicurus scorer stage is -1 and the full stack nets 1 vs pVAC+PRIME. The earlier -2 frozen scorer loss was substantially a 0.5-impute artifact on recovered rows (reference vs primary). Any residual drop is the Epicurus expression/EL reweighting demoting a low-expression true positive \u2014 consistent with prior cohorts where a learned recognition score on top of presentation does not help. NetMHCpan is not locally runnable, so el uses MHCflurry (independent predictor); its moderate agreement with NetMHCpan-EL is disclosed in feature_provenance. n=3, post-hoc, descriptive \u2014 NOT a gate, no constant tuned to Sid."
 }

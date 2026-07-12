@@ -219,8 +219,17 @@ count at the BAG level, never the ~285k/1.09M child rows.
   only.** Eligibility audit encodes all three levels + roles + the no-pooling invariant
   (`src/benchmark/cohort_audit.py`; runner `scripts/four_arm_benchmark.py`; artifacts
   `artifacts/milestone_7_decision/four_arm/`). Sid L1 reachability = generation recall 1/3→3/3; L3 end-to-end:
-  under genuine PRIME `lossless_prime` recovers all 3 (protected incumbent), and the frozen Epicurus scorer nets
-  0 (−2 scorer, partly a missing-EL-feature artifact on recovered rows: MixMHCpred-EL sensitivity nets +1).
+  under genuine PRIME `lossless_prime` recovers all 3 (protected incumbent).
+- **FAIR feature re-run (2026-07-12) — genuine MHCflurry presentation features on recovered candidates.**
+  NetMHCpan (the frozen Epicurus `el`) is not locally runnable; recovered candidates were previously el=0.5
+  imputed. Computed GENUINE MHCflurry presentation %rank/affinity/processing for every candidate
+  (`src/benchmark/presentation_features.py`, tested; cached to `four_arm/mhcflurry_presentation_cache.csv`).
+  Re-running the four-arm attribution with one consistent genuine predictor: frozen Epicurus scorer stage
+  **−1** (was −2 under the 0.5 impute → the extra −1 was an imputation artifact), full stack **+1** vs
+  pVAC+PRIME. Epicurus recovers ASPM once it has real presentation evidence but STILL drops low-expression
+  MAP2 (a real expression-reweighting effect — a learned recognition score on presentation does not help).
+  MHCflurry↔NetMHCpan-EL Spearman 0.52 (moderate) disclosed: the fair run approximates, not reproduces, the
+  frozen NetMHCpan-EL feature. Descriptive, n=3, no constant tuned to Sid.
   Next = acquire/identify an **untouched end-to-end patient**, not more rerankers. See
   `memory/benchmark-three-level-hierarchy.md`.
 
