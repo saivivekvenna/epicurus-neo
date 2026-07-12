@@ -1,30 +1,54 @@
 {
   "experiment": "epicurus_v0.5_context_conditioned_pairwise",
-  "purpose": "Provenance pinned BEFORE the first Q/R fit. Runner recomputes and fails fast on any mismatch.",
-  "git_head": "d650eef258c49cca13efaaba20ef95c727ffefeb",
+  "purpose": "Provenance pinned BEFORE the first Q/R fit (pre-fit CORRECTION of commit 06cb1d1). Runner recomputes and fails fast on any mismatch.",
+  "git_head": "06cb1d159ff175d1f3c2b7a609d97898497be573",
+  "git_head_note": "the prior pre-fit commit (the original v0.5 preregistration) this correction is committed on top of; same semantics as before (pinned parent state), advanced from d650eef",
   "frozen_comparators": {
     "P": {
       "source": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
       "path_in_json": "ladder.rung3_MIL.folds",
-      "note": "frozen corrected-v0.3 rung-3 per-fold (C,tau)+coefficients, loaded verbatim, NOT retuned"
+      "reconstruction": "REFIT from frozen code (event_b.epicurus_v03.MILRanker) on each original outer-train fold at the stored per-fold (C, tau); ZERO retuning; deterministic (fixed zero init, L-BFGS-B)",
+      "note": "NOT loaded: the JSON stores per-fold coefficients but NO feature standardizer (mean_/std_) and NO intercept, so the model is not directly scoreable; refit reproduces it. Reproduction verified to tight tolerance before comparison."
+    },
+    "A": {
+      "source": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
+      "path_in_json": "ladder.rung2_additive.folds",
+      "reconstruction": "REFIT from frozen code (event_b.epicurus_v03.AdditiveLogistic) on each original outer-train fold at the stored per-fold C; ZERO retuning; deterministic",
+      "note": "DESCRIPTIVE comparator only: pointwise additive_logistic on exact-witness positives (instance-level negatives; NOT bag-disciplined). Makes the Q-P objective-vs-supervision split visible (A-Q objective form; A-P supervision granularity). Same caveat as P: coefficients stored, but no scaler/intercept -> refit, reproduction-verified."
     },
     "F": {
       "source": "artifacts/milestone_7_decision/epicurus_v04/DEV_RESULT.json",
-      "path_in_json": "members.F (feature tower)",
-      "note": "frozen v0.4 feature-tower per-fold heads+coefficients, loaded verbatim, NOT retuned; nondeployable source-NAME ceiling"
+      "path_in_json": "members.F_feature_tower.folds",
+      "reconstruction": "REFIT from frozen code (event_b.epicurus_v04.TowerMILRanker) on each original outer-train fold at the stored per-fold (C, tau, lam); ZERO retuning; same init strategy as the v0.4 runner",
+      "note": "NOT loaded: the fold records store ONLY the selected hyperparameters (C, tau, lam) and NO fitted coefficients. Nondeployable source-NAME ceiling. NONCONVEX (v0.4 multi-init wobble), so reproduction is verified only to v0.4's own documented multi-init tolerance, and any residual is reported; convex P/A are verified to tight tolerance."
     }
   },
   "approved_contexts": [
     "ctx_pep_len",
-    "ctx_log_pool",
-    "ctx_hla_multiplicity",
-    "ctx_hla_comp_frac"
+    "ctx_pred_disagree",
+    "ctx_hla_locus"
   ],
+  "approved_context_encoding_cols": [
+    "ctx_pep_len",
+    "ctx_pred_disagree",
+    "ctx_locus_B",
+    "ctx_locus_C"
+  ],
+  "alias_gate": {
+    "rule": "APPROVE iff candidate-level & not pool-enumeration/denominator-dependent AND standalone patient-grouped source-balanced macro OVR AUROC <= 0.70",
+    "audit": "StratifiedGroupKFold(5, seed=0) stratify=source group=patient; source-balanced x patient-balanced weights; LogisticRegression(lbfgs, balanced); range overlap is descriptive only",
+    "approved_standalone_macro_auroc": {"ctx_pep_len": 0.6091, "ctx_pred_disagree": 0.5645, "ctx_hla_locus": 0.5838},
+    "approved_block_macro_auroc": 0.6823,
+    "source_balanced_chance": {"macro_balanced_accuracy": 0.3333, "macro_ovr_auroc": 0.5}
+  },
   "rejected_contexts": {
-    "ctx_routes_per_bag": "bag cardinality; overlap 0.00; categorical bag-vs-instance ascertainment proxy (prohibited)",
-    "ctx_hla_competition_raw": "overlap 0.05; pool-size-driven source proxy; superseded by ctx_hla_comp_frac",
-    "ortho_feature_availability_mask": "source-deterministic ORTHO availability = a source name",
-    "ctx_prime_masked_as_context": "source-skewed mask rate + already modeled; kept only as leakage-safe feature semantics"
+    "ctx_log_pool": "macro AUROC 0.830; pool size has no source-invariant denominator (Gartner combinatorially peptide/HLA-expanded); strong source alias",
+    "ctx_hla_multiplicity": "macro AUROC 0.777; #distinct HLA in a pool is enumeration-dependent, not documented genotype breadth (no completeness flag across sources); strong source alias",
+    "ctx_hla_comp_frac": "macro AUROC 0.706; denominator is the source-specific pool size -> pool-enumeration-dependent; alias also above threshold",
+    "ctx_hla_competition_raw": "macro AUROC 0.804; pool-size-driven source proxy",
+    "ctx_routes_per_bag": "macro AUROC 0.831; categorical bag-vs-instance ascertainment proxy",
+    "ctx_pred_consensus": "macro AUROC 0.500 (not an alias) but REDUNDANT: deterministic mean of already-modeled presentation features",
+    "ctx_prime_masked_as_context": "macro AUROC 0.543 (not an alias) but already modeled (f_prime_pct->0.5) with a source-skewed rate; kept only as leakage-safe feature semantics"
   },
   "forbidden_gartner_test_paths": [
     "data/raw/gartner_nci/NmersTestingSet.txt",
@@ -43,11 +67,12 @@
     "feature_code_epicurus_v04": "350d4047f51f10283dfc2be987c7d94735634c090aad3e82d93716e19e056554",
     "feature_code_nci_crosswalk": "0d52ef7f95a05fb4b28552310350d3447822a6329181d7e2d17e69fd98a22846",
     "frozen_comparator_P_v03_result": "5cbec0536ba330a044d073650579a3148d30fd393498d272e27b6ad59608c738",
+    "frozen_comparator_A_v03_result": "5cbec0536ba330a044d073650579a3148d30fd393498d272e27b6ad59608c738",
     "frozen_comparator_F_v04_result": "ace401266c5d639ed11b43539a2858020af4f3f2d07910250690764fd7894d77",
-    "design_spec": "d17085219926b650c2d3e61cabf8320ecbd08f19d1dec8ecf1f4455fced471a5",
-    "prereg_protocol": "7ad641f7cbcf6775bbb981e21a7551283e8de9483900503f415f9bdc0ec017aa",
-    "context_audit_code": "305841470b59dd8aac05244488319dfa48418adb46b560540e993eb2de041a1f",
-    "context_audit_json": "64cee36eaca19e5ab153aa752a839ae98448ade32d048c66e593d2bf28daf90b"
+    "design_spec": "90ecf87c9b25445e2622e4c69c0c5a57f64a2b389fac609614dc8f856a0671ba",
+    "prereg_protocol": "4ee9512c6e5590ae63fdee591631903afd858dd19a38bf4db5136fe7e0731718",
+    "context_audit_code": "04f93217e363f4fda40c3e56c55cb30b262e102490be30c8d56eea9f490139db",
+    "context_audit_json": "7280a2f4c0fca1166afd80bf76850d18b232d0c27b0f80dc70f83879a937de38"
   },
   "input_paths": {
     "frozen_split": "configs/frozen/mil_dev_split_v1.json",
@@ -62,6 +87,7 @@
     "feature_code_epicurus_v04": "src/event_b/epicurus_v04.py",
     "feature_code_nci_crosswalk": "src/event_b/nci_crosswalk.py",
     "frozen_comparator_P_v03_result": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
+    "frozen_comparator_A_v03_result": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
     "frozen_comparator_F_v04_result": "artifacts/milestone_7_decision/epicurus_v04/DEV_RESULT.json",
     "design_spec": "docs/superpowers/specs/2026-07-11-v05-context-conditioned-design.md",
     "prereg_protocol": "artifacts/milestone_7_decision/epicurus_v05/PREREGISTERED_PROTOCOL.md",
