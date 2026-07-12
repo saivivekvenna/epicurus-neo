@@ -133,6 +133,21 @@ class-I top-20 is **not** the assay's full biological recall. Three reports, cle
   **base variant** universe (§2). Here n=1 (Hu_287) → a single-patient exploratory point with full
   per-mutation/per-peptide detail, not a cohort claim.
 
+## 6b. Runtime notes / resolved deviations (appended BEFORE any result, per §4)
+- **HLA typing = OptiType** (bioconda **osx-64 via micromamba/Rosetta** on this Apple-Silicon host), fed
+  MHC-region reads (Ensembl `6:29.8–33.6 Mb`) extracted from the normal-exome BAM → razers3 → OptiType.
+  This is the prereg's PRIMARY HLA method (no fallback needed).
+- **Annotation/enumeration = Ensembl REST VEP (r110)** via `event_b.lossless_peptide_generation`
+  (`expected=None`, label-blind), not a local VEP/SnpEff install — the generator queries Ensembl REST for
+  the canonical/MANE transcript + protein consequence, keeping the whole pipeline in Ensembl coordinate
+  space (consistent with the Ensembl primary-assembly reference).
+- **Somatic = GATK4.5 Mutect2 on Java 22** (verified to load/run; JDK 17 fallback not required),
+  **matched-normal-only** (no germline resource/PoN — the pre-registered default; higher-FP/specificity
+  cost disclosed), over the **label-blind Ensembl CDS interval BED** (36.7 Mb; contigs `1..22,X,Y,MT`
+  match the FASTA — no contig-naming mix).
+- Scripts: `scripts/miller_hu287_somatic.sh` (align→Mutect2→filter→PASS) and
+  `scripts/miller_hu287_hla.sh` (OptiType). Neither reads the label table.
+
 ## 7. Isolation & GO/NO-GO
 Labels remain sealed (`data/raw/miller_ipv/miller_recognition_labels.csv` is read ONLY at the final scoring
 join, after the universe + ranks are frozen). No Hu_287 label value influences any upstream choice; the
