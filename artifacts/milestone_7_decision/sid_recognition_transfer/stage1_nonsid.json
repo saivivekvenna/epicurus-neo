@@ -21,6 +21,35 @@
         "note": "ANCHORED-COMPONENT-ONLY: q reserve DISABLED externally (no comparable mutant-RNA signal); VAF/RNA features neutral where absent. Not the full frozen policy."
       }
     },
+    "fitted_model": {
+      "C": 0.5,
+      "alpha": 0.1,
+      "apply": "score = within_patient_pct(-prime) + alpha * within_patient_pct(sigmoid(coef.feat_pct + intercept))",
+      "coef": [
+        0.015661188167842975,
+        0.005488775406759181,
+        0.0007174357003912144,
+        0.0022121768078998297
+      ],
+      "direction_policy": {
+        "VarAlFreq": "higher_raw_better",
+        "el": "lower_raw_better",
+        "expr": "higher_raw_better",
+        "prime": "lower_raw_better"
+      },
+      "feature_order": [
+        "prime",
+        "el",
+        "expr",
+        "VarAlFreq"
+      ],
+      "intercept": -0.013156965671484609,
+      "model_payload_sha256": "580339d7b6bcc8da4a045b46387803bd227b95d97f787153d6eb6119171dbcb2",
+      "percentile_policy": "within-patient rank(pct=True) of the oriented raw feature; NaN->0.5",
+      "q": 1,
+      "reserve": "promote-side: protect top (20-q) by score, fill q by mutant-RNA rna_af (higher=better), backfill by score; q disabled where rna_af absent",
+      "sklearn_version": "1.9.0"
+    },
     "frozen": {
       "C": 0.5,
       "alpha": 0.1,
@@ -28,7 +57,7 @@
       "beats_random": true,
       "delta_clean": 8,
       "hits_clean": 88,
-      "matched_random_reserve_hits_clean": 82.15,
+      "matched_random_reserve_hits_clean": 82.55,
       "per_cohort_delta_clean": {
         "Basket": 2.0,
         "bladder": 3.0,
@@ -60,7 +89,7 @@
               "q": 1
             },
             "fold": 0,
-            "matched_random_hits": 21.2,
+            "matched_random_hits": 21.55,
             "null_hits": 21,
             "outer_test_hits": 22
           },
@@ -72,7 +101,7 @@
               "q": 3
             },
             "fold": 1,
-            "matched_random_hits": 15.1,
+            "matched_random_hits": 15.35,
             "null_hits": 18,
             "outer_test_hits": 17
           },
@@ -84,7 +113,7 @@
               "q": 1
             },
             "fold": 2,
-            "matched_random_hits": 5.3,
+            "matched_random_hits": 5.05,
             "null_hits": 6,
             "outer_test_hits": 6
           },
@@ -96,7 +125,7 @@
               "q": 1
             },
             "fold": 3,
-            "matched_random_hits": 21.15,
+            "matched_random_hits": 21.2,
             "null_hits": 21,
             "outer_test_hits": 23
           },
@@ -108,14 +137,14 @@
               "q": 1
             },
             "fold": 4,
-            "matched_random_hits": 14.25,
+            "matched_random_hits": 14.05,
             "null_hits": 14,
             "outer_test_hits": 15
           }
         ],
         "eligible": true,
         "nested_delta": 3,
-        "nested_matched_random_total": 77.0,
+        "nested_matched_random_total": 77.2,
         "nested_null": 80,
         "nested_total": 83,
         "paired_bootstrap_delta_vs_null": {
@@ -145,7 +174,7 @@
               "q": 1
             },
             "fold": 0,
-            "matched_random_hits": 21.2,
+            "matched_random_hits": 21.55,
             "null_hits": 21,
             "outer_test_hits": 22
           },
@@ -157,7 +186,7 @@
               "q": 3
             },
             "fold": 1,
-            "matched_random_hits": 15.1,
+            "matched_random_hits": 15.35,
             "null_hits": 18,
             "outer_test_hits": 17
           },
@@ -169,7 +198,7 @@
               "q": 3
             },
             "fold": 2,
-            "matched_random_hits": 5.45,
+            "matched_random_hits": 5.2,
             "null_hits": 6,
             "outer_test_hits": 6
           },
@@ -181,7 +210,7 @@
               "q": 1
             },
             "fold": 3,
-            "matched_random_hits": 21.25,
+            "matched_random_hits": 21.2,
             "null_hits": 21,
             "outer_test_hits": 23
           },
@@ -193,14 +222,14 @@
               "q": 1
             },
             "fold": 4,
-            "matched_random_hits": 14.25,
+            "matched_random_hits": 14.1,
             "null_hits": 14,
             "outer_test_hits": 15
           }
         ],
         "eligible": true,
         "nested_delta": 3,
-        "nested_matched_random_total": 77.25,
+        "nested_matched_random_total": 77.4,
         "nested_null": 80,
         "nested_total": 83,
         "paired_bootstrap_delta_vs_null": {
@@ -223,9 +252,10 @@
     "null_hits_clean": 80.0,
     "selected_family_by_nested_evidence": "core_deployable",
     "selected_on": "IMPROVE official partitions OOF, LEAKAGE-CLEAN only; matched-random; transport",
-    "sha256": "f578b1662a4209dc8eb87fb4f30b3583572b3b5507fa85c58e59820778f310b8",
+    "sha256": "e44d3d1ac66a272e89cb00aaf85dc856b905e76d8c8712665f6e3f5b13214890",
     "sid_never_consulted": true,
     "stage": "1_non_sid_frozen",
+    "stage2_must_not_refit": "Stage 2 applies fitted_model.coef/intercept only (linear predictor -> sigmoid); it MUST NOT refit any model after Sid is available.",
     "version": "1.0.0"
   },
   "grid": [
@@ -252,7 +282,7 @@
       "beats_random": true,
       "delta_clean": 3,
       "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 79.35,
+      "matched_random_reserve_hits_clean": 78.9,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 1.0,
@@ -268,7 +298,7 @@
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 77.4,
+      "matched_random_reserve_hits_clean": 77.8,
       "per_cohort_delta_clean": {
         "Basket": 1.0,
         "bladder": 1.0,
@@ -284,7 +314,7 @@
       "beats_random": true,
       "delta_clean": 2,
       "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 75.9,
+      "matched_random_reserve_hits_clean": 76.4,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 0.0,
@@ -316,472 +346,8 @@
       "beats_random": true,
       "delta_clean": 8,
       "hits_clean": 88,
-      "matched_random_reserve_hits_clean": 82.15,
-      "per_cohort_delta_clean": {
-        "Basket": 2.0,
-        "bladder": 3.0,
-        "melanoma": 3.0
-      },
-      "q": 1,
-      "worst_cohort": 2.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 1.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 76.85,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 1.0,
-        "melanoma": 3.0
-      },
-      "q": 3,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 0,
-      "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.6,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 0.0,
-        "melanoma": 1.0
-      },
-      "q": 4,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 0,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 6,
-      "hits_clean": 86,
-      "matched_random_reserve_hits_clean": 81.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 3.0
-      },
-      "q": 1,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.35,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 2,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 2,
-      "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 75.6,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 2.0,
-        "melanoma": 1.0
-      },
-      "q": 3,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 0,
-      "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.8,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 1.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 0,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 7,
-      "hits_clean": 87,
       "matched_random_reserve_hits_clean": 82.55,
       "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 4.0
-      },
-      "q": 1,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.4,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 2.0,
-        "melanoma": 2.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 77.4,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 3,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 0,
-      "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.95,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 1.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 0,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 5,
-      "hits_clean": 85,
-      "matched_random_reserve_hits_clean": 80.35,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 2.0,
-        "melanoma": 2.0
-      },
-      "q": 1,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 79.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 2.0,
-        "melanoma": 1.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 2,
-      "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 76.6,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 3.0,
-        "melanoma": 1.0
-      },
-      "q": 3,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 1,
-      "hits_clean": 81,
-      "matched_random_reserve_hits_clean": 75.2,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 1,
-      "hits_clean": 81,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 0.0,
-        "melanoma": 0.0
-      },
-      "q": 0,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 6,
-      "hits_clean": 86,
-      "matched_random_reserve_hits_clean": 81.7,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 1,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 80.25,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 2.0,
-        "melanoma": 1.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 79.65,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 2.0,
-        "melanoma": 2.0
-      },
-      "q": 3,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 0.5,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 2,
-      "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 77.5,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 3.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 5,
-      "hits_clean": 85,
-      "matched_random_reserve_hits_clean": 79.55,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 1,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 79.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 77.4,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 3,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 2,
-      "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 75.9,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 0.0,
-        "melanoma": 2.0
-      },
-      "q": 4,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 3.0,
-        "bladder": 0.0,
-        "melanoma": 0.0
-      },
-      "q": 0,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 8,
-      "hits_clean": 88,
-      "matched_random_reserve_hits_clean": 82.15,
-      "per_cohort_delta_clean": {
         "Basket": 2.0,
         "bladder": 3.0,
         "melanoma": 3.0
@@ -790,13 +356,13 @@
       "worst_cohort": 2.0
     },
     {
-      "C": 1.0,
+      "C": 0.5,
       "alpha": 0.1,
       "arm": "core_deployable",
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.35,
+      "matched_random_reserve_hits_clean": 79.75,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 3.0,
@@ -806,13 +372,13 @@
       "worst_cohort": 0.0
     },
     {
-      "C": 1.0,
+      "C": 0.5,
       "alpha": 0.1,
       "arm": "core_deployable",
       "beats_random": true,
       "delta_clean": 3,
       "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 76.85,
+      "matched_random_reserve_hits_clean": 76.7,
       "per_cohort_delta_clean": {
         "Basket": -1.0,
         "bladder": 1.0,
@@ -822,13 +388,13 @@
       "worst_cohort": -1.0
     },
     {
-      "C": 1.0,
+      "C": 0.5,
       "alpha": 0.1,
       "arm": "core_deployable",
       "beats_random": true,
       "delta_clean": 0,
       "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.6,
+      "matched_random_reserve_hits_clean": 75.0,
       "per_cohort_delta_clean": {
         "Basket": -1.0,
         "bladder": 0.0,
@@ -838,7 +404,7 @@
       "worst_cohort": -1.0
     },
     {
-      "C": 1.0,
+      "C": 0.5,
       "alpha": 0.2,
       "arm": "core_deployable",
       "beats_random": true,
@@ -854,471 +420,7 @@
       "worst_cohort": 1.0
     },
     {
-      "C": 1.0,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 6,
-      "hits_clean": 86,
-      "matched_random_reserve_hits_clean": 81.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 3.0
-      },
-      "q": 1,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.35,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 2,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 76.6,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 3.0,
-        "melanoma": 1.0
-      },
-      "q": 3,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 0,
-      "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.85,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 1.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 0,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 7,
-      "hits_clean": 87,
-      "matched_random_reserve_hits_clean": 82.55,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 4.0
-      },
-      "q": 1,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.4,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 2,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 77.45,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 3.0,
-        "melanoma": 3.0
-      },
-      "q": 3,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.25,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 0,
-      "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 74.0,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 1.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 0,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 5,
-      "hits_clean": 85,
-      "matched_random_reserve_hits_clean": 80.4,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 2.0,
-        "melanoma": 2.0
-      },
-      "q": 1,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 79.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 2.0,
-        "melanoma": 1.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 2,
-      "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 76.6,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 3.0,
-        "melanoma": 1.0
-      },
-      "q": 3,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.3,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 0,
-      "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 74.15,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 1.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 1,
-      "hits_clean": 81,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 0.0,
-        "melanoma": 0.0
-      },
-      "q": 0,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 7,
-      "hits_clean": 87,
-      "matched_random_reserve_hits_clean": 82.7,
-      "per_cohort_delta_clean": {
-        "Basket": 2.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 1,
-      "worst_cohort": 2.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 80.25,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 2.0,
-        "melanoma": 1.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 79.65,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 2.0,
-        "melanoma": 2.0
-      },
-      "q": 3,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 1.0,
-      "alpha": 0.5,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 2,
-      "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 77.65,
-      "per_cohort_delta_clean": {
-        "Basket": -2.0,
-        "bladder": 1.0,
-        "melanoma": 3.0
-      },
-      "q": 4,
-      "worst_cohort": -2.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 5,
-      "hits_clean": 85,
-      "matched_random_reserve_hits_clean": 79.55,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 2.0
-      },
-      "q": 1,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 79.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 77.4,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 2.0
-      },
-      "q": 3,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.0,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 2,
-      "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 75.9,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 0.0,
-        "melanoma": 2.0
-      },
-      "q": 4,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 3.0,
-        "bladder": 0.0,
-        "melanoma": 0.0
-      },
-      "q": 0,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 7,
-      "hits_clean": 87,
-      "matched_random_reserve_hits_clean": 81.15,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 3.0,
-        "melanoma": 3.0
-      },
-      "q": 1,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.35,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 3.0,
-        "melanoma": 1.0
-      },
-      "q": 2,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 4,
-      "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 77.85,
-      "per_cohort_delta_clean": {
-        "Basket": 0.0,
-        "bladder": 1.0,
-        "melanoma": 3.0
-      },
-      "q": 3,
-      "worst_cohort": 0.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.1,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 0,
-      "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.6,
-      "per_cohort_delta_clean": {
-        "Basket": -1.0,
-        "bladder": 0.0,
-        "melanoma": 1.0
-      },
-      "q": 4,
-      "worst_cohort": -1.0
-    },
-    {
-      "C": 2.0,
-      "alpha": 0.2,
-      "arm": "core_deployable",
-      "beats_random": true,
-      "delta_clean": 3,
-      "hits_clean": 83,
-      "matched_random_reserve_hits_clean": null,
-      "per_cohort_delta_clean": {
-        "Basket": 1.0,
-        "bladder": 1.0,
-        "melanoma": 1.0
-      },
-      "q": 0,
-      "worst_cohort": 1.0
-    },
-    {
-      "C": 2.0,
+      "C": 0.5,
       "alpha": 0.2,
       "arm": "core_deployable",
       "beats_random": true,
@@ -1334,13 +436,941 @@
       "worst_cohort": 0.0
     },
     {
+      "C": 0.5,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.7,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 76.2,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 0,
+      "hits_clean": 80,
+      "matched_random_reserve_hits_clean": 74.9,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 7,
+      "hits_clean": 87,
+      "matched_random_reserve_hits_clean": 82.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 4.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.95,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.15,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 0,
+      "hits_clean": 80,
+      "matched_random_reserve_hits_clean": 74.65,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 80.3,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.05,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 77.45,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 1,
+      "hits_clean": 81,
+      "matched_random_reserve_hits_clean": 75.75,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 1,
+      "hits_clean": 81,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 0.0,
+        "melanoma": 0.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.25,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.75,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.8,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.5,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 77.0,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 3.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 79.55,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.9,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.8,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 76.4,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 0.0,
+        "melanoma": 2.0
+      },
+      "q": 4,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 3.0,
+        "bladder": 0.0,
+        "melanoma": 0.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 8,
+      "hits_clean": 88,
+      "matched_random_reserve_hits_clean": 82.55,
+      "per_cohort_delta_clean": {
+        "Basket": 2.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.75,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 76.7,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 1.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 0,
+      "hits_clean": 80,
+      "matched_random_reserve_hits_clean": 75.0,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 4,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.3,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.7,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 77.2,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 0,
+      "hits_clean": 80,
+      "matched_random_reserve_hits_clean": 74.8,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 7,
+      "hits_clean": 87,
+      "matched_random_reserve_hits_clean": 82.2,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 4.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.95,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 78.15,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 0,
+      "hits_clean": 80,
+      "matched_random_reserve_hits_clean": 74.7,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 80.3,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.05,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 77.4,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 0,
+      "hits_clean": 80,
+      "matched_random_reserve_hits_clean": 74.8,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 1,
+      "hits_clean": 81,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 0.0,
+        "melanoma": 0.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 7,
+      "hits_clean": 87,
+      "matched_random_reserve_hits_clean": 82.25,
+      "per_cohort_delta_clean": {
+        "Basket": 2.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.75,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.9,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.5,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 77.05,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 3.0
+      },
+      "q": 4,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 79.55,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.9,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.8,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 76.4,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 0.0,
+        "melanoma": 2.0
+      },
+      "q": 4,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 3.0,
+        "bladder": 0.0,
+        "melanoma": 0.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 7,
+      "hits_clean": 87,
+      "matched_random_reserve_hits_clean": 81.55,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.75,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.75,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 0,
+      "hits_clean": 80,
+      "matched_random_reserve_hits_clean": 74.95,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 4,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 2.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.4,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
       "C": 2.0,
       "alpha": 0.2,
       "arm": "core_deployable",
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.3,
+      "matched_random_reserve_hits_clean": 79.75,
       "per_cohort_delta_clean": {
         "Basket": -1.0,
         "bladder": 3.0,
@@ -1356,7 +1386,7 @@
       "beats_random": true,
       "delta_clean": 3,
       "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 76.7,
+      "matched_random_reserve_hits_clean": 77.1,
       "per_cohort_delta_clean": {
         "Basket": -1.0,
         "bladder": 3.0,
@@ -1372,7 +1402,7 @@
       "beats_random": true,
       "delta_clean": 0,
       "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.8,
+      "matched_random_reserve_hits_clean": 74.85,
       "per_cohort_delta_clean": {
         "Basket": -2.0,
         "bladder": 1.0,
@@ -1404,7 +1434,7 @@
       "beats_random": true,
       "delta_clean": 6,
       "hits_clean": 86,
-      "matched_random_reserve_hits_clean": 81.5,
+      "matched_random_reserve_hits_clean": 81.2,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 3.0,
@@ -1420,7 +1450,7 @@
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 80.2,
+      "matched_random_reserve_hits_clean": 79.9,
       "per_cohort_delta_clean": {
         "Basket": -1.0,
         "bladder": 3.0,
@@ -1436,7 +1466,7 @@
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 77.45,
+      "matched_random_reserve_hits_clean": 78.15,
       "per_cohort_delta_clean": {
         "Basket": -2.0,
         "bladder": 3.0,
@@ -1452,7 +1482,7 @@
       "beats_random": true,
       "delta_clean": 0,
       "hits_clean": 80,
-      "matched_random_reserve_hits_clean": 73.95,
+      "matched_random_reserve_hits_clean": 74.65,
       "per_cohort_delta_clean": {
         "Basket": -2.0,
         "bladder": 1.0,
@@ -1484,7 +1514,7 @@
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 79.55,
+      "matched_random_reserve_hits_clean": 79.35,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 2.0,
@@ -1500,7 +1530,7 @@
       "beats_random": true,
       "delta_clean": 3,
       "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 79.35,
+      "matched_random_reserve_hits_clean": 79.05,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 2.0,
@@ -1516,7 +1546,7 @@
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 77.55,
+      "matched_random_reserve_hits_clean": 78.2,
       "per_cohort_delta_clean": {
         "Basket": -2.0,
         "bladder": 3.0,
@@ -1532,7 +1562,7 @@
       "beats_random": true,
       "delta_clean": 1,
       "hits_clean": 81,
-      "matched_random_reserve_hits_clean": 75.1,
+      "matched_random_reserve_hits_clean": 75.7,
       "per_cohort_delta_clean": {
         "Basket": -2.0,
         "bladder": 2.0,
@@ -1564,7 +1594,7 @@
       "beats_random": true,
       "delta_clean": 8,
       "hits_clean": 88,
-      "matched_random_reserve_hits_clean": 83.6,
+      "matched_random_reserve_hits_clean": 83.25,
       "per_cohort_delta_clean": {
         "Basket": 2.0,
         "bladder": 3.0,
@@ -1580,7 +1610,7 @@
       "beats_random": true,
       "delta_clean": 3,
       "hits_clean": 83,
-      "matched_random_reserve_hits_clean": 80.2,
+      "matched_random_reserve_hits_clean": 79.75,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 2.0,
@@ -1596,7 +1626,7 @@
       "beats_random": true,
       "delta_clean": 4,
       "hits_clean": 84,
-      "matched_random_reserve_hits_clean": 79.75,
+      "matched_random_reserve_hits_clean": 79.9,
       "per_cohort_delta_clean": {
         "Basket": 0.0,
         "bladder": 2.0,
@@ -1612,7 +1642,7 @@
       "beats_random": true,
       "delta_clean": 2,
       "hits_clean": 82,
-      "matched_random_reserve_hits_clean": 77.85,
+      "matched_random_reserve_hits_clean": 77.2,
       "per_cohort_delta_clean": {
         "Basket": -2.0,
         "bladder": 1.0,
@@ -1628,6 +1658,6 @@
     "all": 83.0,
     "clean": 80.0
   },
-  "sha256": "f578b1662a4209dc8eb87fb4f30b3583572b3b5507fa85c58e59820778f310b8",
+  "sha256": "e44d3d1ac66a272e89cb00aaf85dc856b905e76d8c8712665f6e3f5b13214890",
   "stage": 1
 }

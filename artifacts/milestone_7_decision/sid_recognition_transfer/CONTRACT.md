@@ -64,10 +64,12 @@ is implemented exactly.
 
 ## 3b. Two-stage protocol with a hard pre-Sid checkpoint
 
-**Stage 1 (non-Sid only):** select and FREEZE one arm/null using only IMPROVE (+ multimer/Gartner for the
-core arm). Serialize config+SHA-256. Commit. Audit that no Sid file/label was accessed. **STOP.**
-**Stage 2 (later, separate):** load Sid and run exactly one tie-aware evaluation with the frozen config.
-This file is committed at the Stage-1 checkpoint; Stage-2 code does not exist yet.
+**Stage 1 (non-Sid only):** select and FREEZE one arm/null using only IMPROVE (multimer/Gartner are used
+ONLY as an anchored-component-only external transport CHECK, never for selection — see §3a v2). Serialize
+the config, the FITTED model (coefficients/intercept/feature-order/C/sklearn-version/direction+percentile
+policy + payload hash), and the SHA-256. Commit. Audit that no Sid file/label was accessed. **STOP.**
+**Stage 2 (later, separate):** load Sid and run exactly one tie-aware evaluation APPLYING the frozen
+coefficients (never refit). This file is committed at the Stage-1 checkpoint; Stage-2 code does not exist yet.
 
 ## 4. Model families attempted (declared up front — full multiplicity reported)
 

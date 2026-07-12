@@ -15,9 +15,39 @@
       "melanoma": 3.0
     },
     "worst_cohort": 2.0,
-    "matched_random_reserve_hits_clean": 82.15,
+    "matched_random_reserve_hits_clean": 82.55,
     "beats_random": true
   },
+  "fitted_model": {
+    "feature_order": [
+      "prime",
+      "el",
+      "expr",
+      "VarAlFreq"
+    ],
+    "coef": [
+      0.015661188167842975,
+      0.005488775406759181,
+      0.0007174357003912144,
+      0.0022121768078998297
+    ],
+    "intercept": -0.013156965671484609,
+    "C": 0.5,
+    "alpha": 0.1,
+    "q": 1,
+    "sklearn_version": "1.9.0",
+    "percentile_policy": "within-patient rank(pct=True) of the oriented raw feature; NaN->0.5",
+    "direction_policy": {
+      "prime": "lower_raw_better",
+      "el": "lower_raw_better",
+      "expr": "higher_raw_better",
+      "VarAlFreq": "higher_raw_better"
+    },
+    "reserve": "promote-side: protect top (20-q) by score, fill q by mutant-RNA rna_af (higher=better), backfill by score; q disabled where rna_af absent",
+    "apply": "score = within_patient_pct(-prime) + alpha * within_patient_pct(sigmoid(coef.feat_pct + intercept))",
+    "model_payload_sha256": "580339d7b6bcc8da4a045b46387803bd227b95d97f787153d6eb6119171dbcb2"
+  },
+  "stage2_must_not_refit": "Stage 2 applies fitted_model.coef/intercept only (linear predictor -> sigmoid); it MUST NOT refit any model after Sid is available.",
   "null_hits_clean": 80.0,
   "n_leaked_rows_quarantined": 731,
   "selected_on": "IMPROVE official partitions OOF, LEAKAGE-CLEAN only; matched-random; transport",
@@ -44,7 +74,7 @@
           },
           "outer_test_hits": 22,
           "null_hits": 21,
-          "matched_random_hits": 21.2
+          "matched_random_hits": 21.55
         },
         {
           "fold": 1,
@@ -56,7 +86,7 @@
           },
           "outer_test_hits": 17,
           "null_hits": 18,
-          "matched_random_hits": 15.1
+          "matched_random_hits": 15.35
         },
         {
           "fold": 2,
@@ -68,7 +98,7 @@
           },
           "outer_test_hits": 6,
           "null_hits": 6,
-          "matched_random_hits": 5.3
+          "matched_random_hits": 5.05
         },
         {
           "fold": 3,
@@ -80,7 +110,7 @@
           },
           "outer_test_hits": 23,
           "null_hits": 21,
-          "matched_random_hits": 21.15
+          "matched_random_hits": 21.2
         },
         {
           "fold": 4,
@@ -92,10 +122,10 @@
           },
           "outer_test_hits": 15,
           "null_hits": 14,
-          "matched_random_hits": 14.25
+          "matched_random_hits": 14.05
         }
       ],
-      "nested_matched_random_total": 77.0,
+      "nested_matched_random_total": 77.2,
       "beats_nested_matched_random": true,
       "paired_bootstrap_delta_vs_null": {
         "mean_delta": 0.0429,
@@ -129,7 +159,7 @@
           },
           "outer_test_hits": 22,
           "null_hits": 21,
-          "matched_random_hits": 21.2
+          "matched_random_hits": 21.55
         },
         {
           "fold": 1,
@@ -141,7 +171,7 @@
           },
           "outer_test_hits": 17,
           "null_hits": 18,
-          "matched_random_hits": 15.1
+          "matched_random_hits": 15.35
         },
         {
           "fold": 2,
@@ -153,7 +183,7 @@
           },
           "outer_test_hits": 6,
           "null_hits": 6,
-          "matched_random_hits": 5.45
+          "matched_random_hits": 5.2
         },
         {
           "fold": 3,
@@ -165,7 +195,7 @@
           },
           "outer_test_hits": 23,
           "null_hits": 21,
-          "matched_random_hits": 21.25
+          "matched_random_hits": 21.2
         },
         {
           "fold": 4,
@@ -177,10 +207,10 @@
           },
           "outer_test_hits": 15,
           "null_hits": 14,
-          "matched_random_hits": 14.25
+          "matched_random_hits": 14.1
         }
       ],
-      "nested_matched_random_total": 77.25,
+      "nested_matched_random_total": 77.4,
       "beats_nested_matched_random": true,
       "paired_bootstrap_delta_vs_null": {
         "mean_delta": 0.0429,
@@ -220,5 +250,5 @@
     "CelPrev": "MISSING->neutral"
   },
   "limitations": "patient-level paired bootstrap CI for the nested per-family delta is COMPUTED and reported (see nested_cv_per_family[*].paired_bootstrap_delta_vs_null; fixed seed 12345), NOT gated. Stage 1 was NARROWED to the exact runner vs the original contract (see CONTRACT.md 'STAGE-1 v2 PROTOCOL CORRECTION'): PRIME base only (MixMHCpred base deferred), 2 anchored full-feature arms (not the physchem/expression/absence families), 5 IMPROVE official partitions (Gartner/multimer are an ANCHORED-COMPONENT-ONLY external transport check, q disabled there). Sid previously inspected -> Stage 2 is exploratory confirmation, not pristine validation.",
-  "sha256": "f578b1662a4209dc8eb87fb4f30b3583572b3b5507fa85c58e59820778f310b8"
+  "sha256": "e44d3d1ac66a272e89cb00aaf85dc856b905e76d8c8712665f6e3f5b13214890"
 }

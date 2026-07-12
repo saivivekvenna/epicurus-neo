@@ -49,6 +49,11 @@ ARMS = {"core_deployable": ["prime", "el", "expr", "VarAlFreq"],
 ARM_RANK = {"core_deployable": 0, "improve_rich_partial_bridge": 1}  # simpler core preferred in ties
 
 
+def stable_seed(pid) -> int:
+    """Process-stable per-patient seed (Python hash() is randomized across processes)."""
+    return int.from_bytes(hashlib.sha256(str(pid).encode()).digest()[:4], "big")
+
+
 def tiebreak_key(cfg, hits):
     """Conservative deterministic tie-break: prefer NULL, then lower q, lower alpha, simpler (core) arm,
     lower C. Used with min() over (config, hits)."""
@@ -144,7 +149,7 @@ def config_hits(df, prime_pct, oof, alpha, q, clean_mask, *, random_reserve=Fals
             res = [i for i in np.argsort(-np.where(np.isfinite(r), r, -1), kind="mergesort")
                    if i not in ps and np.isfinite(r[i]) and r[i] > 0][: max(k - len(prot), 0)]
         elif q:
-            rng = np.random.default_rng([seed, abs(hash(str(pid))) % (2**31)])
+            rng = np.random.default_rng([seed, stable_seed(pid)])
             elig = [i for i in range(n) if i not in ps and np.isfinite(r[i]) and r[i] > 0]
             res = list(rng.permutation(elig))[: max(k - len(prot), 0)]
         else:
@@ -168,6 +173,31 @@ def fit_predict(train, test, cols, C):
     y = (train["label"].to_numpy() == "POSITIVE").astype(int)
     clf = LogisticRegression(max_iter=2000, C=C).fit(_feat(train, cols), y, sample_weight=_bal(train))
     return clf.predict_proba(_feat(test, cols))[:, 1]
+
+
+def serialize_fitted_model(df, cols, C, alpha, q):
+    """Fit the selected family logistic on ALL non-Sid IMPROVE and serialize everything Stage 2 needs to
+    APPLY it WITHOUT refitting: feature order, coefficients, intercept, C, sklearn version, the percentile/
+    direction policy, the anchor (alpha) and reserve (q), and a payload hash. Stage 2 must only apply these
+    coefficients (linear predictor -> sigmoid), never refit after Sid is available."""
+    import sklearn
+    y = (df["label"].to_numpy() == "POSITIVE").astype(int)
+    clf = LogisticRegression(max_iter=2000, C=C).fit(_feat(df, cols), y, sample_weight=_bal(df))
+    payload = {
+        "feature_order": list(cols),
+        "coef": [float(x) for x in clf.coef_[0]],          # FULL precision (rounding could flip top-20 ties)
+        "intercept": float(clf.intercept_[0]),
+        "C": C, "alpha": alpha, "q": q,
+        "sklearn_version": sklearn.__version__,
+        "percentile_policy": "within-patient rank(pct=True) of the oriented raw feature; NaN->0.5",
+        "direction_policy": {c: ("lower_raw_better" if c in {"prime", "el"} else "higher_raw_better") for c in cols},
+        "reserve": "promote-side: protect top (20-q) by score, fill q by mutant-RNA rna_af (higher=better), "
+                   "backfill by score; q disabled where rna_af absent",
+        "apply": "score = within_patient_pct(-prime) + alpha * within_patient_pct(sigmoid(coef.feat_pct + intercept))",
+    }
+    payload["model_payload_sha256"] = hashlib.sha256(
+        json.dumps(payload, sort_keys=True).encode()).hexdigest()
+    return payload
 
 
 def configs_for(arm):  # per-family config space INCLUDING the null (alpha=0, q=0)
@@ -278,8 +308,13 @@ def main() -> int:
     winner = min(eligible, key=lambda g: tiebreak_key((g["arm"], g["C"], g["alpha"], g["q"]),
                                                       g["hits_clean"])) if eligible else None
     ext = external_transport(df, winner) if winner else None
+    fitted = (serialize_fitted_model(df, ARMS[winner["arm"]], winner["C"], winner["alpha"], winner["q"])
+              if winner else None)
     cfg = {"name": "sid_recognition_gate", "version": "1.0.0", "stage": "1_non_sid_frozen",
            "frozen": winner or {"arm": "null", "alpha": 0.0, "q": 0},
+           "fitted_model": fitted,
+           "stage2_must_not_refit": "Stage 2 applies fitted_model.coef/intercept only (linear predictor -> "
+                                    "sigmoid); it MUST NOT refit any model after Sid is available.",
            "null_hits_clean": null_tot["clean"], "n_leaked_rows_quarantined": n_leaked,
            "selected_on": "IMPROVE official partitions OOF, LEAKAGE-CLEAN only; matched-random; transport",
            "sid_never_consulted": True,
