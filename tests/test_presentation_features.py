@@ -13,16 +13,18 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-pytest.importorskip("mhcflurry")
-
-from benchmark.presentation_features import (  # noqa: E402
-    PRESENTATION_COLUMNS,
-    add_presentation_features,
-)
+# IMPORTANT: do NOT import mhcflurry (TensorFlow) at module/collection scope. Loading TensorFlow into the
+# shared pytest process collides with the OpenMP runtime used by the xgboost-based tests and segfaults the
+# interpreter. Deferring the import into the fixture keeps TensorFlow out of the process until this test
+# actually runs (alphabetically after the xgboost tests), so the full suite stays green.
+from benchmark.presentation_features import PRESENTATION_COLUMNS  # noqa: E402
 
 
 @pytest.fixture(scope="module")
 def scored():
+    pytest.importorskip("mhcflurry")
+    from benchmark.presentation_features import add_presentation_features
+
     frame = pd.DataFrame({
         "mutant_peptide": ["GILGFVFTL", "AAAAAAAAA", "", "NLVPMVATV"],
         "hla_allele": ["HLA-A*02:01", "HLA-A*02:01", "HLA-A*02:01", "HLA-A*02:01"],
@@ -55,6 +57,8 @@ def test_known_binder_presents_better_than_random_nonamer(scored):
 
 
 def test_deterministic(scored):
+    from benchmark.presentation_features import add_presentation_features
+
     frame = pd.DataFrame({
         "mutant_peptide": ["GILGFVFTL", "NLVPMVATV"],
         "hla_allele": ["HLA-A*02:01", "HLA-A*02:01"],
