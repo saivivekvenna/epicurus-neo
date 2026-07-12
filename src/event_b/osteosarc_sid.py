@@ -836,14 +836,14 @@ def _adjudicate(hudson_rows, vafs_idx, pv_genes, cat_by_id) -> dict:
     # MAP2 frameshift
     map2 = [v for v in vafs_idx.values() if v["gene"] == "MAP2" and protein_fs_position(v["protein_change"])]
     labels = sorted({f"{v['variant_id']}({v['protein_change']})" for v in map2})
-    out[("MAP2", "G868FS")] = (
+    out[("MAP2", "GYCVFNKYTV868FS")] = (
         f"MAP2 frameshift (Hudson label p.GYCVFNKYTV868fs, recognized May): the site carries two "
-        f"overlapping frameshift annotations {labels} 4bp apart. Whether these are alternate representations "
-        f"of one event or distinct overlapping deletions cannot be resolved from the public tables. The "
+        f"overlapping frameshift annotations {labels} 4bp apart. They have different genomic alleles and "
+        f"different neo-frame sequences, so they remain distinct records. The "
         f"vaccine (JLF V1/V2/V3) + ELISPOT-strong record is on MAP2-chr2-209694768 (p.Leu867fs); "
         f"the Hudson '868fs' label position-matches MAP2-chr2-209694772 (p.Gly868fs, no vaccine/experiments). "
-        f"The frameshift neo-peptide GYCVFNKYTV is not present in either page's blocks, so sequence cannot "
-        f"disambiguate. BOTH are called by DRAGEN/Sarek/oncoanalyser and BOTH are absent from the pVACtools "
+        f"The Hudson neo-frame GYCVFNKYTV differs from the Leu867fs vaccine neo-frame (RVVPFTKAL), "
+        f"supporting the Gly868fs mapping. BOTH are called by DRAGEN/Sarek/oncoanalyser and absent from pVACtools "
         f"2025 candidate universe -> lost at candidate generation. The prior 'low-TPM expression-filter drop' "
         f"attribution is not confirmable from these files (MAP2 is simply absent from the pVACtools output).")
     return out
@@ -1117,8 +1117,8 @@ def _render_report(summary, funnel, adjudication, provenance) -> str:
     for key, txt in sorted(adjudication.items()):
         A(f"- **{key[0]} {key[1]}** — {txt}")
     A("\n## 5. Changes justified for Epicurus (proposed, NOT fit to this patient)\n")
-    A("1. **Multi-caller / longitudinal union at candidate generation.** 2 of 3 recognized, "
-      "vaccine-included, ELISPOT-positive neoantigens (ASPM, MAP2) were *called by DRAGEN/Sarek/"
+    A("1. **Multi-caller / longitudinal union at candidate generation.** 2 of 3 Hudson-recognized "
+      "neoantigens (ASPM, MAP2 Gly868fs) were *called by DRAGEN/Sarek/"
       "oncoanalyser* yet dropped by the single pVACtools 2025.01 candidate step. The recoverable loss is "
       "candidate **recall**, upstream of any ranker.")
     A("2. **No hard TPM/tier drop; carry low-evidence candidates with a flag** rather than filtering them "

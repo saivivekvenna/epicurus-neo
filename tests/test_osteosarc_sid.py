@@ -86,4 +86,11 @@ def test_full_cached_reconstruction_passes_frozen_headline_invariants(tmp_path):
     assert summary["resolved_nonpool_rows"] == 29
     assert summary["resolved_unique_peptide_units"] == 15
     assert summary["resolved_unique_contradictory_units"] == 8
-
+    funnel = list(__import__("csv").DictReader((tmp_path / "reachability_funnel.csv").open()))
+    hudson_map2 = next(row for row in funnel if row["gene"] == "MAP2" and row["hudson_recognized"] == "true")
+    site_map2 = next(row for row in funnel if row["gene"] == "MAP2" and row["recognized_by"] == "site_elispot_positive")
+    assert hudson_map2["target_id"] == "MAP2-chr2-209694772"
+    assert hudson_map2["in_vaccine"] == "false"
+    assert hudson_map2["has_site_elispot"] == "false"
+    assert "differs from the Leu867fs vaccine neo-frame" in hudson_map2["adjudication"]
+    assert site_map2["target_id"] == "MAP2-chr2-209694768"
