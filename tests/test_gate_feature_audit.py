@@ -21,6 +21,7 @@ from benchmark.gate_feature_audit import (
     feature_coverage,
     grouped_oof_auroc,
     high_presentation_mask,
+    within_patient_variation,
 )
 
 
@@ -111,6 +112,22 @@ def test_grouped_oof_auroc_recovers_real_signal_and_rejects_noise():
     rand = grouped_oof_auroc(frame, ["noise"], n_splits=4, seed=0)
     assert real["oof_auroc"] > 0.85
     assert 0.35 < rand["oof_auroc"] < 0.65
+
+
+def test_within_patient_variation_separates_candidate_varying_from_constant():
+    frame = pd.DataFrame(
+        {
+            "patient_id": ["A", "A", "A", "B", "B"],
+            "candidate_varying": [1.0, 2.0, 3.0, 9.0, 8.0],  # varies in both patients
+            "patient_constant": [5.0, 5.0, 5.0, 7.0, 7.0],  # constant within each patient
+        }
+    )
+    # candidate_varying varies within both A and B -> fraction 1.0
+    assert within_patient_variation(frame, "candidate_varying") == 1.0
+    # patient_constant is constant within each patient -> fraction 0.0
+    assert within_patient_variation(frame, "patient_constant") == 0.0
+    # absent column -> 0.0, no crash
+    assert within_patient_variation(frame, "missing") == 0.0
 
 
 def test_feature_coverage_reports_nonnull_fraction():

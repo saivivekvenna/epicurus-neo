@@ -169,6 +169,21 @@ def grouped_oof_auroc(
     }
 
 
+def within_patient_variation(frame: pd.DataFrame, col: str, *, group_col: str = "patient_id") -> float:
+    """Fraction of patients in which ``col`` takes >1 distinct value across the
+    patient's candidates. ~1.0 = candidate-varying (rankable within a patient);
+    ~0.0 = patient/sample-constant (context-only, cannot re-order candidates).
+
+    This is the deployability axis for a within-patient gate: a feature that is
+    constant across a patient's candidates can shift the whole patient's prior
+    but can never remove one decoy while sparing a positive.
+    """
+    if col not in frame.columns or group_col not in frame.columns:
+        return 0.0
+    varies = frame.groupby(group_col)[col].nunique(dropna=True) > 1
+    return round(float(varies.mean()), 4)
+
+
 def feature_coverage(frame: pd.DataFrame, columns: list[str]) -> dict:
     """Non-null fraction per column; absent columns report 0.0 (never crash)."""
     out = {}

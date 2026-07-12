@@ -1,0 +1,1072 @@
+{
+  "status": "AUDITED",
+  "source": "data/03_data_for_CV/IMPROVE/03_3_final_peptide_features_Partition_for_CV.txt",
+  "shape": [
+    17520,
+    88
+  ],
+  "n_patients": 70,
+  "n_samples": 81,
+  "correction": "supersedes commit 45af791 'IMPROVE has no orthogonal features' \u2014 that audited the reduced prime/el/expr export; the raw 88-col table is feature-rich.",
+  "bucket_counts": {
+    "forbidden": 22,
+    "presentation": 7,
+    "deployable": 39,
+    "suspicious_derived": 4,
+    "split_only": 3,
+    "context_only": 13
+  },
+  "buckets": {
+    "forbidden": [
+      "Sample",
+      "Patient",
+      "HLA_allele",
+      "Norm_peptide",
+      "Mut_peptide",
+      "Gene_ID",
+      "Transcript_ID",
+      "Genomic_Position",
+      "Protein_position",
+      "Gene_Symbol",
+      "identity",
+      "response",
+      "validation",
+      "PeptNorm",
+      "Core",
+      "CoreNonAnchor",
+      "HLA_type",
+      "HLA_num",
+      "sample_hla",
+      "identi_pep_patient",
+      "norm_pMHC",
+      "pMHC"
+    ],
+    "presentation": [
+      "RankEL",
+      "RankBA",
+      "RankEL_wt",
+      "RankEL_4.1",
+      "RankBA_4.1",
+      "RankEL_wt_4.1",
+      "Prime"
+    ],
+    "deployable": [
+      "Mutation_Consequence",
+      "VarAlFreq",
+      "Cancer_Driver_Gene",
+      "Expression",
+      "CelPrev",
+      "PeptLen",
+      "Of",
+      "Gp",
+      "Gl",
+      "Ip",
+      "Il",
+      "Stability",
+      "DAI_4.1",
+      "HydroAll",
+      "HydroCore",
+      "PropSmall",
+      "PropAro",
+      "PropBasic",
+      "PropAcidic",
+      "SelfSim",
+      "mw",
+      "Aro",
+      "Inst",
+      "PropHydroAro",
+      "CysRed",
+      "pI",
+      "DAI",
+      "Misense_mutation",
+      "Frameshift_mutation",
+      "Inframe_deletion_mutation",
+      "Inframe_insertion",
+      "Foreigness",
+      "HLAexp",
+      "rna_confirm",
+      "rna_var",
+      "rna_total",
+      "rna_af",
+      "ValMutRNACoef",
+      "rna_bin"
+    ],
+    "suspicious_derived": [
+      "PrioScore",
+      "IB_CB",
+      "IB_CB_cat",
+      "NetMHCExp"
+    ],
+    "split_only": [
+      "cohort",
+      "Loci",
+      "Partition"
+    ],
+    "context_only": [
+      "Sample_TME",
+      "Tcells",
+      "TcellsCD8",
+      "CytoxLympho",
+      "Blinage",
+      "NKcells",
+      "Monocytes",
+      "MyeloidDC",
+      "Neutrophils",
+      "Endothelial",
+      "Fibroblasts",
+      "MCPmean",
+      "CYT"
+    ]
+  },
+  "deployable_whitelist_by_family": {
+    "mutation_annotation": [
+      "Mutation_Consequence",
+      "Cancer_Driver_Gene",
+      "Misense_mutation",
+      "Frameshift_mutation",
+      "Inframe_deletion_mutation"
+    ],
+    "vaf_readsupport": [
+      "VarAlFreq"
+    ],
+    "expression": [
+      "Expression"
+    ],
+    "clonality": [
+      "CelPrev"
+    ],
+    "physicochemical": [
+      "PeptLen",
+      "HydroAll",
+      "HydroCore",
+      "PropSmall",
+      "PropAro",
+      "PropBasic",
+      "PropAcidic",
+      "mw",
+      "Aro",
+      "Inst",
+      "PropHydroAro",
+      "CysRed",
+      "pI"
+    ],
+    "nn_align": [
+      "Of",
+      "Gp",
+      "Gl"
+    ],
+    "stability_processing": [
+      "Stability"
+    ],
+    "agretopicity": [
+      "DAI_4.1",
+      "DAI"
+    ],
+    "foreignness_selfsim": [
+      "SelfSim",
+      "Foreigness"
+    ],
+    "hla_expression": [
+      "HLAexp"
+    ],
+    "rna_support": [
+      "rna_confirm",
+      "rna_var",
+      "rna_total",
+      "rna_af",
+      "ValMutRNACoef",
+      "rna_bin"
+    ]
+  },
+  "columns": [
+    {
+      "column": "Sample",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "sample id",
+      "response_leakage_auroc": 0.5296
+    },
+    {
+      "column": "Patient",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.0,
+      "n_unique": 70,
+      "note": "patient id"
+    },
+    {
+      "column": "HLA_allele",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9857,
+      "n_unique": 36,
+      "note": "restricting allele (identity)"
+    },
+    {
+      "column": "Norm_peptide",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 0.9908,
+      "within_patient_variation": 1.0,
+      "n_unique": 15000,
+      "note": "WT peptide sequence (identity)"
+    },
+    {
+      "column": "Mut_peptide",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 15293,
+      "note": "mutant peptide sequence (identity)"
+    },
+    {
+      "column": "RankEL",
+      "bucket": "presentation",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 10886,
+      "note": "NetMHCpan-4.0 EL %rank (mut)"
+    },
+    {
+      "column": "RankBA",
+      "bucket": "presentation",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 14990,
+      "note": "NetMHCpan BA %rank (mut)"
+    },
+    {
+      "column": "RankEL_wt",
+      "bucket": "presentation",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 13415,
+      "note": "EL %rank (WT)"
+    },
+    {
+      "column": "Gene_ID",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 4423,
+      "note": "gene identifier"
+    },
+    {
+      "column": "Transcript_ID",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 5246,
+      "note": "transcript identifier"
+    },
+    {
+      "column": "Genomic_Position",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 6016,
+      "note": "genomic coordinate (identity)",
+      "response_leakage_auroc": 0.5105
+    },
+    {
+      "column": "Protein_position",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 4993,
+      "note": "protein coordinate (identity)",
+      "response_leakage_auroc": 0.5221
+    },
+    {
+      "column": "Mutation_Consequence",
+      "bucket": "deployable",
+      "family": "mutation_annotation",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.8857,
+      "n_unique": 4,
+      "note": "categorical consequence class"
+    },
+    {
+      "column": "VarAlFreq",
+      "bucket": "deployable",
+      "family": "vaf_readsupport",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 706,
+      "note": "DNA variant allele frequency"
+    },
+    {
+      "column": "Gene_Symbol",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 4409,
+      "note": "gene symbol (identity; driver captured via Cancer_Driver_Gene)"
+    },
+    {
+      "column": "Cancer_Driver_Gene",
+      "bucket": "deployable",
+      "family": "mutation_annotation",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.8857,
+      "n_unique": 2,
+      "note": "driver-gene flag"
+    },
+    {
+      "column": "Expression",
+      "bucket": "deployable",
+      "family": "expression",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 5974,
+      "note": "gene expression (TPM-like)"
+    },
+    {
+      "column": "PrioScore",
+      "bucket": "suspicious_derived",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 95,
+      "note": "IMPROVE's OWN 0-100 priority bucket \u2014 model output, circular; provenance needed",
+      "response_leakage_auroc": 0.5038
+    },
+    {
+      "column": "CelPrev",
+      "bucket": "deployable",
+      "family": "clonality",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9714,
+      "n_unique": 5965,
+      "note": "cancer-cell prevalence / clonality of the mutation"
+    },
+    {
+      "column": "cohort",
+      "bucket": "split_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.0,
+      "n_unique": 3,
+      "note": "tumour cohort (bladder/melanoma/Basket) \u2014 context/split, not deployable"
+    },
+    {
+      "column": "identity",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 17520,
+      "note": "row identity string"
+    },
+    {
+      "column": "response",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.8714,
+      "n_unique": 2,
+      "note": "THE LABEL (immunogenic 0/1)",
+      "response_leakage_auroc": 1.0
+    },
+    {
+      "column": "validation",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.0,
+      "n_unique": 1,
+      "note": "QC flag (constant 'Sufficient'); outcome-adjacent, unusable"
+    },
+    {
+      "column": "PeptNorm",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 15143,
+      "note": "normalised peptide sequence (identity)"
+    },
+    {
+      "column": "PeptLen",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 4,
+      "note": "peptide length"
+    },
+    {
+      "column": "Core",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 15063,
+      "note": "binding-core residues (sequence-derived)"
+    },
+    {
+      "column": "Of",
+      "bucket": "deployable",
+      "family": "nn_align",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.5857,
+      "n_unique": 3,
+      "note": "NetMHC alignment offset (low value)"
+    },
+    {
+      "column": "Gp",
+      "bucket": "deployable",
+      "family": "nn_align",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 9,
+      "note": "gap position (low value)"
+    },
+    {
+      "column": "Gl",
+      "bucket": "deployable",
+      "family": "nn_align",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 3,
+      "note": "gap length (low value)"
+    },
+    {
+      "column": "Ip",
+      "bucket": "deployable",
+      "family": "nn_align",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.3714,
+      "n_unique": 9,
+      "note": "insertion position (low value)"
+    },
+    {
+      "column": "Il",
+      "bucket": "deployable",
+      "family": "nn_align",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.3714,
+      "n_unique": 2,
+      "note": "insertion length (low value)"
+    },
+    {
+      "column": "RankEL_4.1",
+      "bucket": "presentation",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 3673,
+      "note": "NetMHCpan-4.1 EL %rank"
+    },
+    {
+      "column": "RankBA_4.1",
+      "bucket": "presentation",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 4722,
+      "note": "NetMHCpan-4.1 BA %rank"
+    },
+    {
+      "column": "RankEL_wt_4.1",
+      "bucket": "presentation",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 0.9908,
+      "within_patient_variation": 1.0,
+      "n_unique": 6332,
+      "note": "EL %rank WT 4.1"
+    },
+    {
+      "column": "Stability",
+      "bucket": "deployable",
+      "family": "stability_processing",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 97,
+      "note": "pMHC stability (NetMHCstab)"
+    },
+    {
+      "column": "Prime",
+      "bucket": "presentation",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 16200,
+      "note": "PRIME immunogenicity+presentation score (incumbent scorer)"
+    },
+    {
+      "column": "DAI_4.1",
+      "bucket": "deployable",
+      "family": "agretopicity",
+      "hypothesised_higher_better": true,
+      "coverage": 0.9908,
+      "within_patient_variation": 1.0,
+      "n_unique": 15756,
+      "note": "DAI on NetMHCpan-4.1"
+    },
+    {
+      "column": "CoreNonAnchor",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 15074,
+      "note": "non-anchor core residues (sequence-derived)"
+    },
+    {
+      "column": "Loci",
+      "bucket": "split_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.0,
+      "n_unique": 1,
+      "note": "constant (single value)"
+    },
+    {
+      "column": "HydroAll",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 1770,
+      "note": "hydrophobicity (whole peptide)"
+    },
+    {
+      "column": "HydroCore",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 1303,
+      "note": "hydrophobicity (core)"
+    },
+    {
+      "column": "PropSmall",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 17,
+      "note": "small-residue fraction"
+    },
+    {
+      "column": "PropAro",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 13,
+      "note": "aromatic fraction"
+    },
+    {
+      "column": "PropBasic",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 16,
+      "note": "basic fraction"
+    },
+    {
+      "column": "PropAcidic",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 14,
+      "note": "acidic fraction"
+    },
+    {
+      "column": "SelfSim",
+      "bucket": "deployable",
+      "family": "foreignness_selfsim",
+      "hypothesised_higher_better": false,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 14788,
+      "note": "self-similarity to self-proteome (lower=more foreign)"
+    },
+    {
+      "column": "mw",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 13634,
+      "note": "molecular weight"
+    },
+    {
+      "column": "Aro",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 20,
+      "note": "aromaticity"
+    },
+    {
+      "column": "Inst",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 3334,
+      "note": "instability index"
+    },
+    {
+      "column": "PropHydroAro",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 35,
+      "note": "hydrophobic+aromatic fraction"
+    },
+    {
+      "column": "CysRed",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 18,
+      "note": "reduced-cysteine count"
+    },
+    {
+      "column": "pI",
+      "bucket": "deployable",
+      "family": "physicochemical",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 894,
+      "note": "isoelectric point"
+    },
+    {
+      "column": "DAI",
+      "bucket": "deployable",
+      "family": "agretopicity",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 16823,
+      "note": "differential agretopicity index (mut vs WT binding)"
+    },
+    {
+      "column": "Misense_mutation",
+      "bucket": "deployable",
+      "family": "mutation_annotation",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.8857,
+      "n_unique": 2,
+      "note": "missense flag"
+    },
+    {
+      "column": "Frameshift_mutation",
+      "bucket": "deployable",
+      "family": "mutation_annotation",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.8429,
+      "n_unique": 2,
+      "note": "frameshift flag"
+    },
+    {
+      "column": "Inframe_deletion_mutation",
+      "bucket": "deployable",
+      "family": "mutation_annotation",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.5714,
+      "n_unique": 2,
+      "note": "inframe-del flag"
+    },
+    {
+      "column": "Inframe_insertion",
+      "bucket": "deployable",
+      "family": "mutation_annotation",
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.2714,
+      "n_unique": 2,
+      "note": "inframe-ins flag"
+    },
+    {
+      "column": "IB_CB",
+      "bucket": "suspicious_derived",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 16823,
+      "note": "unknown composite magnitude (CB mean~17.6 vs IB~0.78); provenance needed",
+      "response_leakage_auroc": 0.5007
+    },
+    {
+      "column": "IB_CB_cat",
+      "bucket": "suspicious_derived",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 2,
+      "note": "IB vs CB category of IB_CB; provenance needed"
+    },
+    {
+      "column": "Foreigness",
+      "bucket": "deployable",
+      "family": "foreignness_selfsim",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 496,
+      "note": "foreignness / dissimilarity-to-self score"
+    },
+    {
+      "column": "Sample_TME",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "TME class (per sample)"
+    },
+    {
+      "column": "Tcells",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "MCP-counter T cells (per sample)"
+    },
+    {
+      "column": "TcellsCD8",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 78,
+      "note": "CD8 T cells (per sample)"
+    },
+    {
+      "column": "CytoxLympho",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "cytotoxic lymphocytes (per sample)"
+    },
+    {
+      "column": "Blinage",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "B lineage (per sample)"
+    },
+    {
+      "column": "NKcells",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "NK cells (per sample)"
+    },
+    {
+      "column": "Monocytes",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "monocytes (per sample)"
+    },
+    {
+      "column": "MyeloidDC",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "myeloid DC (per sample)"
+    },
+    {
+      "column": "Neutrophils",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "neutrophils (per sample)"
+    },
+    {
+      "column": "Endothelial",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "endothelial (per sample)"
+    },
+    {
+      "column": "Fibroblasts",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "fibroblasts (per sample)"
+    },
+    {
+      "column": "MCPmean",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "MCP-counter mean (per sample)"
+    },
+    {
+      "column": "HLA_type",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9571,
+      "n_unique": 3,
+      "note": "hetero/homo HLA status string"
+    },
+    {
+      "column": "HLA_num",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9857,
+      "n_unique": 35,
+      "note": "allele-count/identity string"
+    },
+    {
+      "column": "sample_hla",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9571,
+      "n_unique": 202,
+      "note": "sample-allele identity"
+    },
+    {
+      "column": "HLAexp",
+      "bucket": "deployable",
+      "family": "hla_expression",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9571,
+      "n_unique": 202,
+      "note": "expression of the restricting HLA allele"
+    },
+    {
+      "column": "CYT",
+      "bucket": "context_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.1571,
+      "n_unique": 81,
+      "note": "cytolytic activity (per sample)"
+    },
+    {
+      "column": "identi_pep_patient",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 17520,
+      "note": "peptide-patient row id"
+    },
+    {
+      "column": "rna_confirm",
+      "bucket": "deployable",
+      "family": "rna_support",
+      "hypothesised_higher_better": true,
+      "coverage": 0.8466,
+      "within_patient_variation": 0.9857,
+      "n_unique": 3067,
+      "note": "ref/alt RNA read-count string (needs parse)"
+    },
+    {
+      "column": "rna_var",
+      "bucket": "deployable",
+      "family": "rna_support",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9857,
+      "n_unique": 306,
+      "note": "RNA reads supporting the variant"
+    },
+    {
+      "column": "rna_total",
+      "bucket": "deployable",
+      "family": "rna_support",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9857,
+      "n_unique": 819,
+      "note": "RNA total read depth at locus"
+    },
+    {
+      "column": "rna_af",
+      "bucket": "deployable",
+      "family": "rna_support",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9857,
+      "n_unique": 1643,
+      "note": "RNA allele frequency"
+    },
+    {
+      "column": "ValMutRNACoef",
+      "bucket": "deployable",
+      "family": "rna_support",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9857,
+      "n_unique": 1895,
+      "note": "validated-mutation RNA coefficient"
+    },
+    {
+      "column": "rna_bin",
+      "bucket": "deployable",
+      "family": "rna_support",
+      "hypothesised_higher_better": true,
+      "coverage": 1.0,
+      "within_patient_variation": 0.9857,
+      "n_unique": 3,
+      "note": "RNA-confirmed (binarised)"
+    },
+    {
+      "column": "norm_pMHC",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 17087,
+      "note": "allele_peptide IDENTITY string (WT) \u2014 NOT a score"
+    },
+    {
+      "column": "NetMHCExp",
+      "bucket": "suspicious_derived",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 16987,
+      "note": "NetMHC x Expression composite \u2014 double-counts presentation+expression primitives",
+      "response_leakage_auroc": 0.5195
+    },
+    {
+      "column": "pMHC",
+      "bucket": "forbidden",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 1.0,
+      "n_unique": 17353,
+      "note": "allele_peptide IDENTITY string (mutant) \u2014 NOT a score"
+    },
+    {
+      "column": "Partition",
+      "bucket": "split_only",
+      "family": null,
+      "hypothesised_higher_better": null,
+      "coverage": 1.0,
+      "within_patient_variation": 0.0,
+      "n_unique": 5,
+      "note": "CV fold assignment"
+    }
+  ],
+  "unclassified": [],
+  "selection_policy": "whitelist chosen from PRE-DECLARED biology + within-patient variation + coverage; held-out response used ONLY as a leakage screen on suspicious/forbidden (to reject)."
+}

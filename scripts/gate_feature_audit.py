@@ -37,6 +37,7 @@ from benchmark.gate_feature_audit import (  # noqa: E402
     feature_coverage,
     grouped_oof_auroc,
     high_presentation_mask,
+    within_patient_variation,
 )
 
 OUT = ROOT / "artifacts" / "milestone_7_decision" / "gate_feature_audit"
@@ -359,6 +360,225 @@ def run_llm_feasibility(sample_n=3):
     return record
 
 
+# --------------------------------------------------------------------------- IMPROVE raw 88-column audit
+# CORRECTION to commit 45af791: that audit used the REDUCED IMPROVE export (prime/el/expr only) and so
+# wrongly concluded IMPROVE "has no orthogonal features". The raw ZIP member
+# data/03_data_for_CV/IMPROVE/03_3_final_peptide_features_Partition_for_CV.txt carries 88 columns, many of
+# them candidate-varying orthogonal features (DNA VAF, RNA support, agretopicity, foreignness, clonality,
+# stability, HLA expression, mutation class, physicochemistry). The reduced frame discarded all of them.
+#
+# The classification below is PRE-DECLARED from biology + column semantics; it is NOT selected using the
+# held-out `response` outcome. The outcome is consulted only as a LEAKAGE SCREEN on the suspicious/forbidden
+# buckets (to REJECT), never to admit a feature into the deployable whitelist.
+IMPROVE_RAW_MEMBER = "data/03_data_for_CV/IMPROVE/03_3_final_peptide_features_Partition_for_CV.txt"
+IMPROVE_RAW_ZIP = "data/raw/improve/data.zip"
+
+# col -> (bucket, family_or_None, higher_better_or_None, note)
+IMPROVE_RAW_CLASS = {
+    # ---- presentation / incumbent anchor (the wall — NOT orthogonal) ----
+    "RankEL": ("presentation", None, None, "NetMHCpan-4.0 EL %rank (mut)"),
+    "RankBA": ("presentation", None, None, "NetMHCpan BA %rank (mut)"),
+    "RankEL_wt": ("presentation", None, None, "EL %rank (WT)"),
+    "RankEL_4.1": ("presentation", None, None, "NetMHCpan-4.1 EL %rank"),
+    "RankBA_4.1": ("presentation", None, None, "NetMHCpan-4.1 BA %rank"),
+    "RankEL_wt_4.1": ("presentation", None, None, "EL %rank WT 4.1"),
+    "Prime": ("presentation", None, None, "PRIME immunogenicity+presentation score (incumbent scorer)"),
+    # ---- deployable candidate-varying orthogonal features ----
+    "VarAlFreq": ("deployable", "vaf_readsupport", True, "DNA variant allele frequency"),
+    "CelPrev": ("deployable", "clonality", True, "cancer-cell prevalence / clonality of the mutation"),
+    "Expression": ("deployable", "expression", True, "gene expression (TPM-like)"),
+    "HLAexp": ("deployable", "hla_expression", True, "expression of the restricting HLA allele"),
+    "Stability": ("deployable", "stability_processing", True, "pMHC stability (NetMHCstab)"),
+    "DAI": ("deployable", "agretopicity", True, "differential agretopicity index (mut vs WT binding)"),
+    "DAI_4.1": ("deployable", "agretopicity", True, "DAI on NetMHCpan-4.1"),
+    "SelfSim": ("deployable", "foreignness_selfsim", False, "self-similarity to self-proteome (lower=more foreign)"),
+    "Foreigness": ("deployable", "foreignness_selfsim", True, "foreignness / dissimilarity-to-self score"),
+    "Cancer_Driver_Gene": ("deployable", "mutation_annotation", True, "driver-gene flag"),
+    "Mutation_Consequence": ("deployable", "mutation_annotation", None, "categorical consequence class"),
+    "Misense_mutation": ("deployable", "mutation_annotation", None, "missense flag"),
+    "Frameshift_mutation": ("deployable", "mutation_annotation", None, "frameshift flag"),
+    "Inframe_deletion_mutation": ("deployable", "mutation_annotation", None, "inframe-del flag"),
+    "Inframe_insertion": ("deployable", "mutation_annotation", None, "inframe-ins flag"),
+    "rna_var": ("deployable", "rna_support", True, "RNA reads supporting the variant"),
+    "rna_total": ("deployable", "rna_support", True, "RNA total read depth at locus"),
+    "rna_af": ("deployable", "rna_support", True, "RNA allele frequency"),
+    "rna_bin": ("deployable", "rna_support", True, "RNA-confirmed (binarised)"),
+    "ValMutRNACoef": ("deployable", "rna_support", True, "validated-mutation RNA coefficient"),
+    "rna_confirm": ("deployable", "rna_support", True, "ref/alt RNA read-count string (needs parse)"),
+    "PeptLen": ("deployable", "physicochemical", None, "peptide length"),
+    "HydroAll": ("deployable", "physicochemical", None, "hydrophobicity (whole peptide)"),
+    "HydroCore": ("deployable", "physicochemical", None, "hydrophobicity (core)"),
+    "PropSmall": ("deployable", "physicochemical", None, "small-residue fraction"),
+    "PropAro": ("deployable", "physicochemical", None, "aromatic fraction"),
+    "PropBasic": ("deployable", "physicochemical", None, "basic fraction"),
+    "PropAcidic": ("deployable", "physicochemical", None, "acidic fraction"),
+    "mw": ("deployable", "physicochemical", None, "molecular weight"),
+    "Aro": ("deployable", "physicochemical", None, "aromaticity"),
+    "Inst": ("deployable", "physicochemical", None, "instability index"),
+    "PropHydroAro": ("deployable", "physicochemical", None, "hydrophobic+aromatic fraction"),
+    "CysRed": ("deployable", "physicochemical", None, "reduced-cysteine count"),
+    "pI": ("deployable", "physicochemical", None, "isoelectric point"),
+    "Of": ("deployable", "nn_align", None, "NetMHC alignment offset (low value)"),
+    "Gp": ("deployable", "nn_align", None, "gap position (low value)"),
+    "Gl": ("deployable", "nn_align", None, "gap length (low value)"),
+    "Ip": ("deployable", "nn_align", None, "insertion position (low value)"),
+    "Il": ("deployable", "nn_align", None, "insertion length (low value)"),
+    # ---- patient/sample-constant immune context (cannot re-order candidates within a patient) ----
+    "Sample_TME": ("context_only", None, None, "TME class (per sample)"),
+    "Tcells": ("context_only", None, None, "MCP-counter T cells (per sample)"),
+    "TcellsCD8": ("context_only", None, None, "CD8 T cells (per sample)"),
+    "CytoxLympho": ("context_only", None, None, "cytotoxic lymphocytes (per sample)"),
+    "Blinage": ("context_only", None, None, "B lineage (per sample)"),
+    "NKcells": ("context_only", None, None, "NK cells (per sample)"),
+    "Monocytes": ("context_only", None, None, "monocytes (per sample)"),
+    "MyeloidDC": ("context_only", None, None, "myeloid DC (per sample)"),
+    "Neutrophils": ("context_only", None, None, "neutrophils (per sample)"),
+    "Endothelial": ("context_only", None, None, "endothelial (per sample)"),
+    "Fibroblasts": ("context_only", None, None, "fibroblasts (per sample)"),
+    "MCPmean": ("context_only", None, None, "MCP-counter mean (per sample)"),
+    "CYT": ("context_only", None, None, "cytolytic activity (per sample)"),
+    # ---- suspicious / derived: require provenance before any use ----
+    "PrioScore": ("suspicious_derived", None, None, "IMPROVE's OWN 0-100 priority bucket — model output, circular; provenance needed"),
+    "IB_CB": ("suspicious_derived", None, None, "unknown composite magnitude (CB mean~17.6 vs IB~0.78); provenance needed"),
+    "IB_CB_cat": ("suspicious_derived", None, None, "IB vs CB category of IB_CB; provenance needed"),
+    "NetMHCExp": ("suspicious_derived", None, None, "NetMHC x Expression composite — double-counts presentation+expression primitives"),
+    # ---- forbidden: outcome or identity ----
+    "response": ("forbidden", None, None, "THE LABEL (immunogenic 0/1)"),
+    "validation": ("forbidden", None, None, "QC flag (constant 'Sufficient'); outcome-adjacent, unusable"),
+    "identity": ("forbidden", None, None, "row identity string"),
+    "identi_pep_patient": ("forbidden", None, None, "peptide-patient row id"),
+    "Sample": ("forbidden", None, None, "sample id"),
+    "Patient": ("forbidden", None, None, "patient id"),
+    "HLA_allele": ("forbidden", None, None, "restricting allele (identity)"),
+    "HLA_num": ("forbidden", None, None, "allele-count/identity string"),
+    "HLA_type": ("forbidden", None, None, "hetero/homo HLA status string"),
+    "sample_hla": ("forbidden", None, None, "sample-allele identity"),
+    "Gene_ID": ("forbidden", None, None, "gene identifier"),
+    "Transcript_ID": ("forbidden", None, None, "transcript identifier"),
+    "Genomic_Position": ("forbidden", None, None, "genomic coordinate (identity)"),
+    "Protein_position": ("forbidden", None, None, "protein coordinate (identity)"),
+    "Gene_Symbol": ("forbidden", None, None, "gene symbol (identity; driver captured via Cancer_Driver_Gene)"),
+    "Norm_peptide": ("forbidden", None, None, "WT peptide sequence (identity)"),
+    "Mut_peptide": ("forbidden", None, None, "mutant peptide sequence (identity)"),
+    "PeptNorm": ("forbidden", None, None, "normalised peptide sequence (identity)"),
+    "Core": ("forbidden", None, None, "binding-core residues (sequence-derived)"),
+    "CoreNonAnchor": ("forbidden", None, None, "non-anchor core residues (sequence-derived)"),
+    "pMHC": ("forbidden", None, None, "allele_peptide IDENTITY string (mutant) — NOT a score"),
+    "norm_pMHC": ("forbidden", None, None, "allele_peptide IDENTITY string (WT) — NOT a score"),
+    # ---- split / constant ----
+    "Partition": ("split_only", None, None, "CV fold assignment"),
+    "cohort": ("split_only", None, None, "tumour cohort (bladder/melanoma/Basket) — context/split, not deployable"),
+    "Loci": ("split_only", None, None, "constant (single value)"),
+}
+
+
+def audit_improve_raw():
+    import zipfile
+
+    zpath = ROOT / IMPROVE_RAW_ZIP
+    if not zpath.exists():
+        return {"status": f"NOT_FOUND ({IMPROVE_RAW_ZIP})"}
+    with zipfile.ZipFile(zpath) as z:
+        df = pd.read_csv(z.open(IMPROVE_RAW_MEMBER), sep="\t")
+
+    y = pd.to_numeric(df.get("response"), errors="coerce")
+    columns = []
+    unclassified = []
+    for c in df.columns:
+        cls = IMPROVE_RAW_CLASS.get(c)
+        if cls is None:
+            unclassified.append(c)
+            bucket, family, orient, note = "UNCLASSIFIED", None, None, "not in predeclared map"
+        else:
+            bucket, family, orient, note = cls
+        entry = {
+            "column": c, "bucket": bucket, "family": family, "hypothesised_higher_better": orient,
+            "coverage": round(float(df[c].notna().mean()), 4),
+            "within_patient_variation": within_patient_variation(df, c, group_col="Patient"),
+            "n_unique": int(df[c].nunique(dropna=True)), "note": note,
+        }
+        # Leakage screen ONLY for suspicious/forbidden (to reject) — never to select deployables.
+        if bucket in ("suspicious_derived", "forbidden"):
+            x = pd.to_numeric(df[c], errors="coerce")
+            m = x.notna() & y.notna()
+            if m.sum() > 20 and y[m].nunique() > 1 and x[m].nunique() > 1:
+                from sklearn.metrics import roc_auc_score
+
+                a = float(roc_auc_score(y[m], x[m]))
+                entry["response_leakage_auroc"] = round(max(a, 1 - a), 4)
+        columns.append(entry)
+
+    # Deployable whitelist: predeclared-biology deployables that are genuinely candidate-varying + covered.
+    whitelist = {}
+    for e in columns:
+        if e["bucket"] == "deployable" and e["within_patient_variation"] >= 0.5 and e["coverage"] >= 0.8:
+            whitelist.setdefault(e["family"], []).append(e["column"])
+    buckets = {}
+    for e in columns:
+        buckets.setdefault(e["bucket"], []).append(e["column"])
+
+    return {
+        "status": "AUDITED",
+        "source": IMPROVE_RAW_MEMBER,
+        "shape": [int(df.shape[0]), int(df.shape[1])],
+        "n_patients": int(df["Patient"].nunique()),
+        "n_samples": int(df["Sample"].nunique()),
+        "correction": "supersedes commit 45af791 'IMPROVE has no orthogonal features' — that audited the "
+                      "reduced prime/el/expr export; the raw 88-col table is feature-rich.",
+        "bucket_counts": {k: len(v) for k, v in buckets.items()},
+        "buckets": buckets,
+        "deployable_whitelist_by_family": whitelist,
+        "columns": columns,
+        "unclassified": unclassified,
+        "selection_policy": "whitelist chosen from PRE-DECLARED biology + within-patient variation + coverage; "
+                            "held-out response used ONLY as a leakage screen on suspicious/forbidden (to reject).",
+    }
+
+
+def render_improve_markdown(imp):
+    L = ["# IMPROVE raw 88-column feature audit (CORRECTION to commit 45af791)\n"]
+    if imp.get("status") != "AUDITED":
+        L.append(f"status: {imp.get('status')}")
+        return "\n".join(L)
+    L.append(f"**Correction.** {imp['correction']}\n")
+    L.append(f"Source: `{imp['source']}` — {imp['shape'][0]} rows × {imp['shape'][1]} cols, "
+             f"{imp['n_patients']} patients / {imp['n_samples']} samples.\n")
+    L.append(f"**Selection policy.** {imp['selection_policy']}\n")
+    L.append("## Bucket counts\n")
+    for k, v in sorted(imp["bucket_counts"].items(), key=lambda kv: -kv[1]):
+        L.append(f"- **{k}**: {v}")
+    L.append("\n## Deployable candidate-varying whitelist (by orthogonal family)\n")
+    for fam, cols in sorted(imp["deployable_whitelist_by_family"].items()):
+        L.append(f"- **{fam}**: {', '.join(cols)}")
+    L.append("\n## Full column classification\n")
+    L.append("| column | bucket | family | cov | within-pt var | n_uniq | response-leak AUROC | note |")
+    L.append("|---|---|---|---|---|---|---|---|")
+    order = {"deployable": 0, "suspicious_derived": 1, "context_only": 2, "presentation": 3, "forbidden": 4, "split_only": 5, "UNCLASSIFIED": 6}
+    for e in sorted(imp["columns"], key=lambda e: (order.get(e["bucket"], 9), e["family"] or "", e["column"])):
+        L.append(f"| {e['column']} | {e['bucket']} | {e['family'] or ''} | {e['coverage']} | "
+                 f"{e['within_patient_variation']} | {e['n_unique']} | {e.get('response_leakage_auroc', '')} | {e['note']} |")
+    if imp["unclassified"]:
+        L.append(f"\n**UNCLASSIFIED (investigate):** {imp['unclassified']}")
+    L.append("\n## Notes on the columns the previous session flagged\n")
+    L.append("- **PrioScore** — IMPROVE's own 0–100 priority bucket (95 distinct values); marginal response "
+             "AUROC ≈ 0.50 so it is not leaking the outcome, but it is the pipeline's OWN composite output "
+             "(circular / double-counts primitives) → suspicious_derived, excluded from the clean whitelist.")
+    L.append("- **CelPrev** — cancer-cell prevalence / clonality of the mutation, candidate-varying "
+             "(within-patient var ≈ 0.97); legitimate clonality axis → deployable.")
+    L.append("- **IB_CB / IB_CB_cat** — a magnitude with a two-level category (CB≈17.6 vs IB≈0.78); semantics "
+             "undocumented in the reduced export → suspicious_derived pending provenance, not deployed.")
+    L.append("- **NetMHCExp** — NetMHC × Expression composite: double-counts presentation and expression "
+             "primitives that are separately available → suspicious_derived (use the primitives instead).")
+    L.append("- **pMHC / norm_pMHC** — these are `allele_peptide` IDENTITY strings (mutant / WT), NOT composite "
+             "scores → forbidden/identity.")
+    L.append("- **validation** — constant 'Sufficient' (an RNA-QC flag), not an experimental outcome and "
+             "useless as a feature → forbidden/constant.")
+    L.append("- **Immune-deconvolution block** (Tcells…MCPmean, CYT, Sample_TME) is per-sample constant "
+             "(within-patient var ≈ 0.16): it can move a whole patient's prior but cannot re-order that "
+             "patient's candidates → context_only, never a within-patient gate feature.")
+    return "\n".join(L)
+
+
 # --------------------------------------------------------------------------- unlock matrix
 def build_unlock_matrix(cohorts):
     """Rank orthogonal feature families by best cross-cohort stratum signal, availability, leakage."""
@@ -405,8 +625,17 @@ def build_unlock_matrix(cohorts):
 
 
 # --------------------------------------------------------------------------- render
-def render_markdown(cohorts, cedar, miller, unlock, llm):
+def render_markdown(cohorts, cedar, miller, unlock, llm, improve_raw=None):
     L = []
+    if improve_raw and improve_raw.get("status") == "AUDITED":
+        wl = improve_raw["deployable_whitelist_by_family"]
+        n_deploy = sum(len(v) for v in wl.values())
+        L.append(f"> **CORRECTION (supersedes the §2 IMPROVE row and §6 bottom line below).** The IMPROVE entry "
+                 f"here audits the *reduced* export (prime/el/expr) and shows no orthogonal features. That is a "
+                 f"scope artifact, not a fact about IMPROVE: the **raw 88-column** table "
+                 f"(`{improve_raw['source']}`) yields **{n_deploy} deployable candidate-varying orthogonal "
+                 f"features** across {len(wl)} families ({', '.join(sorted(wl))}). See "
+                 f"`IMPROVE_RAW_COLUMN_AUDIT.md` / `IMPROVE_DEPLOYABLE_WHITELIST.json`.\n")
     L.append("# Gate feature audit — orthogonal levers against high-PRIME false positives\n")
     L.append("**Why this exists.** The dynamic gate (`configs/frozen/dynamic_gate_v1.json`) was falsified: a "
              "label-blind *presentation* gate removes 0 pct of the high-presentation decoys that outrank positives, "
@@ -488,10 +717,12 @@ def render_markdown(cohorts, cedar, miller, unlock, llm):
     L.append("")
 
     L.append("## 6. Bottom line\n")
-    L.append("- **Only Gartner and Zhao** carry both a presentation anchor and orthogonal features, so only they can "
-             "test the gate question directly. multimer/IMPROVE have **no orthogonal axis at all** (presentation-only "
-             "frames) — structurally they *cannot* supply a gate feature. CEDAR has no anchor; Miller has no inputs yet; "
-             "Sid has 3 positives and no clean negative denominator.")
+    L.append("- **Gartner and Zhao** carry both a presentation anchor and orthogonal features in their *loaded* "
+             "frames, so they test the gate question directly here. **IMPROVE is NOT featureless** — the reduced "
+             "export loaded in §2 kept only prime/el/expr, but its raw 88-column table is orthogonally rich (see the "
+             "CORRECTION banner and `IMPROVE_RAW_COLUMN_AUDIT.md`); it simply needs the raw table wired into the gate "
+             "frame. multimer's loaded frame is genuinely presentation-only. CEDAR has no anchor; Miller has no "
+             "inputs yet; Sid has 3 positives and no clean negative denominator.")
     L.append("- The unlock matrix above ranks which family to invest in. Read the stratum AUROC, not the marginal: a "
              "feature strong marginally but ~0.5 on the stratum cannot remove high-PRIME decoys (that was expression's "
              "risk per `m7-ascertainment-correction`).")
@@ -515,8 +746,8 @@ def render_markdown(cohorts, cedar, miller, unlock, llm):
     L.append("- **Predictor disagreement** is the second orthogonal axis (Gartner stratum |signal| 0.20) and is "
              "cheap and low-leakage — but its direction must be pre-registered, not chosen from this table.")
     L.append("- **Zhao shows no orthogonal lever** (best stratum |signal| 0.06); its weak anchor (mixMHCpred) means "
-             "its 'stratum' is barely selective. multimer/IMPROVE are presentation-only frames with **no orthogonal "
-             "column to test** — they cannot supply a gate feature regardless of power.")
+             "its 'stratum' is barely selective. Only multimer's *loaded* frame is truly presentation-only; IMPROVE's "
+             "apparent featurelessness was a loader-scope artifact, now corrected.")
     return "\n".join(L)
 
 
@@ -530,6 +761,7 @@ def main():
     cedar = audit_cedar()
     miller = audit_miller()
     llm = run_llm_feasibility()
+    improve_raw = audit_improve_raw()
     unlock = build_unlock_matrix(cohorts)
 
     (OUT / "FEATURE_AUDIT.json").write_text(json.dumps(
@@ -537,10 +769,21 @@ def main():
          "unlock_matrix": unlock, "llm_feasibility": {k: v for k, v in llm.items() if k != "results"}},
         indent=2, default=str))
     (OUT / "FEATURE_UNLOCK_MATRIX.json").write_text(json.dumps(unlock, indent=2, default=str))
-    (OUT / "GATE_FEATURE_AUDIT.md").write_text(render_markdown(cohorts, cedar, miller, unlock, llm))
+    (OUT / "GATE_FEATURE_AUDIT.md").write_text(render_markdown(cohorts, cedar, miller, unlock, llm, improve_raw))
+    (OUT / "IMPROVE_RAW_COLUMN_AUDIT.json").write_text(json.dumps(improve_raw, indent=2, default=str))
+    (OUT / "IMPROVE_RAW_COLUMN_AUDIT.md").write_text(render_improve_markdown(improve_raw))
+    if improve_raw.get("status") == "AUDITED":
+        (OUT / "IMPROVE_DEPLOYABLE_WHITELIST.json").write_text(json.dumps({
+            "source": improve_raw["source"], "selection_policy": improve_raw["selection_policy"],
+            "deployable_whitelist_by_family": improve_raw["deployable_whitelist_by_family"],
+            "excluded": {k: improve_raw["buckets"].get(k, []) for k in
+                         ("suspicious_derived", "forbidden", "context_only", "presentation", "split_only")},
+        }, indent=2, default=str))
     print("wrote", OUT)
     for r in unlock:
         print(f"  {r['family']:28s} |signal|={r['abs_signal']} avail={r['availability'][:40]}")
+    if improve_raw.get("status") == "AUDITED":
+        print("IMPROVE raw:", improve_raw["bucket_counts"])
 
 
 if __name__ == "__main__":

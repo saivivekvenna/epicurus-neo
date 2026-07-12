@@ -15,6 +15,29 @@ presentation stratum where a label-blind presentation gate removes 0% and
 - `llm_feasibility_cache.json` — cached blind LLM schema + prompt + a 3-row
   feasibility sample (annotation-only; NO labels, NO patient/study IDs; raw
   locked-test sequences redacted).
+- `IMPROVE_RAW_COLUMN_AUDIT.md` / `.json` — **correction** to the first pass:
+  full classification of every one of the 88 columns in the raw IMPROVE table
+  (`data/03_data_for_CV/IMPROVE/03_3_final_peptide_features_Partition_for_CV.txt`)
+  into deployable / suspicious-derived / context-only / presentation / forbidden
+  / split, with per-column coverage + within-patient variation + a leakage screen.
+- `IMPROVE_DEPLOYABLE_WHITELIST.json` — the deployable candidate-varying feature
+  whitelist (36 features / 11 families) for the rich-feature gate session, plus
+  the explicit excluded buckets.
+
+## Correction (supersedes the first pass on IMPROVE)
+The first run concluded "IMPROVE has no orthogonal features." That was a
+**loader-scope artifact**: the loaded IMPROVE frame is the *reduced* export
+(prime/el/expr only). The **raw 88-column** table is orthogonally rich — DNA VAF,
+RNA support (reads/AF/confirmation), agretopicity (DAI), foreignness/self-similarity,
+clonality (CelPrev), stability, HLA expression, driver/mutation-class flags, and a
+full physicochemical block: **36 deployable candidate-varying features across 11
+families**. Suspicious/derived (`PrioScore`, `IB_CB`/`IB_CB_cat`, `NetMHCExp`) are
+withheld pending provenance (not leaky, but circular/composite); `pMHC`/`norm_pMHC`
+are `allele_peptide` identity strings not scores; `validation` is a constant QC
+flag; the immune-deconvolution block is per-sample constant (context-only, cannot
+re-order a patient's candidates). The whitelist is chosen from pre-declared
+biology + within-patient variation + coverage; the held-out `response` is used
+only as a leakage screen on the suspicious/forbidden buckets, never to select.
 
 ## Reproduce
 `.venv/bin/python scripts/gate_feature_audit.py` (pure core + tests:
