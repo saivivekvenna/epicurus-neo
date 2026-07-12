@@ -235,11 +235,14 @@ def test_apply_payload_matches_model_path_on_external():
     payload = {"model": "nnlog", "feature_order": cols, "coef": [float(x) for x in coef], "intercept": float(b0),
                "m": m, "tau": (None if not np.isfinite(tau) else float(tau)),
                "ood_envelope": nr.raw_envelope(train, cols), "ood_cover": 0.5}
-    # model path (with fitting) vs pure apply_payload (no fitting)
+    # finite-tau: pure apply_payload (no fitting) matches the model path (with fitting)
+    assert payload["tau"] is not None                          # synthetic yields a finite calibrated tau
     ood = nr.ood_from_envelope(ext, payload["ood_envelope"], cols, 0.5)
     model_removed = nr.gate_removed(ext, nr.nnlogistic_score(nr.feat_matrix(ext, cols), b0, coef),
-                                    (np.inf if payload["tau"] is None else payload["tau"]), cols, m, ood)
+                                    payload["tau"], cols, m, ood)
     assert np.array_equal(nr.apply_payload(ext, payload), model_removed)
+    # tau=None => remove NOTHING (fail closed), NOT remove-all
+    assert np.array_equal(nr.apply_payload(ext, {**payload, "tau": None}), np.zeros(len(ext), bool))
     assert np.array_equal(nr.apply_payload(ext, {"model": "NULL"}), np.zeros(len(ext), bool))
 
 

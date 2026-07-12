@@ -244,18 +244,19 @@ def ood_patients(train: pd.DataFrame, test: pd.DataFrame, cols, cover: float = 0
 
 def apply_payload(df: pd.DataFrame, payload: dict) -> np.ndarray:
     """PURE apply-only gate (no fitting): reproduces the frozen decision. Returns a boolean REMOVED mask.
-    payload NULL/None => remove nothing. For a nonneg-logistic payload it recomputes within-patient oriented
-    percentiles, keep-score = sigmoid(coef.pct + intercept), OOD via the serialized envelope, protected core
-    m, and removes non-core / feature-present / in-support candidates with keep-score < tau."""
-    if payload is None or payload.get("model") in (None, "NULL"):
+    payload NULL/None => remove nothing. **tau=None => remove nothing (FAIL CLOSED)**, matching the frozen
+    removal_rule (a None tau is not "remove everything"). For a nonneg-logistic payload with a finite tau it
+    recomputes within-patient oriented percentiles, keep-score = sigmoid(coef.pct + intercept), OOD via the
+    serialized envelope, protected core m, and removes non-core / feature-present / in-support candidates
+    with keep-score < tau."""
+    if payload is None or payload.get("model") in (None, "NULL") or payload.get("tau") is None:
         return np.zeros(len(df), bool)
     cols = payload["feature_order"]
     X = feat_matrix(df, cols)                                  # orientation from HIGHER_BETTER (matches fit)
     keepscore = 1.0 / (1.0 + np.exp(-(X @ np.asarray(payload["coef"], float) + payload["intercept"])))
-    tau = np.inf if payload.get("tau") is None else float(payload["tau"])
     m = int(payload["m"])
     ood = ood_from_envelope(df, payload["ood_envelope"], cols, payload.get("ood_cover", 0.5))
-    return removable_mask(df, cols, m, ood) & (keepscore < tau)
+    return removable_mask(df, cols, m, ood) & (keepscore < float(payload["tau"]))
 
 
 # ---- gate removal + hits@20 --------------------------------------------------------------------------
