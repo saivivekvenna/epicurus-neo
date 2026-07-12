@@ -1,0 +1,783 @@
+{
+  "k": 20,
+  "challenger_max": 60,
+  "reachability": {
+    "n_patients": 70,
+    "patients_with_positive": 61,
+    "total_positives": 467,
+    "top20_hits_now": 75,
+    "promotable_pos_21_60": 111,
+    "patients_with_promotable": 52,
+    "demotable_top20_neg": 1325,
+    "mean_top20_hits": 1.0714,
+    "mean_promotable": 1.5857,
+    "challenger_pos_rate": 0.0396,
+    "top20_pos_rate": 0.0536
+  },
+  "mechanism": {
+    "zone": "base ranks 1-60 (n=4200, pos_rate=0.0443)",
+    "partial_effects": {
+      "Expression": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0429,
+          "n": 1050,
+          "n_pos": 45,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0448,
+          "n": 1050,
+          "n_pos": 47,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0457,
+          "n": 1050,
+          "n_pos": 48,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0438,
+          "n": 1050,
+          "n_pos": 46,
+          "n_patients": 70
+        }
+      ],
+      "rna_af": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0505,
+          "n": 1050,
+          "n_pos": 53,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0429,
+          "n": 1050,
+          "n_pos": 45,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0295,
+          "n": 1050,
+          "n_pos": 31,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0543,
+          "n": 1050,
+          "n_pos": 57,
+          "n_patients": 70
+        }
+      ],
+      "rna_var": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0495,
+          "n": 1050,
+          "n_pos": 52,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0371,
+          "n": 1050,
+          "n_pos": 39,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0362,
+          "n": 1050,
+          "n_pos": 38,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0543,
+          "n": 1050,
+          "n_pos": 57,
+          "n_patients": 70
+        }
+      ],
+      "ValMutRNACoef": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0505,
+          "n": 1050,
+          "n_pos": 53,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.039,
+          "n": 1050,
+          "n_pos": 41,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0352,
+          "n": 1050,
+          "n_pos": 37,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0524,
+          "n": 1050,
+          "n_pos": 55,
+          "n_patients": 70
+        }
+      ],
+      "VarAlFreq": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0286,
+          "n": 1050,
+          "n_pos": 30,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0429,
+          "n": 1050,
+          "n_pos": 45,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.061,
+          "n": 1050,
+          "n_pos": 64,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0448,
+          "n": 1050,
+          "n_pos": 47,
+          "n_patients": 70
+        }
+      ],
+      "CelPrev": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0486,
+          "n": 1050,
+          "n_pos": 51,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0429,
+          "n": 1050,
+          "n_pos": 45,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0343,
+          "n": 1050,
+          "n_pos": 36,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0514,
+          "n": 1050,
+          "n_pos": 54,
+          "n_patients": 70
+        }
+      ],
+      "HLAexp": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0476,
+          "n": 1050,
+          "n_pos": 50,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0505,
+          "n": 1050,
+          "n_pos": 53,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0429,
+          "n": 1050,
+          "n_pos": 45,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0362,
+          "n": 1050,
+          "n_pos": 38,
+          "n_patients": 70
+        }
+      ],
+      "Stability": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0457,
+          "n": 1050,
+          "n_pos": 48,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.059,
+          "n": 1050,
+          "n_pos": 62,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0352,
+          "n": 1050,
+          "n_pos": 37,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0371,
+          "n": 1050,
+          "n_pos": 39,
+          "n_patients": 70
+        }
+      ],
+      "DAI": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0419,
+          "n": 1050,
+          "n_pos": 44,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0438,
+          "n": 1050,
+          "n_pos": 46,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0476,
+          "n": 1050,
+          "n_pos": 50,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0438,
+          "n": 1050,
+          "n_pos": 46,
+          "n_patients": 70
+        }
+      ],
+      "Foreigness": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0648,
+          "n": 1050,
+          "n_pos": 68,
+          "n_patients": 70
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0352,
+          "n": 1050,
+          "n_pos": 37,
+          "n_patients": 70
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0362,
+          "n": 1050,
+          "n_pos": 38,
+          "n_patients": 70
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.041,
+          "n": 1050,
+          "n_pos": 43,
+          "n_patients": 70
+        }
+      ]
+    },
+    "vaf_x_expression_2x2": {
+      "subclonal_low_expr": {
+        "n": 1001,
+        "pos_rate": 0.029
+      },
+      "subclonal_high_expr": {
+        "n": 1099,
+        "pos_rate": 0.0419
+      },
+      "clonal_low_expr": {
+        "n": 1099,
+        "pos_rate": 0.0573
+      },
+      "clonal_high_expr": {
+        "n": 1001,
+        "pos_rate": 0.048
+      }
+    },
+    "hla_interactions": {
+      "HLAexp_x_RankEL": {
+        "lowHLAexp_lo": {
+          "n": 1012,
+          "pos_rate": 0.0514
+        },
+        "lowHLAexp_hi": {
+          "n": 1088,
+          "pos_rate": 0.0469
+        },
+        "highHLAexp_lo": {
+          "n": 1088,
+          "pos_rate": 0.0368
+        },
+        "highHLAexp_hi": {
+          "n": 1012,
+          "pos_rate": 0.0425
+        }
+      },
+      "HLAexp_x_DAI": {
+        "lowHLAexp_lo": {
+          "n": 1059,
+          "pos_rate": 0.0529
+        },
+        "lowHLAexp_hi": {
+          "n": 1041,
+          "pos_rate": 0.0451
+        },
+        "highHLAexp_lo": {
+          "n": 1041,
+          "pos_rate": 0.0327
+        },
+        "highHLAexp_hi": {
+          "n": 1059,
+          "pos_rate": 0.0463
+        }
+      },
+      "HLAexp_x_Stability": {
+        "lowHLAexp_lo": {
+          "n": 957,
+          "pos_rate": 0.0617
+        },
+        "lowHLAexp_hi": {
+          "n": 1143,
+          "pos_rate": 0.0385
+        },
+        "highHLAexp_lo": {
+          "n": 1143,
+          "pos_rate": 0.0446
+        },
+        "highHLAexp_hi": {
+          "n": 957,
+          "pos_rate": 0.0334
+        }
+      }
+    }
+  },
+  "gates": {
+    "G1_no_rna_confirmation": {
+      "n_demote_flags_total": 7938,
+      "n_fired_in_top20": 589,
+      "mean_delta": -0.1429,
+      "total_delta": -10,
+      "n_improved": 8,
+      "n_harmed": 13,
+      "bootstrap": {
+        "mean": -0.1429,
+        "lo": -0.3143,
+        "hi": 0.0143,
+        "n": 70,
+        "frac_gt0": 0.0335
+      },
+      "matched_random_mean_delta": -0.1058,
+      "gate_minus_random": -0.0371,
+      "per_cohort_transport": {
+        "Basket": {
+          "mean_delta": 0.0,
+          "total": 0,
+          "n_patients": 20
+        },
+        "bladder": {
+          "mean_delta": -0.1667,
+          "total": -4,
+          "n_patients": 24
+        },
+        "melanoma": {
+          "mean_delta": -0.2308,
+          "total": -6,
+          "n_patients": 26
+        }
+      },
+      "per_partition": {
+        "0": -0.0714,
+        "1": -0.2143,
+        "2": 0.0,
+        "3": -0.3125,
+        "4": -0.0769
+      }
+    },
+    "G2_zero_mutant_rna_reads": {
+      "n_demote_flags_total": 7938,
+      "n_fired_in_top20": 589,
+      "mean_delta": -0.1429,
+      "total_delta": -10,
+      "n_improved": 8,
+      "n_harmed": 13,
+      "bootstrap": {
+        "mean": -0.1429,
+        "lo": -0.3143,
+        "hi": 0.0143,
+        "n": 70,
+        "frac_gt0": 0.0335
+      },
+      "matched_random_mean_delta": -0.1058,
+      "gate_minus_random": -0.0371,
+      "per_cohort_transport": {
+        "Basket": {
+          "mean_delta": 0.0,
+          "total": 0,
+          "n_patients": 20
+        },
+        "bladder": {
+          "mean_delta": -0.1667,
+          "total": -4,
+          "n_patients": 24
+        },
+        "melanoma": {
+          "mean_delta": -0.2308,
+          "total": -6,
+          "n_patients": 26
+        }
+      },
+      "per_partition": {
+        "0": -0.0714,
+        "1": -0.2143,
+        "2": 0.0,
+        "3": -0.3125,
+        "4": -0.0769
+      }
+    },
+    "G3_low_rna_vaf_q1": {
+      "n_demote_flags_total": 4392,
+      "n_fired_in_top20": 363,
+      "mean_delta": -0.1,
+      "total_delta": -7,
+      "n_improved": 9,
+      "n_harmed": 15,
+      "bootstrap": {
+        "mean": -0.1,
+        "lo": -0.2429,
+        "hi": 0.0429,
+        "n": 70,
+        "frac_gt0": 0.0595
+      },
+      "matched_random_mean_delta": -0.0614,
+      "gate_minus_random": -0.0386,
+      "per_cohort_transport": {
+        "Basket": {
+          "mean_delta": 0.15,
+          "total": 3,
+          "n_patients": 20
+        },
+        "bladder": {
+          "mean_delta": -0.2917,
+          "total": -7,
+          "n_patients": 24
+        },
+        "melanoma": {
+          "mean_delta": -0.1154,
+          "total": -3,
+          "n_patients": 26
+        }
+      },
+      "per_partition": {
+        "0": -0.0714,
+        "1": -0.2143,
+        "2": 0.0,
+        "3": -0.3125,
+        "4": 0.1538
+      }
+    },
+    "G4_low_expression_q1": {
+      "n_demote_flags_total": 4392,
+      "n_fired_in_top20": 136,
+      "mean_delta": -0.0714,
+      "total_delta": -5,
+      "n_improved": 3,
+      "n_harmed": 7,
+      "bootstrap": {
+        "mean": -0.0714,
+        "lo": -0.1714,
+        "hi": 0.0286,
+        "n": 70,
+        "frac_gt0": 0.0585
+      },
+      "matched_random_mean_delta": -0.0483,
+      "gate_minus_random": -0.0231,
+      "per_cohort_transport": {
+        "Basket": {
+          "mean_delta": -0.15,
+          "total": -3,
+          "n_patients": 20
+        },
+        "bladder": {
+          "mean_delta": -0.0417,
+          "total": -1,
+          "n_patients": 24
+        },
+        "melanoma": {
+          "mean_delta": -0.0385,
+          "total": -1,
+          "n_patients": 26
+        }
+      },
+      "per_partition": {
+        "0": -0.2143,
+        "1": 0.0,
+        "2": 0.0,
+        "3": -0.0625,
+        "4": -0.0769
+      }
+    },
+    "G5_subclonal_and_low_expr": {
+      "n_demote_flags_total": 1846,
+      "n_fired_in_top20": 59,
+      "mean_delta": -0.0143,
+      "total_delta": -1,
+      "n_improved": 1,
+      "n_harmed": 3,
+      "bootstrap": {
+        "mean": -0.0143,
+        "lo": -0.0857,
+        "hi": 0.0714,
+        "n": 70,
+        "frac_gt0": 0.265
+      },
+      "matched_random_mean_delta": -0.0174,
+      "gate_minus_random": 0.0031,
+      "per_cohort_transport": {
+        "Basket": {
+          "mean_delta": 0.0,
+          "total": 0,
+          "n_patients": 20
+        },
+        "bladder": {
+          "mean_delta": 0.0,
+          "total": 0,
+          "n_patients": 24
+        },
+        "melanoma": {
+          "mean_delta": -0.0385,
+          "total": -1,
+          "n_patients": 26
+        }
+      },
+      "per_partition": {
+        "0": 0.0,
+        "1": 0.0,
+        "2": 0.0,
+        "3": -0.0625,
+        "4": 0.0
+      }
+    },
+    "G6_low_hla_expression_q1": {
+      "n_demote_flags_total": 4392,
+      "n_fired_in_top20": 391,
+      "mean_delta": -0.0714,
+      "total_delta": -5,
+      "n_improved": 10,
+      "n_harmed": 11,
+      "bootstrap": {
+        "mean": -0.0714,
+        "lo": -0.2429,
+        "hi": 0.0857,
+        "n": 70,
+        "frac_gt0": 0.1665
+      },
+      "matched_random_mean_delta": -0.0473,
+      "gate_minus_random": -0.0241,
+      "per_cohort_transport": {
+        "Basket": {
+          "mean_delta": 0.1,
+          "total": 2,
+          "n_patients": 20
+        },
+        "bladder": {
+          "mean_delta": -0.2917,
+          "total": -7,
+          "n_patients": 24
+        },
+        "melanoma": {
+          "mean_delta": 0.0,
+          "total": 0,
+          "n_patients": 26
+        }
+      },
+      "per_partition": {
+        "0": -0.1429,
+        "1": 0.2143,
+        "2": 0.0,
+        "3": -0.125,
+        "4": -0.3077
+      }
+    },
+    "NEGCTRL_high_hla_expression_q4": {
+      "n_demote_flags_total": 4387,
+      "n_fired_in_top20": 278,
+      "mean_delta": -0.0571,
+      "total_delta": -4,
+      "n_improved": 6,
+      "n_harmed": 6,
+      "bootstrap": {
+        "mean": -0.0571,
+        "lo": -0.2143,
+        "hi": 0.0714,
+        "n": 70,
+        "frac_gt0": 0.174
+      },
+      "matched_random_mean_delta": -0.0891,
+      "gate_minus_random": 0.0319,
+      "per_cohort_transport": {
+        "Basket": {
+          "mean_delta": -0.1,
+          "total": -2,
+          "n_patients": 20
+        },
+        "bladder": {
+          "mean_delta": 0.0417,
+          "total": 1,
+          "n_patients": 24
+        },
+        "melanoma": {
+          "mean_delta": -0.1154,
+          "total": -3,
+          "n_patients": 26
+        }
+      },
+      "per_partition": {
+        "0": -0.2857,
+        "1": -0.2857,
+        "2": 0.0769,
+        "3": 0.0,
+        "4": 0.2308
+      }
+    }
+  },
+  "ascertainment": {
+    "gartner": {
+      "Expression": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0,
+          "n": 953,
+          "n_pos": 0,
+          "n_patients": 26
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0021,
+          "n": 937,
+          "n_pos": 2,
+          "n_patients": 26
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0075,
+          "n": 934,
+          "n_pos": 7,
+          "n_patients": 26
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0392,
+          "n": 944,
+          "n_pos": 37,
+          "n_patients": 26
+        }
+      ],
+      "VarAlFreq": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0063,
+          "n": 953,
+          "n_pos": 6,
+          "n_patients": 26
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.0096,
+          "n": 937,
+          "n_pos": 9,
+          "n_patients": 26
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.0161,
+          "n": 934,
+          "n_pos": 15,
+          "n_patients": 26
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0169,
+          "n": 944,
+          "n_pos": 16,
+          "n_patients": 26
+        }
+      ],
+      "note": "Gartner expr_decile/vaf_decile are per-patient deciles; POSITIVE vs TESTED_NEGATIVE."
+    },
+    "multimer": {
+      "expr": [
+        {
+          "bin": 0,
+          "pos_rate": 0.0029,
+          "n": 2037,
+          "n_pos": 6,
+          "n_patients": 26
+        },
+        {
+          "bin": 1,
+          "pos_rate": 0.003,
+          "n": 2021,
+          "n_pos": 6,
+          "n_patients": 26
+        },
+        {
+          "bin": 2,
+          "pos_rate": 0.005,
+          "n": 2016,
+          "n_pos": 10,
+          "n_patients": 26
+        },
+        {
+          "bin": 3,
+          "pos_rate": 0.0059,
+          "n": 2029,
+          "n_pos": 12,
+          "n_patients": 26
+        }
+      ],
+      "note": "multimer has expression only (no read-level RNA / HLAexp)."
+    }
+  }
+}
