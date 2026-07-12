@@ -230,6 +230,23 @@ count at the BAG level, never the ~285k/1.09M child rows.
   MAP2 (a real expression-reweighting effect — a learned recognition score on presentation does not help).
   MHCflurry↔NetMHCpan-EL Spearman 0.52 (moderate) disclosed: the fair run approximates, not reproduces, the
   frozen NetMHCpan-EL feature. Descriptive, n=3, no constant tuned to Sid.
+- **Expression ranking-policy frozen (2026-07-12) — RNA expression is CONFIDENCE-ONLY, not a rank penalty.**
+  Label-blind analysis on the 3 Level-2 development cohorts (multimer/Gartner/IMPROVE), each within its own
+  denominator, NEVER pooled, under strict no-regression vs the protected lossless+PRIME incumbent
+  (`src/benchmark/expression_policy.py` tested; runner `scripts/expression_policy_analysis.py`; frozen
+  `configs/frozen/expression_policy_v1.json`; artifact `.../expression_policy/`). Structure differs by
+  denominator: Gartner recognition concentrates in the top expression quartile (penalty would help),
+  IMPROVE is flat with 46% of positives low-expression, multimer weakly monotone with 35% low-expression.
+  Result: **expr_rank_penalty** helps Gartner (recall .37→.57) but REGRESSES multimer (.62→.47) and IMPROVE
+  (.18→.16); the fixed-budget **portfolio reserve** regresses Gartner (.37→.30). The only no-regression-
+  everywhere forms are **prime_only (confidence-only)** and the presentation-protected **soft_saturating**,
+  and the latter is IDENTICAL to prime_only on all 3 cohorts (it only clears low-presentation+low-expression
+  junk that never reaches top-20). ⇒ Frozen decision: expression is **confidence-only** in the score;
+  lossless+PRIME stays the protected ranking; soft-saturating kept as an equivalent route-dependent guard;
+  portfolio reserve retained OPTIONAL/off-by-default. Constants (bottom-quartile stratum) fixed, NOT tuned to
+  any eval. Sid DESCRIPTIVE (post-freeze, n=3): confidence-only keeps 3/3 recognized in top-20, the expr
+  penalty drops low-expression MAP2 to 2/3 — consistent with the dev finding, nothing tuned to Sid. See
+  `memory/expression-ranking-policy.md`.
   Next = acquire/identify an **untouched end-to-end patient**, not more rerankers. See
   `memory/benchmark-three-level-hierarchy.md`.
 

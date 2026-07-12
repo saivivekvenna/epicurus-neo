@@ -1,0 +1,430 @@
+{
+  "policy": "expression-policy-analysis-1.0.0",
+  "k": 20,
+  "development_cohorts": {
+    "cd8_multimer": {
+      "n_candidates": 8103,
+      "n_patients": 26,
+      "n_positives": 34,
+      "structural": {
+        "positive_rate_by_expr_quartile": {
+          "Q1lo": {
+            "rate": 0.0029,
+            "pos": 6,
+            "n": 2036
+          },
+          "Q2": {
+            "rate": 0.003,
+            "pos": 6,
+            "n": 1992
+          },
+          "Q3": {
+            "rate": 0.0045,
+            "pos": 9,
+            "n": 2005
+          },
+          "Q4hi": {
+            "rate": 0.0063,
+            "pos": 13,
+            "n": 2070
+          }
+        },
+        "positives_in_low_expr_half": "12/34",
+        "frac_positives_low_expr_half": 0.353
+      },
+      "policies": {
+        "prime_only_incumbent": {
+          "recall_top20": "21/34",
+          "recall_frac": 0.6176,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "regresses": false,
+            "n_patients": 26
+          }
+        },
+        "expr_rank_penalty": {
+          "recall_top20": "16/34",
+          "recall_frac": 0.4706,
+          "no_regression_vs_incumbent": {
+            "mean_delta": -0.1923,
+            "ci95": [
+              -0.5,
+              0.1154
+            ],
+            "regresses": true,
+            "n_patients": 26
+          }
+        },
+        "soft_saturating": {
+          "recall_top20": "21/34",
+          "recall_frac": 0.6176,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "regresses": false,
+            "n_patients": 26
+          }
+        },
+        "portfolio_reserve": {
+          "recall_top20": "21/34",
+          "recall_frac": 0.6176,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "regresses": false,
+            "n_patients": 26
+          }
+        }
+      }
+    },
+    "gartner_nci": {
+      "n_candidates": 8777,
+      "n_patients": 26,
+      "n_positives": 46,
+      "structural": {
+        "positive_rate_by_expr_quartile": {
+          "Q1lo": {
+            "rate": 0.0,
+            "pos": 0,
+            "n": 2560
+          },
+          "Q2": {
+            "rate": 0.0006,
+            "pos": 1,
+            "n": 1801
+          },
+          "Q3": {
+            "rate": 0.0031,
+            "pos": 7,
+            "n": 2249
+          },
+          "Q4hi": {
+            "rate": 0.0175,
+            "pos": 38,
+            "n": 2167
+          }
+        },
+        "positives_in_low_expr_half": "1/46",
+        "frac_positives_low_expr_half": 0.022
+      },
+      "policies": {
+        "prime_only_incumbent": {
+          "recall_top20": "17/46",
+          "recall_frac": 0.3696,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "regresses": false,
+            "n_patients": 26
+          }
+        },
+        "expr_rank_penalty": {
+          "recall_top20": "26/46",
+          "recall_frac": 0.5652,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.3462,
+            "ci95": [
+              0.1154,
+              0.6154
+            ],
+            "regresses": false,
+            "n_patients": 26
+          }
+        },
+        "soft_saturating": {
+          "recall_top20": "17/46",
+          "recall_frac": 0.3696,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "regresses": false,
+            "n_patients": 26
+          }
+        },
+        "portfolio_reserve": {
+          "recall_top20": "14/46",
+          "recall_frac": 0.3043,
+          "no_regression_vs_incumbent": {
+            "mean_delta": -0.1154,
+            "ci95": [
+              -0.2317,
+              0.0
+            ],
+            "regresses": true,
+            "n_patients": 26
+          }
+        }
+      }
+    },
+    "improve_srhgroup": {
+      "n_candidates": 17520,
+      "n_patients": 70,
+      "n_positives": 467,
+      "structural": {
+        "positive_rate_by_expr_quartile": {
+          "Q1lo": {
+            "rate": 0.024,
+            "pos": 104,
+            "n": 4340
+          },
+          "Q2": {
+            "rate": 0.0254,
+            "pos": 109,
+            "n": 4291
+          },
+          "Q3": {
+            "rate": 0.0318,
+            "pos": 143,
+            "n": 4491
+          },
+          "Q4hi": {
+            "rate": 0.0252,
+            "pos": 111,
+            "n": 4398
+          }
+        },
+        "positives_in_low_expr_half": "213/467",
+        "frac_positives_low_expr_half": 0.456
+      },
+      "policies": {
+        "prime_only_incumbent": {
+          "recall_top20": "83/467",
+          "recall_frac": 0.1777,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "regresses": false,
+            "n_patients": 70
+          }
+        },
+        "expr_rank_penalty": {
+          "recall_top20": "75/467",
+          "recall_frac": 0.1606,
+          "no_regression_vs_incumbent": {
+            "mean_delta": -0.1143,
+            "ci95": [
+              -0.3143,
+              0.1
+            ],
+            "regresses": true,
+            "n_patients": 70
+          }
+        },
+        "soft_saturating": {
+          "recall_top20": "83/467",
+          "recall_frac": 0.1777,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "regresses": false,
+            "n_patients": 70
+          }
+        },
+        "portfolio_reserve": {
+          "recall_top20": "83/467",
+          "recall_frac": 0.1777,
+          "no_regression_vs_incumbent": {
+            "mean_delta": 0.0,
+            "ci95": [
+              -0.0714,
+              0.0714
+            ],
+            "regresses": false,
+            "n_patients": 70
+          }
+        }
+      }
+    }
+  },
+  "decision": {
+    "chosen": "confidence_only",
+    "chosen_ranking_score": "prime_only_incumbent (genuine PRIME; expression does NOT move rank)",
+    "equivalent_no_regression_guard": "soft_saturating (route-dependent; demotes only low-presentation AND low-expression non-multi-source candidates)",
+    "rejected": "expr_rank_penalty (regresses >=1 cohort); portfolio_reserve default (regresses Gartner)",
+    "expression_role": "confidence annotation (stratum label) + optional off-by-default route-dependent portfolio reserve for reachability",
+    "per_policy_no_regression": {
+      "prime_only_incumbent": {
+        "regresses_on": [],
+        "no_regression_everywhere": true,
+        "helps_on": []
+      },
+      "expr_rank_penalty": {
+        "regresses_on": [
+          "cd8_multimer",
+          "improve_srhgroup"
+        ],
+        "no_regression_everywhere": false,
+        "helps_on": [
+          "gartner_nci"
+        ]
+      },
+      "soft_saturating": {
+        "regresses_on": [],
+        "no_regression_everywhere": true,
+        "helps_on": []
+      },
+      "portfolio_reserve": {
+        "regresses_on": [
+          "gartner_nci"
+        ],
+        "no_regression_everywhere": false,
+        "helps_on": []
+      }
+    },
+    "rationale": "Per development cohort (never pooled): expr_rank_penalty regresses [cd8_multimer, improve_srhgroup] while only helping [gartner_nci]; portfolio_reserve regresses [gartner_nci] within a fixed top-20 budget. The two no-regression-everywhere forms are prime_only (confidence-only) and soft_saturating, and on these cohorts soft_saturating is IDENTICAL to prime_only (it only demotes candidates that are BOTH low-presentation and low-expression, which never occupy the top-20) \u2014 i.e. letting expression move rank buys NO measurable benefit and risks harm. Decision: expression is CONFIDENCE-ONLY in the score; lossless+PRIME stays the protected incumbent ranking. The soft-saturating guard is frozen as an equivalent, route-dependent no-op-on-top-20 safeguard, and the portfolio reserve is retained as an OPTIONAL off-by-default reachability tool (it trades displacement for stratum coverage). Because PRIME already keeps high-presentation candidates irrespective of expression, this preserves reachability of low-expression recognized candidates."
+  },
+  "frozen_config_path": "configs/frozen/expression_policy_v1.json",
+  "sid_descriptive": {
+    "status": "descriptive_post_freeze_n3_not_a_gate",
+    "frozen_confidence_only_prime": {
+      "hits_at_20": 3,
+      "recall_at_20": 1.0,
+      "covered": [
+        "ASPM",
+        "DYNC1H1",
+        "MAP2"
+      ]
+    },
+    "counterfactual_expr_rank_penalty": {
+      "hits_at_20": 2,
+      "recall_at_20": 0.6667,
+      "covered": [
+        "ASPM",
+        "DYNC1H1"
+      ]
+    },
+    "counterfactual_soft_saturating": {
+      "hits_at_20": 3,
+      "recall_at_20": 1.0,
+      "covered": [
+        "ASPM",
+        "DYNC1H1",
+        "MAP2"
+      ]
+    },
+    "note": "Confidence-only (= lossless+PRIME) keeps all 3 recognized mutations in the top-20; the expression rank penalty demotes low-expression MAP2. Consistent with the development no-regression finding. Descriptive on n=3; nothing tuned to these labels."
+  },
+  "frozen_config": {
+    "name": "expression_ranking_policy",
+    "version": "1.0.0",
+    "frozen_on": "2026-07-12",
+    "protected_incumbent": "lossless generation + genuine PRIME (rank by PRIME %rank, lower=better)",
+    "decision": {
+      "chosen": "confidence_only",
+      "chosen_ranking_score": "prime_only_incumbent (genuine PRIME; expression does NOT move rank)",
+      "equivalent_no_regression_guard": "soft_saturating (route-dependent; demotes only low-presentation AND low-expression non-multi-source candidates)",
+      "rejected": "expr_rank_penalty (regresses >=1 cohort); portfolio_reserve default (regresses Gartner)",
+      "expression_role": "confidence annotation (stratum label) + optional off-by-default route-dependent portfolio reserve for reachability",
+      "per_policy_no_regression": {
+        "prime_only_incumbent": {
+          "regresses_on": [],
+          "no_regression_everywhere": true,
+          "helps_on": []
+        },
+        "expr_rank_penalty": {
+          "regresses_on": [
+            "cd8_multimer",
+            "improve_srhgroup"
+          ],
+          "no_regression_everywhere": false,
+          "helps_on": [
+            "gartner_nci"
+          ]
+        },
+        "soft_saturating": {
+          "regresses_on": [],
+          "no_regression_everywhere": true,
+          "helps_on": []
+        },
+        "portfolio_reserve": {
+          "regresses_on": [
+            "gartner_nci"
+          ],
+          "no_regression_everywhere": false,
+          "helps_on": []
+        }
+      },
+      "rationale": "Per development cohort (never pooled): expr_rank_penalty regresses [cd8_multimer, improve_srhgroup] while only helping [gartner_nci]; portfolio_reserve regresses [gartner_nci] within a fixed top-20 budget. The two no-regression-everywhere forms are prime_only (confidence-only) and soft_saturating, and on these cohorts soft_saturating is IDENTICAL to prime_only (it only demotes candidates that are BOTH low-presentation and low-expression, which never occupy the top-20) \u2014 i.e. letting expression move rank buys NO measurable benefit and risks harm. Decision: expression is CONFIDENCE-ONLY in the score; lossless+PRIME stays the protected incumbent ranking. The soft-saturating guard is frozen as an equivalent, route-dependent no-op-on-top-20 safeguard, and the portfolio reserve is retained as an OPTIONAL off-by-default reachability tool (it trades displacement for stratum coverage). Because PRIME already keeps high-presentation candidates irrespective of expression, this preserves reachability of low-expression recognized candidates."
+    },
+    "constants": {
+      "bottom_stratum_percentile": 0.25,
+      "expression_strata": [
+        "expr_absent_or_low",
+        "expr_mid",
+        "expr_high"
+      ],
+      "tuned_to_sid": false,
+      "tuned_to_any_eval_cohort": false
+    },
+    "development_evidence": {
+      "cd8_multimer": {
+        "n_positives": 34,
+        "policy_recall_frac": {
+          "prime_only_incumbent": 0.6176,
+          "expr_rank_penalty": 0.4706,
+          "soft_saturating": 0.6176,
+          "portfolio_reserve": 0.6176
+        },
+        "policy_regresses": {
+          "prime_only_incumbent": false,
+          "expr_rank_penalty": true,
+          "soft_saturating": false,
+          "portfolio_reserve": false
+        }
+      },
+      "gartner_nci": {
+        "n_positives": 46,
+        "policy_recall_frac": {
+          "prime_only_incumbent": 0.3696,
+          "expr_rank_penalty": 0.5652,
+          "soft_saturating": 0.3696,
+          "portfolio_reserve": 0.3043
+        },
+        "policy_regresses": {
+          "prime_only_incumbent": false,
+          "expr_rank_penalty": false,
+          "soft_saturating": false,
+          "portfolio_reserve": true
+        }
+      },
+      "improve_srhgroup": {
+        "n_positives": 467,
+        "policy_recall_frac": {
+          "prime_only_incumbent": 0.1777,
+          "expr_rank_penalty": 0.1606,
+          "soft_saturating": 0.1777,
+          "portfolio_reserve": 0.1777
+        },
+        "policy_regresses": {
+          "prime_only_incumbent": false,
+          "expr_rank_penalty": true,
+          "soft_saturating": false,
+          "portfolio_reserve": false
+        }
+      }
+    },
+    "no_pooling": "Development cohorts evaluated separately within their own denominators; never pooled."
+  }
+}

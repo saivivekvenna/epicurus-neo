@@ -1,0 +1,101 @@
+{
+  "name": "expression_ranking_policy",
+  "version": "1.0.0",
+  "frozen_on": "2026-07-12",
+  "protected_incumbent": "lossless generation + genuine PRIME (rank by PRIME %rank, lower=better)",
+  "decision": {
+    "chosen": "confidence_only",
+    "chosen_ranking_score": "prime_only_incumbent (genuine PRIME; expression does NOT move rank)",
+    "equivalent_no_regression_guard": "soft_saturating (route-dependent; demotes only low-presentation AND low-expression non-multi-source candidates)",
+    "rejected": "expr_rank_penalty (regresses >=1 cohort); portfolio_reserve default (regresses Gartner)",
+    "expression_role": "confidence annotation (stratum label) + optional off-by-default route-dependent portfolio reserve for reachability",
+    "per_policy_no_regression": {
+      "prime_only_incumbent": {
+        "regresses_on": [],
+        "no_regression_everywhere": true,
+        "helps_on": []
+      },
+      "expr_rank_penalty": {
+        "regresses_on": [
+          "cd8_multimer",
+          "improve_srhgroup"
+        ],
+        "no_regression_everywhere": false,
+        "helps_on": [
+          "gartner_nci"
+        ]
+      },
+      "soft_saturating": {
+        "regresses_on": [],
+        "no_regression_everywhere": true,
+        "helps_on": []
+      },
+      "portfolio_reserve": {
+        "regresses_on": [
+          "gartner_nci"
+        ],
+        "no_regression_everywhere": false,
+        "helps_on": []
+      }
+    },
+    "rationale": "Per development cohort (never pooled): expr_rank_penalty regresses [cd8_multimer, improve_srhgroup] while only helping [gartner_nci]; portfolio_reserve regresses [gartner_nci] within a fixed top-20 budget. The two no-regression-everywhere forms are prime_only (confidence-only) and soft_saturating, and on these cohorts soft_saturating is IDENTICAL to prime_only (it only demotes candidates that are BOTH low-presentation and low-expression, which never occupy the top-20) \u2014 i.e. letting expression move rank buys NO measurable benefit and risks harm. Decision: expression is CONFIDENCE-ONLY in the score; lossless+PRIME stays the protected incumbent ranking. The soft-saturating guard is frozen as an equivalent, route-dependent no-op-on-top-20 safeguard, and the portfolio reserve is retained as an OPTIONAL off-by-default reachability tool (it trades displacement for stratum coverage). Because PRIME already keeps high-presentation candidates irrespective of expression, this preserves reachability of low-expression recognized candidates."
+  },
+  "constants": {
+    "bottom_stratum_percentile": 0.25,
+    "expression_strata": [
+      "expr_absent_or_low",
+      "expr_mid",
+      "expr_high"
+    ],
+    "tuned_to_sid": false,
+    "tuned_to_any_eval_cohort": false
+  },
+  "development_evidence": {
+    "cd8_multimer": {
+      "n_positives": 34,
+      "policy_recall_frac": {
+        "prime_only_incumbent": 0.6176,
+        "expr_rank_penalty": 0.4706,
+        "soft_saturating": 0.6176,
+        "portfolio_reserve": 0.6176
+      },
+      "policy_regresses": {
+        "prime_only_incumbent": false,
+        "expr_rank_penalty": true,
+        "soft_saturating": false,
+        "portfolio_reserve": false
+      }
+    },
+    "gartner_nci": {
+      "n_positives": 46,
+      "policy_recall_frac": {
+        "prime_only_incumbent": 0.3696,
+        "expr_rank_penalty": 0.5652,
+        "soft_saturating": 0.3696,
+        "portfolio_reserve": 0.3043
+      },
+      "policy_regresses": {
+        "prime_only_incumbent": false,
+        "expr_rank_penalty": false,
+        "soft_saturating": false,
+        "portfolio_reserve": true
+      }
+    },
+    "improve_srhgroup": {
+      "n_positives": 467,
+      "policy_recall_frac": {
+        "prime_only_incumbent": 0.1777,
+        "expr_rank_penalty": 0.1606,
+        "soft_saturating": 0.1777,
+        "portfolio_reserve": 0.1777
+      },
+      "policy_regresses": {
+        "prime_only_incumbent": false,
+        "expr_rank_penalty": true,
+        "soft_saturating": false,
+        "portfolio_reserve": false
+      }
+    }
+  },
+  "no_pooling": "Development cohorts evaluated separately within their own denominators; never pooled."
+}
