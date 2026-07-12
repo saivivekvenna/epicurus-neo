@@ -1,0 +1,472 @@
+{
+  "base_only_noop_sanity": {
+    "max_abs_delta_at_alpha0": 0.0,
+    "passes": true
+  },
+  "command": "python -m scripts.rich_gate_base_anchored",
+  "design": "nested 5 patient-disjoint Partitions; alpha selected on training patients, frozen for outer",
+  "experiment": "rich_gate_v2_base_anchored_IMPROVE",
+  "external_transfer_falsification": {
+    "feature": "PropHydroAro",
+    "frozen_alpha_on_improve": 1.5,
+    "gartner": {
+      "harmed": 3,
+      "improved": 3,
+      "in_sample": false,
+      "mean_delta": 0.0,
+      "n_patients": 26,
+      "tied": 20
+    },
+    "multimer": {
+      "harmed": 8,
+      "improved": 1,
+      "in_sample": true,
+      "mean_delta": -0.4211,
+      "n_patients": 19,
+      "tied": 10
+    },
+    "note": "external feature = peptide-derived hydro/aromatic fraction (proxy for PropHydroAro)"
+  },
+  "feature_classes": {
+    "DAI": "attribution",
+    "HydroAll": "attribution",
+    "HydroCore": "primary",
+    "PropHydroAro": "primary",
+    "SelfSim": "attribution",
+    "VarAlFreq": "attribution"
+  },
+  "leave_source_out_within_improve": {
+    "all_sources_positive": true,
+    "per_source": {
+      "Basket": {
+        "alpha": 1.5,
+        "mean_delta": 0.5,
+        "n_patients": 20
+      },
+      "bladder": {
+        "alpha": 1.5,
+        "mean_delta": 0.0833,
+        "n_patients": 24
+      },
+      "melanoma": {
+        "alpha": 2.0,
+        "mean_delta": 0.5385,
+        "n_patients": 26
+      }
+    },
+    "pooled_mean_delta": 0.3714
+  },
+  "regime_aware_transport_verdict": {
+    "decision": "REGIME-LOCAL: significant within IMPROVE and across its tissue sources, but FALSIFIED externally (Gartner/multimer harmed) => a regime-aware gate must ABSTAIN (no-op) off the IMPROVE-like regime. NOT frozen into product.",
+    "external_nonharmful": false,
+    "local_significant": true,
+    "rule": "activate only if local_significant AND source_invariant AND external_nonharmful; else abstain",
+    "source_invariant_within_improve": true
+  },
+  "results": {
+    "DAI": {
+      "beats_random": false,
+      "chosen_alphas": [
+        0.2,
+        0.1,
+        0.0,
+        2.0,
+        0.0
+      ],
+      "control_random_matched_delta": 0.0127,
+      "delta_ci": [
+        -0.3714,
+        -0.0429
+      ],
+      "feature": "DAI",
+      "gated_hits@20": 0.8714,
+      "harmed": 11,
+      "higher_better": true,
+      "improved": 4,
+      "mean_delta": -0.2,
+      "p_better": 0.004,
+      "per_fold": {
+        "0": {
+          "alpha": 0.2,
+          "mean_delta": -0.1429,
+          "n_patients": 14,
+          "random_delta": 0.0636
+        },
+        "1": {
+          "alpha": 0.1,
+          "mean_delta": -0.0714,
+          "n_patients": 14,
+          "random_delta": 0.0593
+        },
+        "2": {
+          "alpha": 0.0,
+          "mean_delta": 0.0,
+          "n_patients": 13,
+          "random_delta": 0.0
+        },
+        "3": {
+          "alpha": 2.0,
+          "mean_delta": -0.6875,
+          "n_patients": 16,
+          "random_delta": -0.0519
+        },
+        "4": {
+          "alpha": 0.0,
+          "mean_delta": 0.0,
+          "n_patients": 13,
+          "random_delta": 0.0
+        }
+      },
+      "swap_labels": {
+        "neg_swapped_in": 301,
+        "pos_swapped_in": 8,
+        "pos_swapped_out": 22
+      },
+      "tied": 55,
+      "ungated_hits@20": 1.0714,
+      "worst_patient": -3.0
+    },
+    "HydroAll": {
+      "beats_random": true,
+      "chosen_alphas": [
+        2.0,
+        0.5,
+        1.5,
+        2.0,
+        2.0
+      ],
+      "control_random_matched_delta": -0.0377,
+      "delta_ci": [
+        0.0,
+        0.4571
+      ],
+      "feature": "HydroAll",
+      "gated_hits@20": 1.3,
+      "harmed": 11,
+      "higher_better": true,
+      "improved": 21,
+      "mean_delta": 0.2286,
+      "p_better": 0.968,
+      "per_fold": {
+        "0": {
+          "alpha": 2.0,
+          "mean_delta": -0.0714,
+          "n_patients": 14,
+          "random_delta": -0.2686
+        },
+        "1": {
+          "alpha": 0.5,
+          "mean_delta": 0.2143,
+          "n_patients": 14,
+          "random_delta": -0.1014
+        },
+        "2": {
+          "alpha": 1.5,
+          "mean_delta": 0.3077,
+          "n_patients": 13,
+          "random_delta": 0.1331
+        },
+        "3": {
+          "alpha": 2.0,
+          "mean_delta": 0.3125,
+          "n_patients": 16,
+          "random_delta": -0.0406
+        },
+        "4": {
+          "alpha": 2.0,
+          "mean_delta": 0.3846,
+          "n_patients": 13,
+          "random_delta": 0.1123
+        }
+      },
+      "swap_labels": {
+        "neg_swapped_in": 734,
+        "pos_swapped_in": 45,
+        "pos_swapped_out": 29
+      },
+      "tied": 38,
+      "ungated_hits@20": 1.0714,
+      "worst_patient": -3.0
+    },
+    "HydroCore": {
+      "beats_random": true,
+      "chosen_alphas": [
+        1.0,
+        0.75,
+        1.0,
+        1.0,
+        0.75
+      ],
+      "control_random_matched_delta": 0.032,
+      "delta_ci": [
+        0.0429,
+        0.4714
+      ],
+      "feature": "HydroCore",
+      "gated_hits@20": 1.3286,
+      "harmed": 11,
+      "higher_better": true,
+      "improved": 23,
+      "mean_delta": 0.2571,
+      "p_better": 0.992,
+      "per_fold": {
+        "0": {
+          "alpha": 1.0,
+          "mean_delta": 0.0,
+          "n_patients": 14,
+          "random_delta": -0.0786
+        },
+        "1": {
+          "alpha": 0.75,
+          "mean_delta": 0.0714,
+          "n_patients": 14,
+          "random_delta": -0.2014
+        },
+        "2": {
+          "alpha": 1.0,
+          "mean_delta": 0.4615,
+          "n_patients": 13,
+          "random_delta": 0.1077
+        },
+        "3": {
+          "alpha": 1.0,
+          "mean_delta": 0.4375,
+          "n_patients": 16,
+          "random_delta": 0.1031
+        },
+        "4": {
+          "alpha": 0.75,
+          "mean_delta": 0.3077,
+          "n_patients": 13,
+          "random_delta": 0.2392
+        }
+      },
+      "swap_labels": {
+        "neg_swapped_in": 671,
+        "pos_swapped_in": 41,
+        "pos_swapped_out": 23
+      },
+      "tied": 36,
+      "ungated_hits@20": 1.0714,
+      "worst_patient": -2.0
+    },
+    "PropHydroAro": {
+      "beats_random": true,
+      "chosen_alphas": [
+        2.0,
+        1.5,
+        1.5,
+        1.5,
+        2.0
+      ],
+      "control_random_matched_delta": 0.0554,
+      "delta_ci": [
+        0.1143,
+        0.6286
+      ],
+      "feature": "PropHydroAro",
+      "gated_hits@20": 1.4429,
+      "harmed": 7,
+      "higher_better": true,
+      "improved": 23,
+      "mean_delta": 0.3714,
+      "p_better": 0.998,
+      "per_fold": {
+        "0": {
+          "alpha": 2.0,
+          "mean_delta": 0.0714,
+          "n_patients": 14,
+          "random_delta": -0.1714
+        },
+        "1": {
+          "alpha": 1.5,
+          "mean_delta": 0.6429,
+          "n_patients": 14,
+          "random_delta": 0.0171
+        },
+        "2": {
+          "alpha": 1.5,
+          "mean_delta": 0.3846,
+          "n_patients": 13,
+          "random_delta": 0.0985
+        },
+        "3": {
+          "alpha": 1.5,
+          "mean_delta": 0.0625,
+          "n_patients": 16,
+          "random_delta": 0.0669
+        },
+        "4": {
+          "alpha": 2.0,
+          "mean_delta": 0.7692,
+          "n_patients": 13,
+          "random_delta": 0.2838
+        }
+      },
+      "swap_labels": {
+        "neg_swapped_in": 712,
+        "pos_swapped_in": 51,
+        "pos_swapped_out": 25
+      },
+      "tied": 40,
+      "ungated_hits@20": 1.0714,
+      "worst_patient": -3.0
+    },
+    "SelfSim": {
+      "beats_random": false,
+      "chosen_alphas": [
+        0.2,
+        0.2,
+        0.0,
+        0.0,
+        0.2
+      ],
+      "control_random_matched_delta": 0.0007,
+      "delta_ci": [
+        -0.1857,
+        0.0714
+      ],
+      "feature": "SelfSim",
+      "gated_hits@20": 1.0143,
+      "harmed": 7,
+      "higher_better": false,
+      "improved": 4,
+      "mean_delta": -0.0571,
+      "p_better": 0.152,
+      "per_fold": {
+        "0": {
+          "alpha": 0.2,
+          "mean_delta": 0.0,
+          "n_patients": 14,
+          "random_delta": -0.0464
+        },
+        "1": {
+          "alpha": 0.2,
+          "mean_delta": -0.1429,
+          "n_patients": 14,
+          "random_delta": -0.0771
+        },
+        "2": {
+          "alpha": 0.0,
+          "mean_delta": 0.0,
+          "n_patients": 13,
+          "random_delta": 0.0
+        },
+        "3": {
+          "alpha": 0.0,
+          "mean_delta": 0.0,
+          "n_patients": 16,
+          "random_delta": 0.0
+        },
+        "4": {
+          "alpha": 0.2,
+          "mean_delta": -0.1538,
+          "n_patients": 13,
+          "random_delta": 0.1369
+        }
+      },
+      "swap_labels": {
+        "neg_swapped_in": 193,
+        "pos_swapped_in": 8,
+        "pos_swapped_out": 12
+      },
+      "tied": 59,
+      "ungated_hits@20": 1.0714,
+      "worst_patient": -2.0
+    },
+    "VarAlFreq": {
+      "beats_random": true,
+      "chosen_alphas": [
+        0.2,
+        0.2,
+        0.2,
+        0.3,
+        0.2
+      ],
+      "control_random_matched_delta": 0.0616,
+      "delta_ci": [
+        -0.0429,
+        0.2143
+      ],
+      "feature": "VarAlFreq",
+      "gated_hits@20": 1.1571,
+      "harmed": 6,
+      "higher_better": true,
+      "improved": 13,
+      "mean_delta": 0.0857,
+      "p_better": 0.888,
+      "per_fold": {
+        "0": {
+          "alpha": 0.2,
+          "mean_delta": 0.1429,
+          "n_patients": 14,
+          "random_delta": 0.0307
+        },
+        "1": {
+          "alpha": 0.2,
+          "mean_delta": 0.1429,
+          "n_patients": 14,
+          "random_delta": 0.01
+        },
+        "2": {
+          "alpha": 0.2,
+          "mean_delta": 0.1538,
+          "n_patients": 13,
+          "random_delta": 0.0585
+        },
+        "3": {
+          "alpha": 0.3,
+          "mean_delta": -0.0625,
+          "n_patients": 16,
+          "random_delta": 0.0644
+        },
+        "4": {
+          "alpha": 0.2,
+          "mean_delta": 0.0769,
+          "n_patients": 13,
+          "random_delta": 0.15
+        }
+      },
+      "swap_labels": {
+        "neg_swapped_in": 369,
+        "pos_swapped_in": 19,
+        "pos_swapped_out": 13
+      },
+      "tied": 51,
+      "ungated_hits@20": 1.0714,
+      "worst_patient": -2.0
+    }
+  },
+  "status_note": "DEVELOPMENT/LOCAL only. rich-gate v1 (orthogonal-only utility) remains NULL/falsified. The IMPROVE hydrophobic gain does NOT transfer externally (see external_transfer) => regime-aware abstention required; DO NOT freeze hydrophobicity into product.",
+  "utility": "U = base_percentile + alpha*(feature_percentile-0.5); Epicurus UNCHANGED (base anchor)",
+  "verdict": "DEVELOPMENT-POSITIVE (single study): base-anchored gate on PropHydroAro lifts NET hits@20 by +0.371 (CI [0.1143, 0.6286], beats matched-random +0.055) on nested patient-disjoint IMPROVE folds. Feature choice followed inspection => development discovery, NOT external proof. Requires an UNTOUCHED external rich cohort to confirm before any freeze.",
+  "why_improve_differs": {
+    "by_source": [
+      {
+        "hydro_neg": 0.44,
+        "hydro_pos": 0.545,
+        "mean_pep_len": 9.62,
+        "n": 5362,
+        "pos": 116,
+        "source": "Basket"
+      },
+      {
+        "hydro_neg": 0.462,
+        "hydro_pos": 0.494,
+        "mean_pep_len": 9.36,
+        "n": 6237,
+        "pos": 147,
+        "source": "bladder"
+      },
+      {
+        "hydro_neg": 0.444,
+        "hydro_pos": 0.516,
+        "mean_pep_len": 9.35,
+        "n": 5921,
+        "pos": 204,
+        "source": "melanoma"
+      }
+    ],
+    "interpretation": "If positives are systematically MORE hydrophobic than negatives only in IMPROVE (a TIL/screened set), the gain reflects IMPROVE's candidate-selection/assay regime, not a universal recognition rule."
+  }
+}
