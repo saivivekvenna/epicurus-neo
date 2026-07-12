@@ -3,13 +3,15 @@
 **Design source of truth for the inference-time candidate *evidence router* and the *constrained,
 route-aware top-20 selection* it feeds.** This is a **pre-fit policy design**: it freezes the
 inference-time routing rules, the route precedence, the multi-source union identity rules, and the
-top-20 selection policy **before** any result is computed and **before** the locked Sid reachability
-audit is read. Paired frozen copy:
+top-20 selection policy **before route-aware selection is evaluated or compared on any cohort**.
+The route hypothesis is explicitly informed by the already-read Sid structural audit, so Sid is not
+an independent validation cohort for the conception of this router. Paired frozen copy:
 `artifacts/milestone_7_decision/evidence_router/PREREGISTERED_PROTOCOL.md`; frozen machine-readable
 parameters: `configs/frozen/evidence_router_v1.json`.
 
-> **No metric on any cohort — and in particular no number from the locked osteosarc.com (Sid) audit —
-> is read until the router + selection code and tests are committed.** The frozen Epicurus v0.1 config
+> **No route-aware selection metric or independent-cohort comparison is computed until this policy is
+> committed.** Sid's already-known structural losses motivate the design but are not used to choose the
+> frozen reserve count, precedence, or score. The frozen Epicurus v0.1 config
 > (`configs/frozen/epicurus_v0_1.json`) is not read or modified. The legacy deterministic gate
 > (`src/epicurus_neo/gates.py::apply_deterministic_gate`) is **preserved unchanged** for backward
 > compatibility; the router is an additive v2 path.
@@ -247,8 +249,9 @@ from any learned-recognition-superiority claim, and neither is used to argue the
 
 ## 8. Dataset allocation (frozen)
 
-- **osteosarc.com / Sid** — **reachability + ledger diagnostic ONLY.** Locked: read after the code
-  commit, never used to fit or to tune any policy constant/quota. Reports candidate-generation recall of
+- **osteosarc.com / Sid** — **hypothesis-generating reachability + ledger diagnostic ONLY.** Its
+  structural audit informed the router, so it is not independent validation. After the code commit it is
+  replayed without changing any policy constant/quota. Reports candidate-generation recall of
   the 3 Hudson-recognized targets in the multi-caller raw union; which are peptide-generated/rankable;
   which are selected. It is expected and acceptable to report ASPM/MAP2 as `NEEDS_PEPTIDE_GENERATION`
   until real peptide generation is run.
@@ -296,7 +299,7 @@ model is externally established on an untouched cohort. Do not touch `epicurus_v
 dirty files. The legacy gate stays for backward compatibility.
 
 ## 11. Registered deviations
-_(appended chronologically; the design is fixed above before any result is read.)_
+_(appended chronologically; the design is fixed above before any route-aware evaluation is run.)_
 
 - **D1 (integration form).** The instruction asked for "small integration into product.py." In this
   working tree `src/epicurus_neo/product.py`, `gates.py`, and `portfolio_selection.py` are **untracked**

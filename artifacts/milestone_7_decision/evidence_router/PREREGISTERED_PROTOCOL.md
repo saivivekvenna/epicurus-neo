@@ -1,8 +1,9 @@
 # PREREGISTERED PROTOCOL — evidence router + route-aware top-20 selection
 
 Frozen paired copy of `docs/superpowers/specs/2026-07-12-evidence-router-and-route-aware-selection-preregistration.md`.
-Frozen parameters: `configs/frozen/evidence_router_v1.json`. **Committed before any result is computed
-and before the locked Sid audit is read.**
+Frozen parameters: `configs/frozen/evidence_router_v1.json`. **Committed before any route-aware
+selection result or independent-cohort comparison is computed.** The already-read Sid structural
+audit motivated the router; Sid is not presented as independent validation of the design.
 
 ## Fixed decisions (pinned)
 
@@ -33,7 +34,8 @@ and before the locked Sid audit is read.**
    hits@20 conditional on reachability, end-to-end hits@20, route composition, no-regression on measured
    cohorts, bootstrap CIs where labels permit. Mechanical reachability reported separately from any
    learned-superiority claim.
-10. **Dataset allocation**: Sid = reachability/ledger diagnostic only (locked, no tuning); multimer /
+10. **Dataset allocation**: Sid = hypothesis-generating reachability/ledger diagnostic only (no policy
+    tuning after freeze; not independent validation); multimer /
     Gartner / IMPROVE / CheckMate = conditional reranker + no-regression within their denominator limits;
     RTTP = label-free deployment. No fabricated untouched cohort. No superiority claim over PRIME here.
 

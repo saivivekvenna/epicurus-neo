@@ -2,7 +2,7 @@
   "policy_id": "epicurus-evidence-router-1.0.0",
   "status": "FROZEN_PREREGISTERED",
   "preregistration": "docs/superpowers/specs/2026-07-12-evidence-router-and-route-aware-selection-preregistration.md",
-  "description": "Additive inference-time candidate evidence router + constrained route-aware top-20 selection. Preserves the legacy deterministic gate; keeps expression-N/TPM-zero/no-mutant-RNA/atypical-class candidates eligible but flagged. Frozen before any result is computed and before the locked Sid audit is read.",
+  "description": "Additive inference-time candidate evidence router + constrained route-aware top-20 selection. Preserves the legacy deterministic gate; keeps expression-N/TPM-zero/no-mutant-RNA/atypical-class candidates eligible but flagged. Sid's already-read structural audit motivated the design; policy is frozen before route-aware selection evaluation or independent-cohort comparison, and Sid is not independent validation.",
   "amino_acids": "ACDEFGHIKLMNPQRSTVWY",
   "class_i_len": {"min": 8, "max": 14},
   "missense_variant_types": ["SNV", "SNP", "MISSENSE"],
@@ -60,7 +60,7 @@
   },
   "funnel_stages": ["generated", "valid", "rankable", "selected"],
   "dataset_allocation": {
-    "osteosarc_sid": "reachability_and_ledger_diagnostic_only_locked_no_tuning",
+    "osteosarc_sid": "hypothesis_generating_reachability_and_ledger_diagnostic_not_independent_validation_no_postfreeze_tuning",
     "cd8_multimer": "conditional_reranker_no_regression_tested_negatives",
     "gartner_nci": "conditional_reranker_no_regression_tested_only",
     "improve": "conditional_reranker_no_regression_prescreened_denominator",
