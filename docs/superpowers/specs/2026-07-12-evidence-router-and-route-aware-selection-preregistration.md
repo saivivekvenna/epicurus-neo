@@ -175,6 +175,10 @@ sources into one deduplicated frame:
 - **Peptide/HLA availability**: if a unioned candidate lacks a peptide or HLA, its status is
   `NEEDS_PEPTIDE_GENERATION` (§3.5) — the helper never fabricates a peptide or pretends the row can be
   ranked.
+- **Granularity safety:** raw rows without peptide/HLA union at variant identity. When peptide or HLA
+  candidate fields are populated, the identity is automatically extended by exact
+  `(mutant_peptide, hla_allele)`, so one variant's many peptide–HLA routes are never collapsed to the
+  first row. Variant-level provenance can be joined onto those candidate rows by the base identity.
 
 The union feeds the router (provenance → multi-source flags) and the reachability funnel (the
 multi-caller raw variant union is the candidate-generation-recall denominator, §7).
@@ -315,3 +319,6 @@ _(appended chronologically; the design is fixed above before any route-aware eva
   protein/mutation identity. This prevents cross-patient hotspot merging and cross-gene `p.V600E`-style
   collisions. It narrows the originally ambiguous phrase "exact protein/mutation key" without changing
   any route or selection constant.
+- **D3 (variant-vs-candidate granularity, before implementation/results).** A populated peptide/HLA
+  extends the base variant key by exact peptide–HLA identity. This prevents a coordinate-level union
+  from silently collapsing many generated candidate routes for one mutation into the first peptide.

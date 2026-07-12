@@ -24,6 +24,8 @@ audit motivated the router; Sid is not presented as independent validation of th
    is an upstream generation gap (`NEEDS_PEPTIDE_GENERATION`), reported in the funnel, never a PRIME miss.
 6. **Multi-source union**, patient-scoped when available, by `(genome_build,chrom,pos,ref,alt)` else
    `(gene, exact protein/mutation)` — **never gene-only**;
+   populated peptide/HLA fields extend the key so distinct candidate routes from one variant remain
+   distinct;
    provenance (callers/timepoints/regions/sources) aggregated; representation conflicts preserved &
    flagged; MAP2's two 4-bp-apart coordinates stay distinct.
 7. **Constrained route-aware top-20**: k=20; modest exploration reserve of `reserve_per_route=1` per
@@ -49,3 +51,5 @@ No edit to `epicurus_v0_1.json`. Legacy gate preserved.
   portfolio_selection.py are untracked in this tree and are neither edited nor committed here). See spec §11.
 - **D2** — union identities are explicitly patient-scoped; protein/mutation fallback includes gene.
   This closes cross-patient hotspot and cross-gene notation collisions before implementation/results.
+- **D3** — candidate rows extend the base variant key by exact peptide–HLA identity, preventing
+  coordinate-level collapse of multiple candidates generated from one mutation.

@@ -45,6 +45,7 @@
   "needs_peptide_generation_status": "NEEDS_PEPTIDE_GENERATION",
   "union_identity_priority": ["patient_genome_build_chrom_pos_ref_alt", "patient_gene_protein_change_or_mutation_id"],
   "union_patient_scoped_when_available": true,
+  "union_candidate_key_extension": ["mutant_peptide", "hla_allele"],
   "union_never_gene_only": true,
   "selection": {
     "k": 20,
