@@ -37,8 +37,13 @@ the full 0.217 TB before T1 validates and the label table is in hand.
   mutanome enumeration + PRIME/MHCflurry scoring minutes. Full 13-patient cohort ≈ a day of wall-clock on a
   single machine, dominated by alignment.
 
-## Status
-- Inputs: **DONE (verified, open)** — this plan is executable now.
-- The download itself is deferred: **RUNNABLE BUT BLOCKED ON FILE** (S1/S2 labels), so a T1 pull would
-  only exercise the generation half. Pull T1 when you decide to validate the pipeline mechanics, or wait
-  for the label table to run the full north-star loop.
+## Status (updated 2026-07-12)
+- Inputs: **DONE (verified, open)**.
+- Labels: **IN HAND** — `data/raw/miller_ipv/miller_recognition_labels.csv` (754 assays / 13 patients;
+  IFN-g primary 180 POS / 574 NEG). The prior "blocked on S1/S2" status is **superseded**; the metric is
+  defined. No released processed Hu_287 VCF/TPM/HLA exists (web search 2026-07-12) → raw reconstruction from
+  SRA is required.
+- Downloader: **IMPLEMENTED** — `benchmark.miller_download` (resumable HTTP-Range, sha256 + byte-size
+  verification, provenance manifest with a machine-actionable per-stage RUNNABLE/NOT_EVALUABLE map). T1 =
+  Hu_287 trio (SRR24836184 normal WXS, SRR24836169 tumor WXS, SRR24836183 tumor RNA), ~7.5 GB, is being
+  pulled. Labels are never read by the downloader (LOCKED_TEST isolation).

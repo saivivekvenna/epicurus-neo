@@ -1,8 +1,9 @@
 # Miller IPV — pre-registered end-to-end benchmark protocol (frozen BEFORE headline)
 
-Registered 2026-07-12, before any Miller label is seen (S1/S2 are still paywalled). This fixes the
-analysis so the headline cannot be chosen after looking at results. Miller IPV is a **LOCKED_TEST** cohort:
-it is never used for development or tuning, and no constant is fit to it.
+Registered 2026-07-12. The metric, arms, exclusions, and leakage controls below were frozen at
+registration so the headline cannot be chosen after looking at results; the S1/S2 labels have since been
+ingested (see "Current status") but no element of this protocol was changed in response to any label value.
+Miller IPV is a **LOCKED_TEST** cohort: never used for development or tuning, and no constant is fit to it.
 
 ## Hypothesis (the north star)
 On the Miller patients, from **identical** WES/RNA/HLA inputs, does the frozen Epicurus pipeline place
@@ -52,7 +53,13 @@ raw input → candidate generation → the **same** candidate universe → genui
 → paired hits@20, with `NOT_EVALUABLE` explicit wherever a requirement is missing. If only the tested
 peptides can be reconstructed (no full universe), the cohort yields an **L2 diagnostic only**.
 
-## Current status
-`RUNNABLE BUT BLOCKED ON FILE`: the ingestion contract, run manifest, download tranches, and this protocol
-are done; the run is blocked on the paywalled S1/S2 label table (`EXTERNAL ACTION REQUIRED`). Inputs are
-open and the pilot tranche (7.2 GB) is executable now to validate the generation half.
+## Current status (updated 2026-07-12)
+**Labels are IN HAND and validated** — `data/raw/miller_ipv/miller_recognition_labels.csv`, 754 assays /
+13 patients / 349 tested variants (PRIMARY IFN-g: 180 POSITIVE / 574 TESTED_NEGATIVE; sensitivity `any`:
+199 / 555). The earlier "blocked on the paywalled S1/S2 file" status is **superseded**. The metric is now
+defined; what remains is the RAW-INPUT RECONSTRUCTION (the generation half), which is gated only on local
+tooling/references, not on any label file. Web search (2026-07-12) found **no released processed Hu_287
+VCF/TPM/HLA**, so raw reconstruction from SRA is necessary. T1 (patient Hu_287 trio, ~7.5 GB) downloads via
+the resumable/checksummed `benchmark.miller_download`; each downstream stage carries a machine-actionable
+RUNNABLE / NOT_EVALUABLE status (tool+reference manifest), never a vague blocker. Labels remain quarantined
+from all generation/HLA/expression/threshold/ranking decisions (LOCKED_TEST).

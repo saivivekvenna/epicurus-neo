@@ -1,19 +1,21 @@
 """Miller IPV (PRJNA980652, DOI 10.1126/scitranslmed.abj9905) ingestion scaffold.
 
-State of the cohort (2026-07-12): the raw WES/RNA inputs are PUBLIC on SRA (PRJNA980652); the per-peptide
-ELISpot label table (data files S1/S2) is paywalled behind science.org (Cloudflare 403 to every public
-CLI/API route — Crossref/Unpaywall/PMC/Europe PMC/direct file patterns all fail; the article is not open
-access). So this module covers everything that does NOT need the paywalled file:
+State of the cohort (updated 2026-07-12): BOTH halves are now in hand. The raw WES/RNA inputs are PUBLIC on
+SRA (PRJNA980652), and the per-peptide ELISpot label table (S1/S2) has been ingested and validated to
+`data/raw/miller_ipv/miller_recognition_labels.csv` — 754 assayed 20-mers across 13 patients / 349 tested
+variants, single ex-vivo-stim timepoint, no HLA column. PRIMARY readout = IFN-g (CD8/class-I biased):
+180 POSITIVE / 574 TESTED_NEGATIVE. Sensitivity readout = `any` (IFN-g OR IL-5): 199 POSITIVE / 555
+TESTED_NEGATIVE (the paper's headline set). This module covers metadata + the label ingestion contract:
 
   * parse the public SRA run metadata -> a per-patient input crosswalk (13 patients x {normal exome,
     tumor exome, tumor RNA}) and ordered download tranches (smallest valid first = one patient trio); and
-  * the ingestion CONTRACT the S1/S2 label frame must satisfy once obtained, enforcing the north-star
-    invariants: three-state labels (POSITIVE / TESTED_NEGATIVE / UNTESTED), NO collapsing of contradictory
-    longitudinal rows, a real conflict surfaced (never dropped), and a deterministic patient crosswalk to
-    the SRA BioSamples.
+  * the ingestion CONTRACT the S1/S2 label frame satisfies: three-state labels (POSITIVE /
+    TESTED_NEGATIVE / UNTESTED), NO collapsing of contradictory longitudinal rows, a real conflict surfaced
+    (never dropped), and a deterministic patient crosswalk to the SRA BioSamples.
 
-Aggregate labels are known from the paper text (RUNNABLE BUT BLOCKED ON FILE for the per-row table):
-754 assayed 20-mers, 199 POSITIVE (26%), 555 TESTED_NEGATIVE, across 13 patients / 349 tested variants.
+LOCKED_TEST isolation: the labels define the pre-registered metric ONLY. They must never influence
+download, HLA typing, expression, somatic calling, candidate generation, thresholds, or ranking. Raw-input
+download + reconstruction is handled by `benchmark.miller_download` (which never reads the label table).
 """
 
 from __future__ import annotations
