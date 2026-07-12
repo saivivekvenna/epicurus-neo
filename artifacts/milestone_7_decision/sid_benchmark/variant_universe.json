@@ -1,0 +1,26 @@
+{
+  "total_variants": 200,
+  "class_i_eligible": 147,
+  "consequence_counts": {
+    "missense_variant": 128,
+    "": 32,
+    "frameshift_variant": 12,
+    "stop_gained": 7,
+    "synonymous_variant": 4,
+    "intron_variant": 3,
+    "splice_acceptor_variant": 3,
+    "inframe_insertion": 3,
+    "inframe_deletion": 3,
+    "splice_donor_variant&intron_variant": 2,
+    "splice_donor_variant&non_coding_transcript_exon_variant": 1,
+    "3_prime_UTR_variant": 1,
+    "inframe_indel": 1
+  },
+  "eligibility_rule": "consequence in {missense,frameshift,stop_gained,inframe_del/ins/indel} AND max tumor alt_reads>0 (declared before label join)",
+  "hudson_positive_variant_ids_EVAL_ONLY": [
+    "ASPM-chr1-197102716",
+    "DYNC1H1-chr14-101980529",
+    "MAP2-chr2-209694772"
+  ],
+  "n_eligible": 147
+}

@@ -1,5 +1,11 @@
 # Lossless peptide recovery — osteosarc.com / Sid (EXPLORATORY, post-hoc)
 
+> **⛔ CORRECTION (2026-07-12): TARGET LEAKAGE — not end-to-end.** The generator hard-codes the 3 recognized
+> positives as `TARGETS` and generates only for them (covers 10.2% of the 147-variant label-blind universe;
+> `assert_generation_label_blind` fails it). The recall/coverage figures here are a **target-conditioned
+> sensitivity** test, NOT proof of end-to-end recovery. L3 claim withdrawn. See
+> `../sid_benchmark/BENCHMARK_PROTOCOL.md`.
+
 > Generator policy `lossless-peptide-generation-1.0.0` composed with router policy `epicurus-evidence-router-1.0.0`. Mode: **online**. Genuine PRIME commit `7b18d4e110`.
 
 > **Status:** post-hoc reachability diagnostic on the patient that motivated it — NOT preregistered / blind / independent. This does **not** show Epicurus beats PRIME: the selection score IS genuine PRIME (`genuine_prime = -PRIME %rank`); better candidate GENERATION lets genuine PRIME score targets it previously never received.

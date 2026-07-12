@@ -1,5 +1,15 @@
 # Lossless peptide recovery — final status & next validation blocker
 
+> ## ⛔ CORRECTION (2026-07-12): the 1/3 → 3/3 table below is NOT an end-to-end result — target leakage
+> `scripts/osteosarc_peptide_recovery.py` hard-codes `TARGETS = {ASPM, MAP2, DYNC1H1}` (the exact recognized
+> positives) and generates candidates ONLY for those. Target selection **leaks the answer**; the "3/3"
+> recall/coverage numbers are a **target-conditioned peptide-reconstruction SENSITIVITY test**, not proof
+> of end-to-end recognized-hit recovery. The complete label-blind universe is **147 eligible variants**
+> (of 200 public), and the existing generation covers only **10.2%** of it — `assert_generation_label_blind`
+> (src/event_b/sid_benchmark.py) correctly FAILS it. **This L3 claim is withdrawn.** The corrected,
+> label-blind end-to-end protocol is `../sid_benchmark/BENCHMARK_PROTOCOL.md`; read the numbers below only
+> as target-conditioned generation feasibility.
+
 **Milestone-7 exploratory diagnostic. Post-hoc, not preregistered/blind/independent.**
 
 ## What was done

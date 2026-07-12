@@ -359,14 +359,18 @@ def generate_variant_candidates(
     client: EnsemblClient,
     hla_panel: list[str],
     *,
-    expected: dict,
+    expected: dict | None = None,
 ) -> dict:
-    """Generate ``(peptide, HLA)`` candidates for one recovered variant (network via ``client``).
+    """Generate ``(peptide, HLA)`` candidates for one variant (network via ``client``).
 
     ``variant`` carries ``chrom, pos, ref, alt, gene, source_variant_type`` (``missense``/``snv`` or
     ``frameshift``/``deletion``). Returns the candidate rows plus a provenance record (Ensembl URLs +
-    SHAs, transcript fields, window counts, short junction context). Frozen ``expected`` is verified
-    before any window is emitted.
+    SHAs, transcript fields, window counts, short junction context).
+
+    ``expected`` is OPTIONAL: when a frozen expected-transcript dict is supplied it is verified before any
+    window is emitted (target-conditioned reconstruction). When ``expected is None`` the generator runs
+    LABEL-BLIND — it trusts VEP's MANE/canonical transcript with the variant's own consequence, which is
+    what an end-to-end benchmark over the complete variant universe requires (no per-target verification).
     """
     kind = str(variant["source_variant_type"]).lower()
     is_frameshift = kind in {"frameshift", "deletion", "frameshift_variant"}
@@ -375,7 +379,8 @@ def generate_variant_candidates(
     hgvs = genomic_hgvs(variant["chrom"], variant["pos"], variant["ref"], variant["alt"])
     vep = client.vep_hgvs(hgvs)
     selected = select_transcript(vep["json"], expected_consequence=consequence)
-    verify_transcript(selected, expected)
+    if expected is not None:
+        verify_transcript(selected, expected)
 
     provenance: dict = {
         "variant": {k: variant[k] for k in ("chrom", "pos", "ref", "alt", "gene")},
