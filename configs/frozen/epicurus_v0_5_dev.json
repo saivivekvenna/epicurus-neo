@@ -1,0 +1,79 @@
+{
+  "name": "epicurus_v0_5_dev",
+  "kind": "context_conditioned_pairwise",
+  "status": "REJECTED_DEVELOPMENT",
+  "supersedes_frozen": false,
+  "features": [
+    "f_prime_pct",
+    "f_mix_pct",
+    "f_el_pct",
+    "f_pres_abs",
+    "f_expr",
+    "f_agreto",
+    "f_foreign",
+    "f_bindstab",
+    "f_proc"
+  ],
+  "contexts": [
+    "ctx_pep_len",
+    "ctx_pred_disagree",
+    "ctx_locus_B",
+    "ctx_locus_C"
+  ],
+  "model": {
+    "kind": "context_pairwise",
+    "member": "R",
+    "lam_w": 0.1,
+    "lam_ctx": 3.0,
+    "w0": {
+      "f_prime_pct": 0.1583,
+      "f_mix_pct": 0.0727,
+      "f_el_pct": 0.0337,
+      "f_pres_abs": 0.577,
+      "f_expr": 0.0487,
+      "f_agreto": 0.0461,
+      "f_foreign": 0.0179,
+      "f_bindstab": 0.2905,
+      "f_proc": -0.0628
+    },
+    "beta": {
+      "f_el_pct__x__ctx_pep_len": -0.0064,
+      "f_el_pct__x__ctx_pred_disagree": 0.0075,
+      "f_el_pct__x__ctx_locus_B": -0.0024,
+      "f_el_pct__x__ctx_locus_C": 0.0015,
+      "f_pres_abs__x__ctx_pep_len": -0.0152,
+      "f_pres_abs__x__ctx_pred_disagree": 0.0075,
+      "f_pres_abs__x__ctx_locus_B": -0.0205,
+      "f_pres_abs__x__ctx_locus_C": -0.0025,
+      "f_prime_pct__x__ctx_pep_len": -0.0075,
+      "f_prime_pct__x__ctx_pred_disagree": 0.0062,
+      "f_prime_pct__x__ctx_locus_B": 0.0046,
+      "f_prime_pct__x__ctx_locus_C": -0.0135,
+      "f_mix_pct__x__ctx_pep_len": -0.01,
+      "f_mix_pct__x__ctx_pred_disagree": 0.0092,
+      "f_mix_pct__x__ctx_locus_B": -0.0026,
+      "f_mix_pct__x__ctx_locus_C": -0.0047
+    }
+  },
+  "registered_gate": {
+    "beats_genuine_prime": false,
+    "strongest_presentation": "mix",
+    "no_regression_vs_strongest_presentation": true,
+    "verdict": "REJECT",
+    "delta_vs_prime": {
+      "delta": -0.012,
+      "ci_lo": -0.125,
+      "ci_hi": 0.1084,
+      "n_patients": 118
+    },
+    "delta_vs_strongest_presentation": {
+      "delta": 0.0324,
+      "ci_lo": -0.0722,
+      "ci_hi": 0.125,
+      "n_patients": 118
+    },
+    "note": "Development-only; ACCEPT licenses ONE pre-registered look at the SEMI-CONSUMED Gartner TEST. No external claim without an untouched cohort."
+  },
+  "protocol": "artifacts/milestone_7_decision/epicurus_v05/PREREGISTERED_PROTOCOL.md",
+  "note": "Development-only deployable challenger; not generalizable without an untouched cohort."
+}

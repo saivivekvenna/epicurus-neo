@@ -1,0 +1,847 @@
+{
+  "protocol": "artifacts/milestone_7_decision/epicurus_v05/PREREGISTERED_PROTOCOL.md",
+  "provenance": {
+    "git_head": "03488b896eddb2e6be3f8c74801ef49292004d6d",
+    "n_inputs_verified": 18
+  },
+  "io_guard": {
+    "forbidden_paths_blocked": [
+      "data/raw/gartner_nci/NmersTestingSet.txt",
+      "data/raw/gartner_nci/MmpsTestingSet_extract.tsv"
+    ]
+  },
+  "registered_candidate": "R_context_pairwise",
+  "k": 5,
+  "scored_patients": 118,
+  "leakage_assertions": {
+    "patient_fold_functional": true,
+    "peptide_fold_functional": true,
+    "gartner_dev_patients": 56,
+    "gartner_test_patients_present": 0
+  },
+  "frozen_comparator_reproduction": {
+    "P": {
+      "max_abs_coef_diff": 4.9e-05,
+      "overall_hits_refit": 1.0528,
+      "overall_hits_frozen": 1.0528,
+      "abs_hits_diff": 0.0,
+      "tol_coef": 0.002,
+      "tol_hits": 1e-06,
+      "reproduced": true
+    },
+    "A": {
+      "max_abs_coef_diff": 4.9e-05,
+      "overall_hits_refit": 0.9343,
+      "overall_hits_frozen": 0.9343,
+      "abs_hits_diff": 0.0,
+      "tol_coef": 0.002,
+      "tol_hits": 1e-06,
+      "reproduced": true
+    },
+    "F": {
+      "overall_hits_refit": 1.1296,
+      "overall_hits_frozen": 1.1296,
+      "abs_hits_diff": 0.0,
+      "tol_hits": 0.005,
+      "nonconvex": true,
+      "reproduced": true,
+      "note": "F is nonconvex (v0.4 multi-init wobble); hits verified to v0.4 tolerance, residual reported."
+    }
+  },
+  "members": {
+    "P_pooled_frozen_v03": {
+      "eval": {
+        "n_scored_patients": 118,
+        "overall_hits_model": 1.0528,
+        "vs_prime": {
+          "delta": -0.0926,
+          "ci_lo": -0.2278,
+          "ci_hi": 0.0509,
+          "n_patients": 118
+        },
+        "overall_hits_prime": 1.1454,
+        "vs_mix": {
+          "delta": -0.0481,
+          "ci_lo": -0.1722,
+          "ci_hi": 0.075,
+          "n_patients": 118
+        },
+        "overall_hits_mix": 1.1009,
+        "vs_presentation": {
+          "delta": 0.0056,
+          "ci_lo": -0.0982,
+          "ci_hi": 0.1074,
+          "n_patients": 118
+        },
+        "overall_hits_presentation": 1.0472,
+        "per_source": {
+          "gartner": {
+            "patients": 40,
+            "mean_hits_model": 1.025,
+            "mean_recall_model": 0.548,
+            "mean_hits_prime": 0.975,
+            "delta_vs_prime": 0.05,
+            "mean_hits_mix": 0.875,
+            "delta_vs_mix": 0.15,
+            "mean_hits_presentation": 1.025,
+            "delta_vs_presentation": 0.0
+          },
+          "improve": {
+            "patients": 60,
+            "mean_hits_model": 0.967,
+            "mean_recall_model": 0.154,
+            "mean_hits_prime": 1.35,
+            "delta_vs_prime": -0.383,
+            "mean_hits_mix": 1.15,
+            "delta_vs_mix": -0.183,
+            "mean_hits_presentation": 1.117,
+            "delta_vs_presentation": -0.15
+          },
+          "multimer": {
+            "patients": 18,
+            "mean_hits_model": 1.167,
+            "mean_recall_model": 0.689,
+            "mean_hits_prime": 1.111,
+            "delta_vs_prime": 0.056,
+            "mean_hits_mix": 1.278,
+            "delta_vs_mix": -0.111,
+            "mean_hits_presentation": 1.0,
+            "delta_vs_presentation": 0.167
+          }
+        }
+      },
+      "folds": [
+        {
+          "fold": 0,
+          "member": "P",
+          "C": 0.1,
+          "tau": 1.0
+        },
+        {
+          "fold": 1,
+          "member": "P",
+          "C": 0.1,
+          "tau": 1.0
+        },
+        {
+          "fold": 2,
+          "member": "P",
+          "C": 0.1,
+          "tau": 1.0
+        },
+        {
+          "fold": 3,
+          "member": "P",
+          "C": 0.1,
+          "tau": 1.0
+        },
+        {
+          "fold": 4,
+          "member": "P",
+          "C": 0.3,
+          "tau": 1.0
+        }
+      ]
+    },
+    "A_additive_frozen_v03": {
+      "eval": {
+        "n_scored_patients": 118,
+        "overall_hits_model": 0.9343,
+        "vs_prime": {
+          "delta": -0.2111,
+          "ci_lo": -0.325,
+          "ci_hi": -0.1018,
+          "n_patients": 118
+        },
+        "overall_hits_prime": 1.1454,
+        "vs_mix": {
+          "delta": -0.1667,
+          "ci_lo": -0.3278,
+          "ci_hi": -0.0241,
+          "n_patients": 118
+        },
+        "overall_hits_mix": 1.1009,
+        "vs_presentation": {
+          "delta": -0.113,
+          "ci_lo": -0.2556,
+          "ci_hi": 0.0241,
+          "n_patients": 118
+        },
+        "overall_hits_presentation": 1.0472,
+        "per_source": {
+          "gartner": {
+            "patients": 40,
+            "mean_hits_model": 0.975,
+            "mean_recall_model": 0.569,
+            "mean_hits_prime": 0.975,
+            "delta_vs_prime": 0.0,
+            "mean_hits_mix": 0.875,
+            "delta_vs_mix": 0.1,
+            "mean_hits_presentation": 1.025,
+            "delta_vs_presentation": -0.05
+          },
+          "improve": {
+            "patients": 60,
+            "mean_hits_model": 1.05,
+            "mean_recall_model": 0.183,
+            "mean_hits_prime": 1.35,
+            "delta_vs_prime": -0.3,
+            "mean_hits_mix": 1.15,
+            "delta_vs_mix": -0.1,
+            "mean_hits_presentation": 1.117,
+            "delta_vs_presentation": -0.067
+          },
+          "multimer": {
+            "patients": 18,
+            "mean_hits_model": 0.778,
+            "mean_recall_model": 0.511,
+            "mean_hits_prime": 1.111,
+            "delta_vs_prime": -0.333,
+            "mean_hits_mix": 1.278,
+            "delta_vs_mix": -0.5,
+            "mean_hits_presentation": 1.0,
+            "delta_vs_presentation": -0.222
+          }
+        }
+      },
+      "folds": [
+        {
+          "fold": 0,
+          "member": "A",
+          "C": 0.1
+        },
+        {
+          "fold": 1,
+          "member": "A",
+          "C": 0.1
+        },
+        {
+          "fold": 2,
+          "member": "A",
+          "C": 1.0
+        },
+        {
+          "fold": 3,
+          "member": "A",
+          "C": 1.0
+        },
+        {
+          "fold": 4,
+          "member": "A",
+          "C": 1.0
+        }
+      ]
+    },
+    "F_feature_tower_frozen_v04": {
+      "eval": {
+        "n_scored_patients": 118,
+        "overall_hits_model": 1.1296,
+        "vs_prime": {
+          "delta": -0.0157,
+          "ci_lo": -0.1472,
+          "ci_hi": 0.1121,
+          "n_patients": 118
+        },
+        "overall_hits_prime": 1.1454,
+        "vs_mix": {
+          "delta": 0.0287,
+          "ci_lo": -0.1176,
+          "ci_hi": 0.1694,
+          "n_patients": 118
+        },
+        "overall_hits_mix": 1.1009,
+        "vs_presentation": {
+          "delta": 0.0824,
+          "ci_lo": -0.0981,
+          "ci_hi": 0.2528,
+          "n_patients": 118
+        },
+        "overall_hits_presentation": 1.0472,
+        "per_source": {
+          "gartner": {
+            "patients": 40,
+            "mean_hits_model": 1.25,
+            "mean_recall_model": 0.648,
+            "mean_hits_prime": 0.975,
+            "delta_vs_prime": 0.275,
+            "mean_hits_mix": 0.875,
+            "delta_vs_mix": 0.375,
+            "mean_hits_presentation": 1.025,
+            "delta_vs_presentation": 0.225
+          },
+          "improve": {
+            "patients": 60,
+            "mean_hits_model": 1.25,
+            "mean_recall_model": 0.212,
+            "mean_hits_prime": 1.35,
+            "delta_vs_prime": -0.1,
+            "mean_hits_mix": 1.15,
+            "delta_vs_mix": 0.1,
+            "mean_hits_presentation": 1.117,
+            "delta_vs_presentation": 0.133
+          },
+          "multimer": {
+            "patients": 18,
+            "mean_hits_model": 0.889,
+            "mean_recall_model": 0.578,
+            "mean_hits_prime": 1.111,
+            "delta_vs_prime": -0.222,
+            "mean_hits_mix": 1.278,
+            "delta_vs_mix": -0.389,
+            "mean_hits_presentation": 1.0,
+            "delta_vs_presentation": -0.111
+          }
+        }
+      },
+      "folds": [
+        {
+          "fold": 0,
+          "member": "F",
+          "C": 1.0,
+          "tau": 0.5,
+          "lam": 10.0
+        },
+        {
+          "fold": 1,
+          "member": "F",
+          "C": 0.3,
+          "tau": 1.0,
+          "lam": 10.0
+        },
+        {
+          "fold": 2,
+          "member": "F",
+          "C": 0.3,
+          "tau": 0.5,
+          "lam": 1.0
+        },
+        {
+          "fold": 3,
+          "member": "F",
+          "C": 0.3,
+          "tau": 0.5,
+          "lam": 1.0
+        },
+        {
+          "fold": 4,
+          "member": "F",
+          "C": 0.3,
+          "tau": 1.0,
+          "lam": 3.0
+        }
+      ]
+    },
+    "Q_shared_pairwise": {
+      "eval": {
+        "n_scored_patients": 118,
+        "overall_hits_model": 1.1222,
+        "vs_prime": {
+          "delta": -0.0231,
+          "ci_lo": -0.1472,
+          "ci_hi": 0.1111,
+          "n_patients": 118
+        },
+        "overall_hits_prime": 1.1454,
+        "vs_mix": {
+          "delta": 0.0213,
+          "ci_lo": -0.0694,
+          "ci_hi": 0.1037,
+          "n_patients": 118
+        },
+        "overall_hits_mix": 1.1009,
+        "vs_presentation": {
+          "delta": 0.075,
+          "ci_lo": -0.05,
+          "ci_hi": 0.2019,
+          "n_patients": 118
+        },
+        "overall_hits_presentation": 1.0472,
+        "per_source": {
+          "gartner": {
+            "patients": 40,
+            "mean_hits_model": 1.1,
+            "mean_recall_model": 0.621,
+            "mean_hits_prime": 0.975,
+            "delta_vs_prime": 0.125,
+            "mean_hits_mix": 0.875,
+            "delta_vs_mix": 0.225,
+            "mean_hits_presentation": 1.025,
+            "delta_vs_presentation": 0.075
+          },
+          "improve": {
+            "patients": 60,
+            "mean_hits_model": 1.1,
+            "mean_recall_model": 0.187,
+            "mean_hits_prime": 1.35,
+            "delta_vs_prime": -0.25,
+            "mean_hits_mix": 1.15,
+            "delta_vs_mix": -0.05,
+            "mean_hits_presentation": 1.117,
+            "delta_vs_presentation": -0.017
+          },
+          "multimer": {
+            "patients": 18,
+            "mean_hits_model": 1.167,
+            "mean_recall_model": 0.681,
+            "mean_hits_prime": 1.111,
+            "delta_vs_prime": 0.056,
+            "mean_hits_mix": 1.278,
+            "delta_vs_mix": -0.111,
+            "mean_hits_presentation": 1.0,
+            "delta_vs_presentation": 0.167
+          }
+        }
+      },
+      "folds": [
+        {
+          "fold": 0,
+          "member": "Q",
+          "lam_w": 0.3,
+          "lam_ctx": null
+        },
+        {
+          "fold": 1,
+          "member": "Q",
+          "lam_w": 0.1,
+          "lam_ctx": null
+        },
+        {
+          "fold": 2,
+          "member": "Q",
+          "lam_w": 0.1,
+          "lam_ctx": null
+        },
+        {
+          "fold": 3,
+          "member": "Q",
+          "lam_w": 0.1,
+          "lam_ctx": null
+        },
+        {
+          "fold": 4,
+          "member": "Q",
+          "lam_w": 3.0,
+          "lam_ctx": null
+        }
+      ]
+    },
+    "R_context_pairwise": {
+      "eval": {
+        "n_scored_patients": 118,
+        "overall_hits_model": 1.1333,
+        "vs_prime": {
+          "delta": -0.012,
+          "ci_lo": -0.125,
+          "ci_hi": 0.1084,
+          "n_patients": 118
+        },
+        "overall_hits_prime": 1.1454,
+        "vs_mix": {
+          "delta": 0.0324,
+          "ci_lo": -0.0722,
+          "ci_hi": 0.125,
+          "n_patients": 118
+        },
+        "overall_hits_mix": 1.1009,
+        "vs_presentation": {
+          "delta": 0.0861,
+          "ci_lo": -0.0232,
+          "ci_hi": 0.1954,
+          "n_patients": 118
+        },
+        "overall_hits_presentation": 1.0472,
+        "per_source": {
+          "gartner": {
+            "patients": 40,
+            "mean_hits_model": 1.05,
+            "mean_recall_model": 0.584,
+            "mean_hits_prime": 0.975,
+            "delta_vs_prime": 0.075,
+            "mean_hits_mix": 0.875,
+            "delta_vs_mix": 0.175,
+            "mean_hits_presentation": 1.025,
+            "delta_vs_presentation": 0.025
+          },
+          "improve": {
+            "patients": 60,
+            "mean_hits_model": 1.183,
+            "mean_recall_model": 0.197,
+            "mean_hits_prime": 1.35,
+            "delta_vs_prime": -0.167,
+            "mean_hits_mix": 1.15,
+            "delta_vs_mix": 0.033,
+            "mean_hits_presentation": 1.117,
+            "delta_vs_presentation": 0.067
+          },
+          "multimer": {
+            "patients": 18,
+            "mean_hits_model": 1.167,
+            "mean_recall_model": 0.689,
+            "mean_hits_prime": 1.111,
+            "delta_vs_prime": 0.056,
+            "mean_hits_mix": 1.278,
+            "delta_vs_mix": -0.111,
+            "mean_hits_presentation": 1.0,
+            "delta_vs_presentation": 0.167
+          }
+        }
+      },
+      "gate": {
+        "beats_genuine_prime": false,
+        "strongest_presentation": "mix",
+        "no_regression_vs_strongest_presentation": true,
+        "verdict": "REJECT",
+        "delta_vs_prime": {
+          "delta": -0.012,
+          "ci_lo": -0.125,
+          "ci_hi": 0.1084,
+          "n_patients": 118
+        },
+        "delta_vs_strongest_presentation": {
+          "delta": 0.0324,
+          "ci_lo": -0.0722,
+          "ci_hi": 0.125,
+          "n_patients": 118
+        },
+        "note": "Development-only; ACCEPT licenses ONE pre-registered look at the SEMI-CONSUMED Gartner TEST. No external claim without an untouched cohort."
+      },
+      "folds": [
+        {
+          "fold": 0,
+          "member": "R",
+          "lam_w": 0.1,
+          "lam_ctx": 3.0
+        },
+        {
+          "fold": 1,
+          "member": "R",
+          "lam_w": 0.1,
+          "lam_ctx": 3.0
+        },
+        {
+          "fold": 2,
+          "member": "R",
+          "lam_w": 0.1,
+          "lam_ctx": 3.0
+        },
+        {
+          "fold": 3,
+          "member": "R",
+          "lam_w": 0.1,
+          "lam_ctx": 3.0
+        },
+        {
+          "fold": 4,
+          "member": "R",
+          "lam_w": 0.3,
+          "lam_ctx": 10.0
+        }
+      ]
+    }
+  },
+  "registered_gate_R": {
+    "beats_genuine_prime": false,
+    "strongest_presentation": "mix",
+    "no_regression_vs_strongest_presentation": true,
+    "verdict": "REJECT",
+    "delta_vs_prime": {
+      "delta": -0.012,
+      "ci_lo": -0.125,
+      "ci_hi": 0.1084,
+      "n_patients": 118
+    },
+    "delta_vs_strongest_presentation": {
+      "delta": 0.0324,
+      "ci_lo": -0.0722,
+      "ci_hi": 0.125,
+      "n_patients": 118
+    },
+    "note": "Development-only; ACCEPT licenses ONE pre-registered look at the SEMI-CONSUMED Gartner TEST. No external claim without an untouched cohort."
+  },
+  "diagnostics": {
+    "selected_per_fold": [
+      {
+        "fold": 0,
+        "member": "R",
+        "lam_w": 0.1,
+        "lam_ctx": 3.0
+      },
+      {
+        "fold": 1,
+        "member": "R",
+        "lam_w": 0.1,
+        "lam_ctx": 3.0
+      },
+      {
+        "fold": 2,
+        "member": "R",
+        "lam_w": 0.1,
+        "lam_ctx": 3.0
+      },
+      {
+        "fold": 3,
+        "member": "R",
+        "lam_w": 0.1,
+        "lam_ctx": 3.0
+      },
+      {
+        "fold": 4,
+        "member": "R",
+        "lam_w": 0.3,
+        "lam_ctx": 10.0
+      }
+    ],
+    "contrasts": {
+      "R_minus_Q": {
+        "delta": 0.0111,
+        "ci_lo": -0.0574,
+        "ci_hi": 0.0843,
+        "n_patients": 118
+      },
+      "Q_minus_P": {
+        "delta": 0.0694,
+        "ci_lo": -0.0454,
+        "ci_hi": 0.1796,
+        "n_patients": 118
+      },
+      "A_minus_Q": {
+        "delta": -0.188,
+        "ci_lo": -0.2981,
+        "ci_hi": -0.0861,
+        "n_patients": 118,
+        "interpretation": "DESCRIPTIVE, not causal: A vs Q changes objective form AND Gartner negative aggregation/bag discipline (not a pure objective isolation)."
+      },
+      "A_minus_P": {
+        "delta": -0.1185,
+        "ci_lo": -0.2565,
+        "ci_hi": 0.013,
+        "n_patients": 118,
+        "interpretation": "DESCRIPTIVE: supervision granularity (exact-witness pointwise vs bag-MIL)."
+      },
+      "R_minus_F": {
+        "delta": 0.0037,
+        "ci_lo": -0.1389,
+        "ci_hi": 0.1565,
+        "n_patients": 118
+      }
+    },
+    "per_source_ext": {
+      "gartner": {
+        "patients": 40,
+        "hits": 1.05,
+        "recall": 0.584,
+        "best_pos_rank": 95.38,
+        "ndcg": 0.327,
+        "hits_prime": 0.975,
+        "hits_presentation": 1.025
+      },
+      "improve": {
+        "patients": 60,
+        "hits": 1.183,
+        "recall": 0.197,
+        "best_pos_rank": 32.63,
+        "ndcg": 0.123,
+        "hits_prime": 1.35,
+        "hits_presentation": 1.117
+      },
+      "multimer": {
+        "patients": 18,
+        "hits": 1.167,
+        "recall": 0.689,
+        "best_pos_rank": 23.5,
+        "ndcg": 0.332,
+        "hits_prime": 1.111,
+        "hits_presentation": 1.0
+      }
+    },
+    "prime_masking_availability": {
+      "per_source": {
+        "gartner": {
+          "n_rows": 290239,
+          "prime_rank_available_rate": 1.0,
+          "prime_mask_rate": 0.0103
+        },
+        "improve": {
+          "n_rows": 16857,
+          "prime_rank_available_rate": 1.0,
+          "prime_mask_rate": 0.0111
+        },
+        "multimer": {
+          "n_rows": 7954,
+          "prime_rank_available_rate": 1.0,
+          "prime_mask_rate": 0.197
+        }
+      },
+      "attrition": {
+        "gartner": {
+          "feature_bearing": 56,
+          "rankable_label_blind": 56,
+          "scored_has_positive": 40,
+          "lost_to_quarantine_only": 3,
+          "core_availability_rate": 1.0,
+          "prime_mask_rate": 0.0103,
+          "prime_rank_available_rate": 1.0
+        },
+        "improve": {
+          "feature_bearing": 70,
+          "rankable_label_blind": 70,
+          "scored_has_positive": 60,
+          "lost_to_quarantine_only": 1,
+          "core_availability_rate": 1.0,
+          "prime_mask_rate": 0.0111,
+          "prime_rank_available_rate": 1.0
+        },
+        "multimer": {
+          "feature_bearing": 26,
+          "rankable_label_blind": 26,
+          "scored_has_positive": 18,
+          "lost_to_quarantine_only": 1,
+          "core_availability_rate": 1.0,
+          "prime_mask_rate": 0.197,
+          "prime_rank_available_rate": 1.0
+        },
+        "TOTAL": {
+          "feature_bearing": 152,
+          "rankable_label_blind": 152,
+          "scored_has_positive": 118,
+          "lost_to_quarantine_only": 5
+        }
+      }
+    },
+    "context_alias_reaudit": {
+      "per_context": {
+        "ctx_pep_len": {
+          "alias": {
+            "macro_balanced_accuracy": 0.4249,
+            "macro_ovr_auroc": 0.6091,
+            "source_balanced_chance": {
+              "macro_balanced_accuracy": 0.3333,
+              "macro_ovr_auroc": 0.5
+            }
+          },
+          "within_patient_variation": {
+            "mean_within_patient_std": 0.9563,
+            "mean_within_patient_distinct": 3.91,
+            "patient_constant": false
+          }
+        },
+        "ctx_pred_disagree": {
+          "alias": {
+            "macro_balanced_accuracy": 0.3662,
+            "macro_ovr_auroc": 0.5645,
+            "source_balanced_chance": {
+              "macro_balanced_accuracy": 0.3333,
+              "macro_ovr_auroc": 0.5
+            }
+          },
+          "within_patient_variation": {
+            "mean_within_patient_std": 0.074,
+            "mean_within_patient_distinct": 2038.42,
+            "patient_constant": false
+          }
+        },
+        "ctx_hla_locus": {
+          "alias": {
+            "macro_balanced_accuracy": 0.4028,
+            "macro_ovr_auroc": 0.5838,
+            "source_balanced_chance": {
+              "macro_balanced_accuracy": 0.3333,
+              "macro_ovr_auroc": 0.5
+            }
+          },
+          "within_patient_variation": {
+            "mean_within_patient_std": 0.4463,
+            "mean_within_patient_distinct": 1.94,
+            "patient_constant": false
+          }
+        }
+      },
+      "approved_block_alias": {
+        "macro_balanced_accuracy": 0.4853,
+        "macro_ovr_auroc": 0.6823,
+        "source_balanced_chance": {
+          "macro_balanced_accuracy": 0.3333,
+          "macro_ovr_auroc": 0.5
+        }
+      },
+      "note": "near-perfect aliasing \u21d2 NO transferability claim for that context (descriptive)."
+    },
+    "context_ablations": {
+      "full_delta_vs_prime": -0.012,
+      "leave_one_context_out": {
+        "ctx_pep_len": {
+          "delta_vs_prime_without": -0.0454,
+          "drop_vs_full": 0.0334
+        },
+        "ctx_pred_disagree": {
+          "delta_vs_prime_without": -0.0398,
+          "drop_vs_full": 0.0278
+        },
+        "ctx_locus_B": {
+          "delta_vs_prime_without": -0.0343,
+          "drop_vs_full": 0.0223
+        },
+        "ctx_locus_C": {
+          "delta_vs_prime_without": -0.0009,
+          "drop_vs_full": -0.0111
+        }
+      }
+    },
+    "shuffled_context_control": {
+      "true_context_delta_vs_prime": -0.012,
+      "shuffled_context_delta_vs_prime": -0.0778,
+      "note": "comparable shuffled lift \u21d2 gain is capacity, not portable context structure. Diagnostic."
+    },
+    "loso_transfer": {
+      "per_held_out_source": {
+        "gartner": {
+          "n_patients": 40,
+          "R_mean_hits": 0.95,
+          "Q_mean_hits": 0.95,
+          "prime_mean_hits": 0.975
+        },
+        "improve": {
+          "n_patients": 60,
+          "R_mean_hits": 1.15,
+          "Q_mean_hits": 1.15,
+          "prime_mean_hits": 1.35
+        },
+        "multimer": {
+          "n_patients": 18,
+          "R_mean_hits": 1.333,
+          "Q_mean_hits": 1.278,
+          "prime_mean_hits": 1.111
+        }
+      },
+      "note": "descriptive (n=3); no transfer claim."
+    },
+    "multi_init_stability": {
+      "max_abs_coef_delta": 2.1e-07,
+      "min_spearman": 1.0,
+      "pass": true
+    },
+    "interpretation": {
+      "note": "context \u00d7 presentation-feature interactions are presentation REWEIGHTING, not a new recognition axis. Flag if pred_disagree interactions dominate the effective \u03b2.",
+      "effective_beta_final": {
+        "f_el_pct__x__ctx_pep_len": -0.0064,
+        "f_el_pct__x__ctx_pred_disagree": 0.0075,
+        "f_el_pct__x__ctx_locus_B": -0.0024,
+        "f_el_pct__x__ctx_locus_C": 0.0015,
+        "f_pres_abs__x__ctx_pep_len": -0.0152,
+        "f_pres_abs__x__ctx_pred_disagree": 0.0075,
+        "f_pres_abs__x__ctx_locus_B": -0.0205,
+        "f_pres_abs__x__ctx_locus_C": -0.0025,
+        "f_prime_pct__x__ctx_pep_len": -0.0075,
+        "f_prime_pct__x__ctx_pred_disagree": 0.0062,
+        "f_prime_pct__x__ctx_locus_B": 0.0046,
+        "f_prime_pct__x__ctx_locus_C": -0.0135,
+        "f_mix_pct__x__ctx_pep_len": -0.01,
+        "f_mix_pct__x__ctx_pred_disagree": 0.0092,
+        "f_mix_pct__x__ctx_locus_B": -0.0026,
+        "f_mix_pct__x__ctx_locus_C": -0.0047
+      }
+    }
+  },
+  "verdict": "REJECT",
+  "preservation": "v0.1 remains the frozen model of record; v0.5 is REJECTED_DEVELOPMENT. Gartner TEST NOT opened; no external claim."
+}
