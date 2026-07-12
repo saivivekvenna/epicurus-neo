@@ -89,8 +89,12 @@ def test_full_cached_reconstruction_passes_frozen_headline_invariants(tmp_path):
     funnel = list(__import__("csv").DictReader((tmp_path / "reachability_funnel.csv").open()))
     hudson_map2 = next(row for row in funnel if row["gene"] == "MAP2" and row["hudson_recognized"] == "true")
     site_map2 = next(row for row in funnel if row["gene"] == "MAP2" and row["recognized_by"] == "site_elispot_positive")
+    hudson_aspm = next(row for row in funnel if row["gene"] == "ASPM" and row["hudson_recognized"] == "true")
     assert hudson_map2["target_id"] == "MAP2-chr2-209694772"
     assert hudson_map2["in_vaccine"] == "false"
     assert hudson_map2["has_site_elispot"] == "false"
     assert "differs from the Leu867fs vaccine neo-frame" in hudson_map2["adjudication"]
     assert site_map2["target_id"] == "MAP2-chr2-209694768"
+    assert hudson_aspm["in_vaccine"] == "false"
+    assert hudson_aspm["has_site_elispot"] == "false"
+    assert "zero site-ELISPOT experiments" in hudson_aspm["adjudication"]

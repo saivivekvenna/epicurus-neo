@@ -824,8 +824,9 @@ def _adjudicate(hudson_rows, vafs_idx, pv_genes, cat_by_id) -> dict:
     out[("ASPM", "G2179R")] = (
         f"ASPM p.G2179R (Hudson-recognized May+Aug) = site variant "
         f"{aspm['variant_id'] if aspm else '?'} (p.Gly2179Arg), called by "
-        f"{'/'.join(sorted(aspm['pipelines'])) if aspm else '?'}, vaccine-included and site-ELISPOT-listed, "
-        f"but ABSENT from the pVACtools 2025.01 candidate universe (pVACtools has no ASPM). "
+        f"{'/'.join(sorted(aspm['pipelines'])) if aspm else '?'}. The page lists an mRNA peptide construct "
+        f"but zero vaccines targeting it and zero site-ELISPOT experiments; the Hudson recognition stream "
+        f"is the positive evidence. It is ABSENT from the pVACtools 2025.01 candidate universe (no ASPM). "
         f"Lost at candidate generation, NOT variant calling — corrects dd3efd1's 'off-callset' claim.")
     # DYNC1H1 p.V314I
     dyn = match_vafs_variant("DYNC1H1", "p.V314I", vafs_idx)
