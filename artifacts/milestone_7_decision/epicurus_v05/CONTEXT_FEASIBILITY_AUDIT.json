@@ -1,0 +1,297 @@
+{
+  "experiment": "epicurus_v0.5_context_feasibility_audit",
+  "note": "PRE-FIT, label-blind, no model, no ranking metric. Source used descriptively for aliasing.",
+  "n_rows_eval_pool": 315050,
+  "n_patients": 152,
+  "sources": [
+    "gartner",
+    "improve",
+    "multimer"
+  ],
+  "forbidden_label_cols_untouched": [
+    "eval_positive",
+    "bag_label"
+  ],
+  "contexts": {
+    "ctx_pep_len": {
+      "description": "peptide length (per-candidate, from sequence)  [APPROVE]",
+      "inference_computable": true,
+      "per_source": {
+        "gartner": {
+          "n": 290239,
+          "min": 8.0,
+          "p50": 10.0,
+          "max": 12.0,
+          "mean": 10.0975,
+          "std": 1.3665
+        },
+        "improve": {
+          "n": 16857,
+          "min": 8.0,
+          "p50": 9.0,
+          "max": 11.0,
+          "mean": 9.433,
+          "std": 0.7076
+        },
+        "multimer": {
+          "n": 7954,
+          "min": 9.0,
+          "p50": 10.0,
+          "max": 11.0,
+          "mean": 9.8681,
+          "std": 0.8234
+        }
+      },
+      "pairwise_range_overlap": {
+        "gartner|improve": 0.75,
+        "gartner|multimer": 0.5,
+        "improve|multimer": 0.6667
+      },
+      "within_patient_variation": {
+        "mean_within_patient_std": 0.9563,
+        "mean_within_patient_distinct": 3.91,
+        "patient_constant": false
+      }
+    },
+    "ctx_log_pool": {
+      "description": "log1p(patient candidate-pool size) (patient-constant)  [APPROVE, interaction-only]",
+      "inference_computable": true,
+      "per_source": {
+        "gartner": {
+          "n": 290239,
+          "min": 4.5109,
+          "p50": 8.6675,
+          "max": 10.3034,
+          "mean": 8.771,
+          "std": 0.649
+        },
+        "improve": {
+          "n": 16857,
+          "min": 4.1431,
+          "p50": 5.3181,
+          "max": 6.9866,
+          "mean": 5.6658,
+          "std": 0.6262
+        },
+        "multimer": {
+          "n": 7954,
+          "min": 2.8904,
+          "p50": 6.0936,
+          "max": 7.2675,
+          "mean": 6.1984,
+          "std": 0.8958
+        }
+      },
+      "pairwise_range_overlap": {
+        "gartner|improve": 0.4019,
+        "gartner|multimer": 0.3719,
+        "improve|multimer": 0.6496
+      },
+      "within_patient_variation": {
+        "mean_within_patient_std": 0.0,
+        "mean_within_patient_distinct": 1.0,
+        "patient_constant": true
+      }
+    },
+    "ctx_hla_multiplicity": {
+      "description": "distinct HLA alleles in patient pool (patient-constant)  [APPROVE, interaction-only]",
+      "inference_computable": true,
+      "per_source": {
+        "gartner": {
+          "n": 290239,
+          "min": 3.0,
+          "p50": 6.0,
+          "max": 6.0,
+          "mean": 5.654,
+          "std": 0.6329
+        },
+        "improve": {
+          "n": 16857,
+          "min": 1.0,
+          "p50": 4.0,
+          "max": 6.0,
+          "mean": 4.0924,
+          "std": 1.0389
+        },
+        "multimer": {
+          "n": 7954,
+          "min": 2.0,
+          "p50": 4.0,
+          "max": 4.0,
+          "mean": 3.4619,
+          "std": 0.6531
+        }
+      },
+      "pairwise_range_overlap": {
+        "gartner|improve": 0.6,
+        "gartner|multimer": 0.25,
+        "improve|multimer": 0.4
+      },
+      "within_patient_variation": {
+        "mean_within_patient_std": 0.0,
+        "mean_within_patient_distinct": 1.0,
+        "patient_constant": true
+      }
+    },
+    "ctx_hla_comp_frac": {
+      "description": "HLA competition as within-patient fraction (per-candidate)  [APPROVE]",
+      "inference_computable": true,
+      "per_source": {
+        "gartner": {
+          "n": 290239,
+          "min": 0.0111,
+          "p50": 0.1898,
+          "max": 0.5571,
+          "mean": 0.1926,
+          "std": 0.0523
+        },
+        "improve": {
+          "n": 16857,
+          "min": 0.0825,
+          "p50": 0.2478,
+          "max": 1.0,
+          "mean": 0.2789,
+          "std": 0.1181
+        },
+        "multimer": {
+          "n": 7954,
+          "min": 0.0556,
+          "p50": 0.2939,
+          "max": 0.7097,
+          "mean": 0.3102,
+          "std": 0.0874
+        }
+      },
+      "pairwise_range_overlap": {
+        "gartner|improve": 0.48,
+        "gartner|multimer": 0.718,
+        "improve|multimer": 0.6641
+      },
+      "within_patient_variation": {
+        "mean_within_patient_std": 0.0549,
+        "mean_within_patient_distinct": 4.29,
+        "patient_constant": false
+      }
+    },
+    "ctx_hla_competition_raw": {
+      "description": "raw HLA competition count (pool-size-driven)  [REJECT: source proxy]",
+      "inference_computable": true,
+      "per_source": {
+        "gartner": {
+          "n": 290239,
+          "min": 1.0,
+          "p50": 1115.0,
+          "max": 7006.0,
+          "mean": 1554.3338,
+          "std": 1418.9191
+        },
+        "improve": {
+          "n": 16857,
+          "min": 10.0,
+          "p50": 71.0,
+          "max": 398.0,
+          "mean": 97.4989,
+          "std": 82.972
+        },
+        "multimer": {
+          "n": 7954,
+          "min": 1.0,
+          "p50": 127.0,
+          "max": 376.0,
+          "mean": 193.9112,
+          "std": 123.4732
+        }
+      },
+      "pairwise_range_overlap": {
+        "gartner|improve": 0.0554,
+        "gartner|multimer": 0.0535,
+        "improve|multimer": 0.9219
+      },
+      "within_patient_variation": {
+        "mean_within_patient_std": 92.3681,
+        "mean_within_patient_distinct": 4.29,
+        "patient_constant": false
+      }
+    },
+    "ctx_routes_per_bag": {
+      "description": "bag cardinality = routes/mutation  [REJECT: bag-vs-instance ascertainment proxy]",
+      "inference_computable": true,
+      "per_source": {
+        "gartner": {
+          "n": 290239,
+          "min": 1.0,
+          "p50": 46.0,
+          "max": 74.0,
+          "mean": 44.9073,
+          "std": 6.3454
+        },
+        "improve": {
+          "n": 16857,
+          "min": 1.0,
+          "p50": 1.0,
+          "max": 1.0,
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "multimer": {
+          "n": 7954,
+          "min": 1.0,
+          "p50": 1.0,
+          "max": 2.0,
+          "mean": 1.002,
+          "std": 0.0448
+        }
+      },
+      "pairwise_range_overlap": {
+        "gartner|improve": 0.0,
+        "gartner|multimer": 0.0137,
+        "improve|multimer": 0.0
+      },
+      "within_patient_variation": {
+        "mean_within_patient_std": 2.1626,
+        "mean_within_patient_distinct": 9.18,
+        "patient_constant": false
+      }
+    },
+    "ctx_prime_masked": {
+      "description": "PRIME leakage mask rate  [REJECT as context: source-skewed + already modeled]",
+      "inference_computable": true,
+      "per_source": {
+        "gartner": {
+          "n": 290239,
+          "min": 0.0,
+          "p50": 0.0,
+          "max": 1.0,
+          "mean": 0.0103,
+          "std": 0.1009
+        },
+        "improve": {
+          "n": 16857,
+          "min": 0.0,
+          "p50": 0.0,
+          "max": 1.0,
+          "mean": 0.0111,
+          "std": 0.1047
+        },
+        "multimer": {
+          "n": 7954,
+          "min": 0.0,
+          "p50": 0.0,
+          "max": 1.0,
+          "mean": 0.197,
+          "std": 0.3977
+        }
+      },
+      "pairwise_range_overlap": {
+        "gartner|improve": 1.0,
+        "gartner|multimer": 1.0,
+        "improve|multimer": 1.0
+      },
+      "within_patient_variation": {
+        "mean_within_patient_std": 0.0888,
+        "mean_within_patient_distinct": 1.76,
+        "patient_constant": false
+      }
+    }
+  }
+}

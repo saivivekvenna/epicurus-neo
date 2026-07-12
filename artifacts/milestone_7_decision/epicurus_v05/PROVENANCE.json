@@ -1,0 +1,71 @@
+{
+  "experiment": "epicurus_v0.5_context_conditioned_pairwise",
+  "purpose": "Provenance pinned BEFORE the first Q/R fit. Runner recomputes and fails fast on any mismatch.",
+  "git_head": "d650eef258c49cca13efaaba20ef95c727ffefeb",
+  "frozen_comparators": {
+    "P": {
+      "source": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
+      "path_in_json": "ladder.rung3_MIL.folds",
+      "note": "frozen corrected-v0.3 rung-3 per-fold (C,tau)+coefficients, loaded verbatim, NOT retuned"
+    },
+    "F": {
+      "source": "artifacts/milestone_7_decision/epicurus_v04/DEV_RESULT.json",
+      "path_in_json": "members.F (feature tower)",
+      "note": "frozen v0.4 feature-tower per-fold heads+coefficients, loaded verbatim, NOT retuned; nondeployable source-NAME ceiling"
+    }
+  },
+  "approved_contexts": [
+    "ctx_pep_len",
+    "ctx_log_pool",
+    "ctx_hla_multiplicity",
+    "ctx_hla_comp_frac"
+  ],
+  "rejected_contexts": {
+    "ctx_routes_per_bag": "bag cardinality; overlap 0.00; categorical bag-vs-instance ascertainment proxy (prohibited)",
+    "ctx_hla_competition_raw": "overlap 0.05; pool-size-driven source proxy; superseded by ctx_hla_comp_frac",
+    "ortho_feature_availability_mask": "source-deterministic ORTHO availability = a source name",
+    "ctx_prime_masked_as_context": "source-skewed mask rate + already modeled; kept only as leakage-safe feature semantics"
+  },
+  "forbidden_gartner_test_paths": [
+    "data/raw/gartner_nci/NmersTestingSet.txt",
+    "data/raw/gartner_nci/MmpsTestingSet_extract.tsv"
+  ],
+  "inputs_sha256": {
+    "frozen_split": "b94637248346c32adabeb669463f9c3deba794d98d6468741206d2f80023bac7",
+    "cache_gartner_muller_prime": "6eb947bf69a1beb1cb857141ed099ee29c9a7d30cf1941ea120f712e6908097f",
+    "cache_improve_primemix": "a31d7efc88c6ef96bc1c9c8a8f9e77dd964e60468a2ee9170975fe9002be3dc7",
+    "cache_multimer_primemix": "7352c95f391b5a929514416b91acf9e1d9339f76c2d77ad5cbc4862018ba820e",
+    "gartner_train": "716a23f2ed27fa956d39144ad2831b937a65a486c0ecf4b191d0bb2fabdd49a3",
+    "muller_min": "d0ea2457513d0178fb323c593168265d0f040ec7092bc9e55bd0d25a78cf3dc7",
+    "improve_zip": "adf02eb5054a8aa4b6eccd3b6e0ff1200889d41ae05655fd6e55c5c347f720d9",
+    "multimer_corpus": "dde900d025f1fdb2b2c42efe891f67e9fe4141153fb8e386e3797242ce57b439",
+    "feature_code_epicurus_v03": "267f8f9e84f91e3722643e64b17a3cf2872e9312d56e773f3e9e2d9aae21fed5",
+    "feature_code_epicurus_v04": "350d4047f51f10283dfc2be987c7d94735634c090aad3e82d93716e19e056554",
+    "feature_code_nci_crosswalk": "0d52ef7f95a05fb4b28552310350d3447822a6329181d7e2d17e69fd98a22846",
+    "frozen_comparator_P_v03_result": "5cbec0536ba330a044d073650579a3148d30fd393498d272e27b6ad59608c738",
+    "frozen_comparator_F_v04_result": "ace401266c5d639ed11b43539a2858020af4f3f2d07910250690764fd7894d77",
+    "design_spec": "d17085219926b650c2d3e61cabf8320ecbd08f19d1dec8ecf1f4455fced471a5",
+    "prereg_protocol": "7ad641f7cbcf6775bbb981e21a7551283e8de9483900503f415f9bdc0ec017aa",
+    "context_audit_code": "305841470b59dd8aac05244488319dfa48418adb46b560540e993eb2de041a1f",
+    "context_audit_json": "64cee36eaca19e5ab153aa752a839ae98448ade32d048c66e593d2bf28daf90b"
+  },
+  "input_paths": {
+    "frozen_split": "configs/frozen/mil_dev_split_v1.json",
+    "cache_gartner_muller_prime": "data/raw/gartner_nci/_cache_gartner_muller_prime.tsv",
+    "cache_improve_primemix": "data/raw/gartner_nci/_cache_improve_primemix.tsv",
+    "cache_multimer_primemix": "data/raw/gartner_nci/_cache_multimer_primemix.tsv",
+    "gartner_train": "data/raw/gartner_nci/NmersTrainingSet.txt",
+    "muller_min": "data/raw/neoranking_mirror/MullerNCItrain.train-data.min.tsv",
+    "improve_zip": "data/raw/improve/data.zip",
+    "multimer_corpus": "data/raw/cd8_multimer_2025/files/mmc2.xlsx",
+    "feature_code_epicurus_v03": "src/event_b/epicurus_v03.py",
+    "feature_code_epicurus_v04": "src/event_b/epicurus_v04.py",
+    "feature_code_nci_crosswalk": "src/event_b/nci_crosswalk.py",
+    "frozen_comparator_P_v03_result": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
+    "frozen_comparator_F_v04_result": "artifacts/milestone_7_decision/epicurus_v04/DEV_RESULT.json",
+    "design_spec": "docs/superpowers/specs/2026-07-11-v05-context-conditioned-design.md",
+    "prereg_protocol": "artifacts/milestone_7_decision/epicurus_v05/PREREGISTERED_PROTOCOL.md",
+    "context_audit_code": "scripts/epicurus_v05_context_audit.py",
+    "context_audit_json": "artifacts/milestone_7_decision/epicurus_v05/CONTEXT_FEASIBILITY_AUDIT.json"
+  }
+}
