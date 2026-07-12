@@ -5,7 +5,7 @@ falsified, what is frozen/preserved, which datasets are consumed, and what the n
 to** the artifacts that hold the actual results; it does not restate or re-derive them. Keep it updated as the
 last step of every milestone.
 
-_Last updated: 2026-07-11 (v0.5 deployable context-conditioned pairwise — REJECT/TIE with PRIME (Δ −0.012); closes the assay/regime-head lever: deployable context matches the v0.4 tower's aggregate with NO study identity, but recovers only ~27% of the Gartner edge and adds ~nothing over the pairwise objective → five straight parity results prove the wall is DATA, not model form)._
+_Last updated: 2026-07-12 (RTTP SR24-58221 — FIRST end-to-end Epicurus deployment on a real clinical patient: WES+RNA+HLA+LOH → ranked neoantigen list. Deployment DEMO, not a benchmark — RTTP carries no experimental recognition label (its immunogenicity score is predicted). Epicurus raw-scores like PRIME (ρ 0.966) but its per-mutation shortlist diverges (2/20 shared w/ PRIME); no method agrees w/ the vendor's predicted immunogenicity → labels needed to adjudicate. Prior same day: CheckMate 153 first external PRIME-untouched test, frozen v0.1 TIES PRIME (Δ +0.071) = sixth straight parity; presentation is the ceiling.)_
 
 ---
 
@@ -44,6 +44,8 @@ on patients no part of the pipeline has touched. `CONSISTENT_WITH_NO_EFFECT` (po
 | — | **Epicurus v0.3** MIL development experiment | Preregistered nested-OOF MIL ranker on the frozen split. **REJECT** (no ACCEPT) but the registered candidate is **statistically TIED** with genuine PRIME (Δhits@20 −0.093, CI[−0.228,+0.051] spans 0) — NOT worse. Presentation alone also ties PRIME; modeling adds **nothing over presentation** (stop rule: no promotion past rung1). Per-source: ties/edges PRIME on Gartner (+0.05) & multimer (+0.056), loses on IMPROVE (−0.38). Orthogonal recognition features add nothing; augmentation hurts. A source-EL-semantics bug invalidated the FIRST run (its "−0.25 significantly worse" was an artifact). | REJECT (tie) | `artifacts/milestone_7_decision/epicurus_v03/{PREREGISTERED_PROTOCOL.md,DEV_REPORT.md}`, `configs/frozen/epicurus_v0_3_dev.json` |
 | — | **Epicurus v0.4** source-aware tower | Preregistered partial-pooling MIL tower (shared backbone `w₀` + shrunk per-source feature heads `v_s` + rank-inert intercepts `c_s`; λ nested-selected) on the SAME frozen split/gate. **REJECT** — F still **TIED** with genuine PRIME (Δ −0.016, CI[−0.147,+0.112]), though CLOSER than pooled v0.3 (−0.093). **New:** the tower **recovers the predicted Gartner edge** (F beats PRIME on Gartner Δ**+0.275**, up from pooled +0.05); the **negative control is clean** (shuffled-source F−P −0.232 vs true +0.077 → the lift is genuine source structure, NOT capacity). Mechanism directionally right but **underpowered**: F−P +0.077 [−0.073,+0.208] and F−C +0.086 [−0.080,+0.227] positive (feature-weighting, not calibration: C−P −0.009), all CIs span 0. IMPROVE (−0.10) and multimer (−0.222, head over-specializes on n=18) cancel Gartner in the aggregate. Recognition wall persists (gains ride on presentation-adjacent features). | REJECT (tie; Gartner edge real) | `artifacts/milestone_7_decision/epicurus_v04/{PREREGISTERED_PROTOCOL.md,DEV_REPORT.md,PROVENANCE.json}`, `configs/frozen/epicurus_v0_4_dev.json` |
 | — | **Epicurus v0.5** deployable context-conditioned pairwise | Preregistered convex within-patient pairwise ranker; **no study/assay identity** — observable-only context (peptide-length, HLA-locus, predictor-disagreement) × presentation features, nested-λ, same frozen split/gate. **REJECT** — R still **TIED** with genuine PRIME (Δ −0.012, CI[−0.125,+0.108]); closest yet. **Three findings:** (1) the *pairwise objective* is the workhorse (Q−P **+0.069**, biggest single move) — *context adds ~nothing* (R−Q **+0.011**, CI spans 0); (2) *deployable ≈ non-deployable* v0.4 tower in aggregate (R−F **+0.004**) → **no deployability penalty**, BUT the deployable Gartner edge is only **+0.075** (1.05 v 0.975) ≈27% of v0.4's +0.275 → **most of the v0.4 Gartner win was parasitic on study identity**; (3) context×presentation interactions all **|β|≤0.02 = presentation reweighting, NOT a new recognition axis**. Per-source R vs PRIME: Gartner +0.075, IMPROVE −0.167, multimer +0.056. Multi-init stability now **PASSES** (coef Δ 2.1e-7, Spearman 1.0 — v0.4's failure fixed). **Closes the assay/regime-head lever.** | REJECT (tie; deployable ceiling = tower) | `artifacts/milestone_7_decision/epicurus_v05/{PREREGISTERED_PROTOCOL.md,DEV_REPORT.md,PROVENANCE.json}`, `configs/frozen/epicurus_v0_5_dev.json` |
+| — | **CheckMate 153** — first external PRIME-untouched test | Frozen Epicurus v0.1 **TIES** genuine PRIME (Δ **+0.071**, CI[−0.357,+0.571]); 6th straight parity, now on EXTERNAL data. Among predicted binders recognition AUROC collapses to ~0.53–0.60 for ALL incl genuine PRIME → **presentation is the ceiling**. | TIE (14 pts, underpowered) | `artifacts/milestone_7_decision/checkmate153/`, memory `checkmate153-external-outcome` |
+| — | **RTTP SR24-58221** — first real-patient tool deployment | First **end-to-end Epicurus run on a genuine clinical case** (WES+RNA+HLA+LOH → ranked neoantigen list). **DEMO, not a benchmark** (no experimental recognition label). Epicurus raw-scores like PRIME (per-candidate ρ **0.966**) but its per-mutation shortlist **diverges** (2/20 shared w/ PRIME, 7/20 w/ SHERPA); no method agrees w/ the vendor's *predicted* immunogenicity (~0.10). Handles HLA LOH. | deployment demo | `artifacts/…/rttp_sr24/` (gitignored, DUA), manifest `configs/source_manifests/rttp.yml`, memory `rttp-multiomics-asset` |
 
 ---
 
@@ -139,12 +141,26 @@ count at the BAG level, never the ~285k/1.09M child rows.
   candidate denominator + explicit **tested-negatives** + WES/RNA/HLA + a T-cell recognition assay), (ii)
   **statistical power** (n=118 across 3 heterogeneous sources can't establish the directionally-real effects),
   and (iii) a **still-pristine external proof cohort**.
+- **CheckMate 153 (2026-07-12) — first independent PRIME-untouched external test executed; TIE.** Alban *Nat
+  Med* 2024 combinatorial-tetramer NSCLC screen, downloaded openly (Nature static host), own model score
+  discarded, genuine PRIME 2.1 + MHCflurry-EL + study RNA-seq computed here. 14 pts / 1,197 class-I HLA-resolved
+  9-mers / 162 tetramer+ / 1,035 tested-neg. **Frozen Epicurus v0.1 vs genuine PRIME: Δhits@20 +0.071, CI spans
+  0 → TIE** (both all-negatives and the binders-only hard cut). **Load-bearing:** restricted to predicted
+  binders (TETRAMER+ vs TETRAMER−), recognition **AUROC collapses to ~0.53–0.60 for every method including
+  genuine PRIME (0.597)** — presentation (MixMHCpred 0.735 w/ easy negs) is the ceiling, recognition-among-
+  presented is near-chance for the whole field. Sixth straight parity, now external. Underpowered (14 pts, wide
+  CIs) → directional confirmation of the wall, not a new gate. Runner `scripts/checkmate153_dev.py`; artifact
+  `artifacts/milestone_7_decision/checkmate153/`; manifest `configs/source_manifests/checkmate153.yml`.
 - **Indicated levers (model form now exhausted on these 3 cohorts):**
   1. ~~Assay/regime heads~~ — **DONE (v0.5); closes at a tie.** Do NOT iterate v0.6 model form against the
      current 3 cohorts expecting ACCEPT — v0.3/v0.4/v0.5 prove parity is data-bound, not a tuning miss.
   2. **DATA — acquire a second Gartner-like denominator cohort** (real per-patient candidate ranking + explicit
      immunogenicity negatives + WES/RNA). Now the single highest-value action; see the data-acquisition search
-     brief (`artifacts/milestone_7_decision/external_validation/`).
+     brief (`artifacts/milestone_7_decision/external_validation/`). **Partial delivery: CheckMate 153 acquired +
+     run (above) — independent + untouched but small (14 pts) and range-restricted; it confirms rather than
+     clears. Still needed: a DENSE-denominator, well-powered cohort. Best open lead = Miller IPV `PRJNA980652`
+     (label table behind the STM paywall → needs user download; raw seq 0.23TB). CheckMate raw WES/RNA (dbGaP)
+     would complete its inputs. WashU TNBC = mostly CD4/long-peptide + no class-I HLA typing → weak for PRIME.**
   3. **External proof** — acquire Hu/Ott via dbGaP phs001451
      (`artifacts/milestone_7_decision/external_validation/ACQUISITION_PACKET.md`).
 - **Not yet spent:** one pre-registered look at the SEMI-CONSUMED Gartner TEST holdout is still available, but

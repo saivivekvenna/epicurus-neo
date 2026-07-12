@@ -10,3 +10,7 @@ data/interim/
 data/processed/
 outputs/
 models/
+
+# RTTP is DUA-controlled patient data — keep patient-specific results (peptides, HLA, expression,
+# ranked neoantigen lists) OUT of version control. Only code + a scrubbed provenance manifest are tracked.
+artifacts/milestone_7_decision/rttp_sr24/
