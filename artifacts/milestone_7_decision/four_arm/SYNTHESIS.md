@@ -44,14 +44,14 @@ genuine superiority claim requires a Level-3-eligible, PRIME-untouched patient: 
 callset + WES/RNA + class-I HLA + measured recognition, labels joined only after ranking.** Best routes
 (documented, no external action taken here):
 
-1. **More Hudson-lab / RTTP patients** with the IFNγ peptide-expansion assay **plus the stimulation-pool
-   composition** (the true recognition denominator) — converts n=3 into a real deployable benchmark and
-   gives the frozen generator + policy a prospective test.
-2. **Miller IPV `PRJNA980652`** — dense denominator, well-powered; label table behind the STM paywall
-   (needs user download).
-3. **CheckMate 153 dbGaP WES/RNA** — completes the inputs for the already-run external cohort, upgrading
-   it from L2 to L1/L3.
+1. **Miller IPV `PRJNA980652`** — the only fully-OPEN end-to-end (L3) build prospect: raw WES+RNA public,
+   per-peptide ELISpot negatives recorded (n=13). Verify the S1/S2 label supplement, then build.
+2. **CheckMate 153 raw WES/RNA — EGA `EGAD00001011302` (controlled, BMS discretion), NOT dbGaP** —
+   upgrades the already-run L2 external cohort to L1/L3.
+3. **More Hudson-lab / RTTP patients** with the IFNγ peptide-expansion assay **plus the stimulation-pool
+   composition** (the true recognition denominator) — converts n=3 into a real denominated benchmark.
 
-Until such a run clears, this benchmark is honest infrastructure + a post-hoc diagnostic, not a gate.
-See `../../../NORTH_STAR_HISTORY.md` and `memory/benchmark-three-level-hierarchy.md`,
-`memory/expression-ranking-policy.md`.
+Canonical acquisition plan + tracker + data-request schema + outreach drafts:
+`../external_validation/ACQUISITION_EXECUTION_PLAN.md`. Until an L3 run clears the go/no-go gate, this
+benchmark is honest infrastructure + a post-hoc diagnostic, not a gate. See `../../../NORTH_STAR_HISTORY.md`
+and `memory/benchmark-three-level-hierarchy.md`, `memory/expression-ranking-policy.md`.

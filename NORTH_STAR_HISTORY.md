@@ -247,6 +247,21 @@ count at the BAG level, never the ~285k/1.09M child rows.
   any eval. Sid DESCRIPTIVE (post-freeze, n=3): confidence-only keeps 3/3 recognized in top-20, the expr
   penalty drops low-expression MAP2 to 2/3 — consistent with the dev finding, nothing tuned to Sid. See
   `memory/expression-ranking-policy.md`.
+- **Acquisition packet (2026-07-12) — canonical, primary-source-verified plan to obtain an untouched
+  end-to-end patient.** `artifacts/milestone_7_decision/external_validation/`:
+  `ACQUISITION_EXECUTION_PLAN.md` (cohorts ranked by benchmark level × leakage × denominator × negatives ×
+  input-recoverability × effort × north-star value; split policy; go/no-go), `COHORT_ACQUISITION_TRACKER.csv`
+  (13 cohorts, 19 columns), `MINIMUM_PATIENT_DATA_PACKAGE.md` (exact de-identified request schema),
+  `AUTHOR_OUTREACH_DRAFTS.md` (7 tailored data-not-PHI requests), + verify-first manifests
+  `configs/source_manifests/{miller_ipv,southampton_nsclc}.yml`. Web-verified corrections: **Miller "IPV" =
+  identify-prioritize-validate PLATFORM** (raw WES+RNA OPEN at `PRJNA980652`, ELISpot negatives → the ONLY
+  fully-open L3 build); **CheckMate raw = EGA `EGAD00001011302` controlled (BMS discretion), not dbGaP**;
+  **EVX-01 (PMC11116868) = closed data**; GBM `GSE237936` = RNA-only n=4 (2024, not 2026); medRxiv aggregate
+  UNLOCATABLE. Split: LOCK >=2 low-leakage cohorts (Miller IPV + CheckMate; Southampton secondary), DEV =
+  phs001003/Gartner/IMPROVE/multimer, TRAIN = CEDAR/IEDB/Zhao; by patient & study, no random peptide split.
+  **Go/no-go: no headline unless raw->generation->same universe->PRIME AND Epicurus->paired hits@20
+  reproduces.** Single best user action: verify Miller IPV S1/S2 supplement is downloadable (science.org 403
+  to bot), then build; parallel DARs for phs001003 + CheckMate EGA. See `memory/acquisition-packet.md`.
   Next = acquire/identify an **untouched end-to-end patient**, not more rerankers. See
   `memory/benchmark-three-level-hierarchy.md`.
 

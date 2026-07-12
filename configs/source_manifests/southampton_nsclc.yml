@@ -1,0 +1,65 @@
+manifest_version: event-b-cohort-source-1.0.0
+source_id: southampton_nsclc
+status: PLANNED_LABELS_OPEN_RAW_CONTROLLED       # labels minable now; raw inputs need an EGA DAR for L3
+role: CANDIDATE_INDEPENDENT_PRIME_UNTOUCHED_RECOGNITION_COHORT
+intended_use: LOCKED_TEST                          # small, independent secondary locked test
+
+cite: >-
+  Immunopeptidomics-guided identification of functional neoantigens in NSCLC (Southampton;
+  Bailey/Skipp/Ottensmeier). npj Precision Oncology (2026); preprint bioRxiv 2024.05.30.596609.
+doi: 10.1038/s41698-026-01539-2
+preprint: https://www.biorxiv.org/content/10.1101/2024.05.30.596609v3
+
+why_this_cohort: >-
+  Independent NSCLC cohort with an OPEN, labeled tested-neoantigen table INCLUDING explicit negatives
+  (IFN-g ELISpot Strong/Weak/None). 6 functionally-tested patients (24-patient landscape). LOW leakage.
+  See artifacts/milestone_7_decision/external_validation/ACQUISITION_EXECUTION_PLAN.md (rank 5).
+
+north_star_fit:
+  primary_metric: patient-level paired delta in recognized hits@20
+  denominator_caveat: >-
+    Tested peptides are IMMUNOPEPTIDOMICS-GUIDED (MS-presented), not the full somatic universe. Supports an
+    L2 conditional-ranking arm now; a full L3 run needs the controlled EGA raw WES/RNA to re-enumerate.
+
+download:
+  labels_supplement:
+    host: Zenodo (OPEN)
+    doi: 10.5281/zenodo.12820423
+    url: https://zenodo.org/records/12820423
+    github_mirror: https://github.com/ab604/lung-neoantigen-supplement
+    contents: >-
+      9 CSV supplements S1-S9; S9 = tested neoantigens with IFN-g ELISPOT response (Strong/Weak/None) for
+      mutant and wildtype; S8 = peptidome predictions + immunopeptidomics observations.
+    access: OPEN
+    gitignored: true
+  proteomics:
+    host: PRIDE / ProteomeXchange (OPEN)
+    accession: PXD028990
+    url: https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=PXD028990
+    access: OPEN
+  raw_sequencing:
+    host: EGA (CONTROLLED)
+    study: EGAS00001005499
+    dataset: EGAD00001007934         # WES + RNA-seq, 24 NSCLC patients
+    url: https://ega-archive.org/studies/EGAS00001005499
+    access: CONTROLLED (EGA DAC / DAR)
+    download_policy: DEFERRED_UNTIL_DAR
+
+preflight_gates:
+  - id: labels_open
+    check: Zenodo S9 downloadable with explicit None/Weak/Strong labels
+    status: VERIFIED_OPEN
+  - id: peptide_hla_pairing
+    check: S9/S8 record restricting allele per tested peptide
+    status: VERIFY_FROM_FILES
+  - id: raw_inputs
+    check: EGA DAR for EGAS00001005499 (WES+RNA) to enable L3 generation
+    status: REQUIRES_DAR
+
+leakage_adjudication:
+  vs_prime_training: LOW (2024/26, independent Southampton). Run exact+near-peptide k-mer screen.
+  split: patient-level holdout; LOCKED_TEST — never used for development.
+
+go_no_go: >-
+  L2 conditional-ranking arm is publishable-as-diagnostic from the open labels; an L3 north-star headline
+  requires the EGA raw inputs -> re-enumerated universe -> genuine PRIME AND Epicurus -> paired hits@20.
