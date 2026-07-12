@@ -1,0 +1,971 @@
+{
+  "caveats": [
+    "DEV features are peptide-/presentation-only (prime/el/expr). No raw WES depth, mutant-allele RNA VAF, purity/CCF, or processing available cross-cohort -> this gate does NOT learn genomics.",
+    "multimer is frozen Epicurus' training cohort -> in-sample; excluded from the safety headline.",
+    "CheckMate expr coverage is sparse; the gate operates on the core el+prime axes there.",
+    "Oracle retention (100%) is a ceiling, never a validation.",
+    "Downstream hits@20/recall@20 rise partly because gating shrinks the top-20 denominator; the no-regression check (gated >= ungated) is the honest safety statement, not the raw lift."
+  ],
+  "command": "python -m scripts.dynamic_gate",
+  "dev_cohorts_frozen_config": {
+    "gartner": {
+      "baseline_el_gate_matched": {
+        "n_patients_losing_a_positive": 0,
+        "negative_removal": 0.0445996775926921,
+        "positive_retention": 1.0,
+        "positive_retention_cp_lb": 0.9369506983259456
+      },
+      "baseline_random_matched": {
+        "negative_removal": 0.0445996775926921,
+        "positive_retention": 1.0
+      },
+      "cohort": "gartner",
+      "config_t": 0.25,
+      "downstream_vs_ungated": {
+        "frozen_epicurus": {
+          "gated_hits@20_mean": 0.8077,
+          "gated_recall@20_mean": 0.4744,
+          "hits@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "hits@20_delta_gated_minus_ungated": 0.0,
+          "no_regression": true,
+          "recall@20_delta": 0.0,
+          "recall@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "ungated_hits@20_mean": 0.8077,
+          "ungated_recall@20_mean": 0.4744
+        },
+        "genuine_prime": {
+          "gated_hits@20_mean": 0.6923,
+          "gated_recall@20_mean": 0.4038,
+          "hits@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "hits@20_delta_gated_minus_ungated": 0.0,
+          "no_regression": true,
+          "recall@20_delta": 0.0,
+          "recall@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "ungated_hits@20_mean": 0.6923,
+          "ungated_recall@20_mean": 0.4038
+        }
+      },
+      "gate": {
+        "kept_fraction": 0.9559447983014862,
+        "n_input": 3768,
+        "n_kept": 3602,
+        "n_patients_losing_a_positive": 0,
+        "n_positives": 46,
+        "n_tested_negatives": 3722,
+        "negative_removal": 0.0445996775926921,
+        "positive_retention": 1.0,
+        "positive_retention_cp_lb": 0.9369506983259456,
+        "positive_retention_per_patient_mean": 1.0,
+        "positive_retention_per_patient_min": 1.0
+      },
+      "in_sample": false,
+      "oracle_ceiling": {
+        "note": "by construction; diagnostic ceiling only",
+        "positive_retention": 1.0
+      },
+      "oracle_lift_location": {
+        "at_t": 0.6,
+        "high_presentation_neg_removed": 0.0,
+        "low_presentation_neg_removed": 0.5405,
+        "n_high_presentation_neg": 927,
+        "n_low_presentation_neg": 925
+      },
+      "reason_counts_removed": {
+        "VETO_LOW_ALL_AXES": 166
+      },
+      "threshold_sweep": [
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.0639,
+          "positive_retention": 1.0,
+          "positive_retention_cp_lb": 0.937,
+          "t": 0.3
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.1822,
+          "positive_retention": 1.0,
+          "positive_retention_cp_lb": 0.937,
+          "t": 0.5
+        },
+        {
+          "d_hits@20_frozen_epicurus": -0.0385,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.1154,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.2767,
+          "positive_retention": 1.0,
+          "positive_retention_cp_lb": 0.937,
+          "t": 0.6
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.1154,
+            0.1154
+          ],
+          "d_hits@20_genuine_prime": 0.0385,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.1154
+          ],
+          "negative_removal": 0.4105,
+          "positive_retention": 0.9565,
+          "positive_retention_cp_lb": 0.8694,
+          "t": 0.7
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0385,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.0769,
+            0.1923
+          ],
+          "d_hits@20_genuine_prime": 0.0385,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.1154
+          ],
+          "negative_removal": 0.4785,
+          "positive_retention": 0.913,
+          "positive_retention_cp_lb": 0.812,
+          "t": 0.75
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0385,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.1154,
+            0.2308
+          ],
+          "d_hits@20_genuine_prime": 0.0769,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.1923
+          ],
+          "negative_removal": 0.655,
+          "positive_retention": 0.8478,
+          "positive_retention_cp_lb": 0.7331,
+          "t": 0.85
+        },
+        {
+          "d_hits@20_frozen_epicurus": -0.0769,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.3846,
+            0.2308
+          ],
+          "d_hits@20_genuine_prime": 0.0385,
+          "d_hits@20_genuine_prime_ci": [
+            -0.2308,
+            0.3077
+          ],
+          "negative_removal": 0.856,
+          "positive_retention": 0.4348,
+          "positive_retention_cp_lb": 0.3098,
+          "t": 0.95
+        }
+      ]
+    },
+    "improve": {
+      "baseline_el_gate_matched": {
+        "n_patients_losing_a_positive": 11,
+        "negative_removal": 0.02273757854505409,
+        "positive_retention": 0.9764453961456103,
+        "positive_retention_cp_lb": 0.9613126816363824
+      },
+      "baseline_random_matched": {
+        "negative_removal": 0.023450152231651228,
+        "positive_retention": 1.0
+      },
+      "cohort": "improve",
+      "config_t": 0.25,
+      "downstream_vs_ungated": {
+        "frozen_epicurus": {
+          "gated_hits@20_mean": 1.2295,
+          "gated_recall@20_mean": 0.2032,
+          "hits@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "hits@20_delta_gated_minus_ungated": 0.0,
+          "no_regression": true,
+          "recall@20_delta": 0.0036,
+          "recall@20_delta_ci": [
+            0.0002,
+            0.0094
+          ],
+          "ungated_hits@20_mean": 1.2295,
+          "ungated_recall@20_mean": 0.1995
+        },
+        "genuine_prime": {
+          "gated_hits@20_mean": 1.3607,
+          "gated_recall@20_mean": 0.241,
+          "hits@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "hits@20_delta_gated_minus_ungated": 0.0,
+          "no_regression": true,
+          "recall@20_delta": 0.0042,
+          "recall@20_delta_ci": [
+            0.0001,
+            0.0116
+          ],
+          "ungated_hits@20_mean": 1.3607,
+          "ungated_recall@20_mean": 0.2368
+        }
+      },
+      "gate": {
+        "kept_fraction": 0.977238430583501,
+        "n_input": 15904,
+        "n_kept": 15542,
+        "n_patients_losing_a_positive": 6,
+        "n_positives": 467,
+        "n_tested_negatives": 15437,
+        "negative_removal": 0.023061475675325516,
+        "positive_retention": 0.987152034261242,
+        "positive_retention_cp_lb": 0.9747999656174876,
+        "positive_retention_per_patient_mean": 0.9890659431643039,
+        "positive_retention_per_patient_min": 0.8
+      },
+      "in_sample": false,
+      "oracle_ceiling": {
+        "note": "by construction; diagnostic ceiling only",
+        "positive_retention": 1.0
+      },
+      "oracle_lift_location": {
+        "at_t": 0.6,
+        "high_presentation_neg_removed": 0.0,
+        "low_presentation_neg_removed": 0.4855,
+        "n_high_presentation_neg": 3837,
+        "n_low_presentation_neg": 3819
+      },
+      "reason_counts_removed": {
+        "VETO_LOW_ALL_AXES": 362
+      },
+      "threshold_sweep": [
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.0411,
+          "positive_retention": 0.9615,
+          "positive_retention_cp_lb": 0.9434,
+          "t": 0.3
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0164,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.0328,
+            0.082
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.1607,
+          "positive_retention": 0.8801,
+          "positive_retention_cp_lb": 0.8525,
+          "t": 0.5
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0328,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.0492,
+            0.1148
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.2703,
+          "positive_retention": 0.7966,
+          "positive_retention_cp_lb": 0.7635,
+          "t": 0.6
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0328,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.0656,
+            0.1311
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.402,
+          "positive_retention": 0.6916,
+          "positive_retention_cp_lb": 0.6546,
+          "t": 0.7
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0984,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.1967
+          ],
+          "d_hits@20_genuine_prime": 0.0164,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0492
+          ],
+          "negative_removal": 0.4754,
+          "positive_retention": 0.6253,
+          "positive_retention_cp_lb": 0.5868,
+          "t": 0.75
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.1475,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0164,
+            0.2787
+          ],
+          "d_hits@20_genuine_prime": 0.0164,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0492
+          ],
+          "negative_removal": 0.6519,
+          "positive_retention": 0.4518,
+          "positive_retention_cp_lb": 0.4132,
+          "t": 0.85
+        },
+        {
+          "d_hits@20_frozen_epicurus": -0.0492,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.2459,
+            0.1475
+          ],
+          "d_hits@20_genuine_prime": -0.1475,
+          "d_hits@20_genuine_prime_ci": [
+            -0.3443,
+            0.0492
+          ],
+          "negative_removal": 0.8687,
+          "positive_retention": 0.2141,
+          "positive_retention_cp_lb": 0.1832,
+          "t": 0.95
+        }
+      ]
+    },
+    "multimer": {
+      "baseline_el_gate_matched": {
+        "n_patients_losing_a_positive": 0,
+        "negative_removal": 0.03130729093216754,
+        "positive_retention": 1.0,
+        "positive_retention_cp_lb": 0.9156603566493746
+      },
+      "baseline_random_matched": {
+        "negative_removal": 0.03130729093216754,
+        "positive_retention": 1.0
+      },
+      "cohort": "multimer",
+      "config_t": 0.25,
+      "downstream_vs_ungated": {
+        "frozen_epicurus": {
+          "gated_hits@20_mean": 1.2632,
+          "gated_recall@20_mean": 0.7421,
+          "hits@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "hits@20_delta_gated_minus_ungated": 0.0,
+          "no_regression": true,
+          "recall@20_delta": 0.0088,
+          "recall@20_delta_ci": [
+            0.0,
+            0.0263
+          ],
+          "ungated_hits@20_mean": 1.2632,
+          "ungated_recall@20_mean": 0.7333
+        },
+        "genuine_prime": {
+          "gated_hits@20_mean": 1.1053,
+          "gated_recall@20_mean": 0.7386,
+          "hits@20_delta_ci": [
+            0.0,
+            0.0
+          ],
+          "hits@20_delta_gated_minus_ungated": 0.0,
+          "no_regression": true,
+          "recall@20_delta": 0.0088,
+          "recall@20_delta_ci": [
+            0.0,
+            0.0263
+          ],
+          "ungated_hits@20_mean": 1.1053,
+          "ungated_recall@20_mean": 0.7298
+        }
+      },
+      "gate": {
+        "kept_fraction": 0.968842105263158,
+        "n_input": 7125,
+        "n_kept": 6903,
+        "n_patients_losing_a_positive": 1,
+        "n_positives": 34,
+        "n_tested_negatives": 7091,
+        "negative_removal": 0.031166267099139753,
+        "positive_retention": 0.9705882352941176,
+        "positive_retention_cp_lb": 0.867926174868522,
+        "positive_retention_per_patient_mean": 0.9824561403508772,
+        "positive_retention_per_patient_min": 0.6666666666666666
+      },
+      "in_sample": true,
+      "oracle_ceiling": {
+        "note": "by construction; diagnostic ceiling only",
+        "positive_retention": 1.0
+      },
+      "oracle_lift_location": {
+        "at_t": 0.6,
+        "high_presentation_neg_removed": 0.0,
+        "low_presentation_neg_removed": 0.4785,
+        "n_high_presentation_neg": 1766,
+        "n_low_presentation_neg": 1770
+      },
+      "reason_counts_removed": {
+        "VETO_LOW_ALL_AXES": 222
+      },
+      "threshold_sweep": [
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.0467,
+          "positive_retention": 0.9706,
+          "positive_retention_cp_lb": 0.8679,
+          "t": 0.3
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.1625,
+          "positive_retention": 0.9706,
+          "positive_retention_cp_lb": 0.8679,
+          "t": 0.5
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.2616,
+          "positive_retention": 0.9706,
+          "positive_retention_cp_lb": 0.8679,
+          "t": 0.6
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.3939,
+          "positive_retention": 0.8824,
+          "positive_retention_cp_lb": 0.7507,
+          "t": 0.7
+        },
+        {
+          "d_hits@20_frozen_epicurus": 0.0,
+          "d_hits@20_frozen_epicurus_ci": [
+            0.0,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.471,
+          "positive_retention": 0.8529,
+          "positive_retention_cp_lb": 0.7154,
+          "t": 0.75
+        },
+        {
+          "d_hits@20_frozen_epicurus": -0.0526,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.1579,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            0.0,
+            0.0
+          ],
+          "negative_removal": 0.6594,
+          "positive_retention": 0.8235,
+          "positive_retention_cp_lb": 0.6811,
+          "t": 0.85
+        },
+        {
+          "d_hits@20_frozen_epicurus": -0.1579,
+          "d_hits@20_frozen_epicurus_ci": [
+            -0.3158,
+            0.0
+          ],
+          "d_hits@20_genuine_prime": 0.0,
+          "d_hits@20_genuine_prime_ci": [
+            -0.2105,
+            0.2632
+          ],
+          "negative_removal": 0.8821,
+          "positive_retention": 0.7059,
+          "positive_retention_cp_lb": 0.5524,
+          "t": 0.95
+        }
+      ]
+    }
+  },
+  "experiment": "dynamic_upstream_gate",
+  "frozen_config": {
+    "boundary_margin": 0.0,
+    "calibrated_on": [
+      "gartner",
+      "improve",
+      "multimer"
+    ],
+    "cov_floor": 0.5,
+    "disagreement_rescue": null,
+    "el_floor_frac": 0.05,
+    "per_patient_cap": 0.9,
+    "pool_floor": 8,
+    "rescue_axes": [
+      "expr"
+    ],
+    "retention_target": 0.95,
+    "t": 0.25,
+    "version": "dynamic_gate_v1",
+    "veto_axes": [
+      "el",
+      "prime"
+    ]
+  },
+  "frozen_config_path": "configs/frozen/dynamic_gate_v1.json",
+  "locked_external_test_checkmate153": {
+    "baseline_el_gate_matched": {
+      "n_patients_losing_a_positive": 4,
+      "negative_removal": 0.10531400966183575,
+      "positive_retention": 0.9629629629629629,
+      "positive_retention_cp_lb": 0.9282120270782739
+    },
+    "baseline_random_matched": {
+      "negative_removal": 0.1111111111111111,
+      "positive_retention": 1.0
+    },
+    "cohort": "checkmate153",
+    "config_t": 0.25,
+    "downstream_vs_ungated": {
+      "frozen_epicurus": {
+        "gated_hits@20_mean": 5.0714,
+        "gated_recall@20_mean": 0.5876,
+        "hits@20_delta_ci": [
+          0.0,
+          0.0
+        ],
+        "hits@20_delta_gated_minus_ungated": 0.0,
+        "no_regression": true,
+        "recall@20_delta": 0.0317,
+        "recall@20_delta_ci": [
+          0.0,
+          0.0816
+        ],
+        "ungated_hits@20_mean": 5.0714,
+        "ungated_recall@20_mean": 0.5559
+      },
+      "genuine_prime": {
+        "gated_hits@20_mean": 5.0,
+        "gated_recall@20_mean": 0.5377,
+        "hits@20_delta_ci": [
+          0.0,
+          0.0
+        ],
+        "hits@20_delta_gated_minus_ungated": 0.0,
+        "no_regression": true,
+        "recall@20_delta": 0.024,
+        "recall@20_delta_ci": [
+          0.0,
+          0.0586
+        ],
+        "ungated_hits@20_mean": 5.0,
+        "ungated_recall@20_mean": 0.5136
+      }
+    },
+    "expr_coverage": 0.19,
+    "gate": {
+      "kept_fraction": 0.9039264828738512,
+      "n_input": 1197,
+      "n_kept": 1082,
+      "n_patients_losing_a_positive": 3,
+      "n_positives": 162,
+      "n_tested_negatives": 1035,
+      "negative_removal": 0.10434782608695652,
+      "positive_retention": 0.9567901234567902,
+      "positive_retention_cp_lb": 0.9203743967847413,
+      "positive_retention_per_patient_mean": 0.9499641962047978,
+      "positive_retention_per_patient_min": 0.5714285714285714
+    },
+    "in_sample": false,
+    "oracle_ceiling": {
+      "note": "by construction; diagnostic ceiling only",
+      "positive_retention": 1.0
+    },
+    "oracle_lift_location": {
+      "at_t": 0.6,
+      "high_presentation_neg_removed": 0.0,
+      "low_presentation_neg_removed": 0.8029,
+      "n_high_presentation_neg": 227,
+      "n_low_presentation_neg": 279
+    },
+    "reason_counts_removed": {
+      "VETO_LOW_ALL_AXES": 115
+    },
+    "threshold_sweep": [
+      {
+        "d_hits@20_frozen_epicurus": 0.0,
+        "d_hits@20_frozen_epicurus_ci": [
+          0.0,
+          0.0
+        ],
+        "d_hits@20_genuine_prime": 0.0,
+        "d_hits@20_genuine_prime_ci": [
+          0.0,
+          0.0
+        ],
+        "negative_removal": 0.1469,
+        "positive_retention": 0.9568,
+        "positive_retention_cp_lb": 0.9204,
+        "t": 0.3
+      },
+      {
+        "d_hits@20_frozen_epicurus": 0.0,
+        "d_hits@20_frozen_epicurus_ci": [
+          -0.2143,
+          0.2143
+        ],
+        "d_hits@20_genuine_prime": -0.0714,
+        "d_hits@20_genuine_prime_ci": [
+          -0.2143,
+          0.0
+        ],
+        "negative_removal": 0.3362,
+        "positive_retention": 0.8704,
+        "positive_retention_cp_lb": 0.8187,
+        "t": 0.5
+      },
+      {
+        "d_hits@20_frozen_epicurus": -0.0714,
+        "d_hits@20_frozen_epicurus_ci": [
+          -0.2857,
+          0.1429
+        ],
+        "d_hits@20_genuine_prime": -0.0714,
+        "d_hits@20_genuine_prime_ci": [
+          -0.2143,
+          0.0
+        ],
+        "negative_removal": 0.4435,
+        "positive_retention": 0.8148,
+        "positive_retention_cp_lb": 0.7573,
+        "t": 0.6
+      },
+      {
+        "d_hits@20_frozen_epicurus": -0.1429,
+        "d_hits@20_frozen_epicurus_ci": [
+          -0.4286,
+          0.1429
+        ],
+        "d_hits@20_genuine_prime": -0.0714,
+        "d_hits@20_genuine_prime_ci": [
+          -0.2143,
+          0.0
+        ],
+        "negative_removal": 0.5691,
+        "positive_retention": 0.7407,
+        "positive_retention_cp_lb": 0.678,
+        "t": 0.7
+      },
+      {
+        "d_hits@20_frozen_epicurus": -0.0714,
+        "d_hits@20_frozen_epicurus_ci": [
+          -0.3571,
+          0.2143
+        ],
+        "d_hits@20_genuine_prime": 0.0714,
+        "d_hits@20_genuine_prime_ci": [
+          -0.2143,
+          0.4286
+        ],
+        "negative_removal": 0.6425,
+        "positive_retention": 0.6975,
+        "positive_retention_cp_lb": 0.6327,
+        "t": 0.75
+      },
+      {
+        "d_hits@20_frozen_epicurus": -0.2857,
+        "d_hits@20_frozen_epicurus_ci": [
+          -0.7143,
+          0.1429
+        ],
+        "d_hits@20_genuine_prime": -0.2143,
+        "d_hits@20_genuine_prime_ci": [
+          -0.7143,
+          0.2143
+        ],
+        "negative_removal": 0.7778,
+        "positive_retention": 0.4877,
+        "positive_retention_cp_lb": 0.4206,
+        "t": 0.85
+      },
+      {
+        "d_hits@20_frozen_epicurus": -2.3571,
+        "d_hits@20_frozen_epicurus_ci": [
+          -2.9286,
+          -1.7857
+        ],
+        "d_hits@20_genuine_prime": -2.2857,
+        "d_hits@20_genuine_prime_ci": [
+          -3.1429,
+          -1.4286
+        ],
+        "negative_removal": 0.9179,
+        "positive_retention": 0.2346,
+        "positive_retention_cp_lb": 0.1807,
+        "t": 0.95
+      }
+    ]
+  },
+  "pareto_frontier_loco": [
+    {
+      "calib_deleak_dropped": 0,
+      "eval_cohort": "gartner",
+      "in_sample": false,
+      "loco_calibrated_t": 0.4,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 0,
+      "negative_removal": 0.111,
+      "positive_retention": 1.0,
+      "positive_retention_cp_lb": 0.937,
+      "positive_retention_worst_patient": 1.0,
+      "target": 0.9
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "improve",
+      "in_sample": false,
+      "loco_calibrated_t": 0.65,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 45,
+      "negative_removal": 0.3322,
+      "positive_retention": 0.7302,
+      "positive_retention_cp_lb": 0.6943,
+      "positive_retention_worst_patient": 0.0,
+      "target": 0.9
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "multimer",
+      "in_sample": true,
+      "loco_calibrated_t": 0.4,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 1,
+      "negative_removal": 0.0934,
+      "positive_retention": 0.9706,
+      "positive_retention_cp_lb": 0.8679,
+      "positive_retention_worst_patient": 0.6667,
+      "target": 0.9
+    },
+    {
+      "calib_deleak_dropped": 0,
+      "eval_cohort": "gartner",
+      "in_sample": false,
+      "loco_calibrated_t": 0.25,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 0,
+      "negative_removal": 0.0446,
+      "positive_retention": 1.0,
+      "positive_retention_cp_lb": 0.937,
+      "positive_retention_worst_patient": 1.0,
+      "target": 0.95
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "improve",
+      "in_sample": false,
+      "loco_calibrated_t": 0.15,
+      "meets_bar_cp_lb>=0.95": true,
+      "n_patients_losing_a_positive": 4,
+      "negative_removal": 0.0055,
+      "positive_retention": 0.9914,
+      "positive_retention_cp_lb": 0.9805,
+      "positive_retention_worst_patient": 0.8,
+      "target": 0.95
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "multimer",
+      "in_sample": true,
+      "loco_calibrated_t": 0.25,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 1,
+      "negative_removal": 0.0312,
+      "positive_retention": 0.9706,
+      "positive_retention_cp_lb": 0.8679,
+      "positive_retention_worst_patient": 0.6667,
+      "target": 0.95
+    },
+    {
+      "calib_deleak_dropped": 0,
+      "eval_cohort": "gartner",
+      "in_sample": false,
+      "loco_calibrated_t": 0.2,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 0,
+      "negative_removal": 0.0204,
+      "positive_retention": 1.0,
+      "positive_retention_cp_lb": 0.937,
+      "positive_retention_worst_patient": 1.0,
+      "target": 0.975
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "improve",
+      "in_sample": false,
+      "loco_calibrated_t": 0.0,
+      "meets_bar_cp_lb>=0.95": true,
+      "n_patients_losing_a_positive": 0,
+      "negative_removal": 0.0,
+      "positive_retention": 1.0,
+      "positive_retention_cp_lb": 0.9936,
+      "positive_retention_worst_patient": 1.0,
+      "target": 0.975
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "multimer",
+      "in_sample": true,
+      "loco_calibrated_t": 0.25,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 1,
+      "negative_removal": 0.0312,
+      "positive_retention": 0.9706,
+      "positive_retention_cp_lb": 0.8679,
+      "positive_retention_worst_patient": 0.6667,
+      "target": 0.975
+    },
+    {
+      "calib_deleak_dropped": 0,
+      "eval_cohort": "gartner",
+      "in_sample": false,
+      "loco_calibrated_t": 0.05,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 0,
+      "negative_removal": 0.0003,
+      "positive_retention": 1.0,
+      "positive_retention_cp_lb": 0.937,
+      "positive_retention_worst_patient": 1.0,
+      "target": 0.99
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "improve",
+      "in_sample": false,
+      "loco_calibrated_t": 0.0,
+      "meets_bar_cp_lb>=0.95": true,
+      "n_patients_losing_a_positive": 0,
+      "negative_removal": 0.0,
+      "positive_retention": 1.0,
+      "positive_retention_cp_lb": 0.9936,
+      "positive_retention_worst_patient": 1.0,
+      "target": 0.99
+    },
+    {
+      "calib_deleak_dropped": 10,
+      "eval_cohort": "multimer",
+      "in_sample": true,
+      "loco_calibrated_t": 0.05,
+      "meets_bar_cp_lb>=0.95": false,
+      "n_patients_losing_a_positive": 0,
+      "negative_removal": 0.0006,
+      "positive_retention": 1.0,
+      "positive_retention_cp_lb": 0.9157,
+      "positive_retention_worst_patient": 1.0,
+      "target": 0.99
+    }
+  ],
+  "safety_bar": {
+    "1_worst_external_cohort_cp_lb": ">= 0.95 (multimer in-sample excluded)",
+    "2_no_downstream_regression": "gated hits@20 delta CI upper bound >= 0 for both rankers",
+    "3_removal_material": "negative removal > 0 where the bar allows",
+    "4_locked_test_reproduces": "frozen config meets (1)-(2) on CheckMate"
+  },
+  "verdict": "**B for the gate as a safe recall-preserving pruner; C for the aggressive top-20 premise on label-blind presentation features.**\n\nThe layered gate is real, safe, and Pareto-dominates the incumbent EL-percentile gate on positive retention at matched removal (FEASIBILITY.md). It removes presentation-weak negatives at a calibrated recall floor, so its honest value is **shrinking the candidate universe handed to expensive downstream steps (genuine-PRIME scoring, wet-lab) without losing recognized positives** \u2014 NOT lifting top-20.\n\nIt does NOT close the oracle gap. The threshold sweep shows that at any SAFE retention (\u22481.0) the paired downstream \u0394hits@20 is \u22480: the gate only ever removes negatives that already sat below top-20. The oracle's large lift (Gartner 0.808\u21921.652) came from deleting *random* negatives \u2014 including the HIGH-presentation decoys that outrank positives \u2014 while keeping positives by construction. A label-blind gate removes **0%** of those high-presentation decoys (they are indistinguishable from positives: presentation is the ceiling), so the reranking benefit is unreachable this way. Any apparent lift arrives only once retention has fallen (denominator effect, bought by dropping positives) \u2014 which the safety bar forbids. This re-derives the project's recognition wall from a new angle: the gate/oracle decomposition.\n\nCP retention lower bounds are additionally sample-size-capped (Gartner 46 positives \u21d2 max CP-LB 0.937 even at 100% retention), so small cohorts cannot certify \u22650.95 regardless of the gate \u2014 an underpowering limit, not an unsafety.\n\n**What unlocks the next level:** an orthogonal signal that separates true positives from high-presentation decoys \u2014 **mutant-allele RNA VAF + read support, tumor DNA VAF/depth/purity/CCF, proteasomal processing, agretopicity** \u2014 consumed as KEEP-only rescue axes (never imputed to a vetoing value). These are absent across the current eval cohorts; the open WES+RNA of Miller IPV (PRJNA980652) and Gartner reconstruction are the concrete path (see SPEC \u00a77)."
+}
