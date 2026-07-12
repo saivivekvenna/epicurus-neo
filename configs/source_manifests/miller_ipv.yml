@@ -1,15 +1,33 @@
 manifest_version: event-b-cohort-source-1.0.0
 source_id: miller_ipv
-status: PLANNED_VERIFY_BEFORE_DOWNLOAD          # do NOT bulk-download until the preflight gates below pass
+status: INPUTS_VERIFIED_OPEN__LABELS_BLOCKED_ON_PAYWALL   # inputs public; S1/S2 label table needs subscription/browser
 role: CANDIDATE_INDEPENDENT_PRIME_UNTOUCHED_END_TO_END_COHORT
 intended_use: LOCKED_TEST                        # independent, low-leakage; fixed before any label touches the model
 
 cite: >-
-  Miller et al. A functional identification platform reveals frequent, spontaneous neoantigen-specific
-  T cell responses in patients with cancer. Sci Transl Med (2024).
+  Miller AM et al. A functional identification platform reveals frequent, spontaneous neoantigen-specific
+  T cell responses in patients with cancer. Sci Transl Med 16, eabj9905 (2024).
   NOTE: "IPV" = "identify-prioritize-validate" PLATFORM, not "individualized peptide vaccine".
 doi: 10.1126/scitranslmed.abj9905
+pmid: 38416845                                   # verified via Europe PMC (NOT 38416842, a different SOX9 paper)
 submitter: La Jolla Institute for Immunology
+
+verified_2026_07_12:
+  inputs_open: >-
+    PRJNA980652 confirmed OPEN via NCBI SRA runinfo (public, no DAR). 39 runs, 26 BioSamples.
+  patient_crosswalk: >-
+    13 patients, sample ids Hu_<NNN>; each has a COMPLETE trio {normal exome (WXS), tumor exome (WXS),
+    tumor RNA-seq}. 26 WXS + 13 RNA-Seq = 39 runs. Deterministic patient id = regex (Hu_\d+) on SampleName.
+    Crosswalk artifact: artifacts/milestone_7_decision/external_validation/miller_ipv/INPUT_CROSSWALK.csv
+  download_size: total 549.7 Gbases / ~0.217 TB SRA archive. Smallest single-patient trio = 7.2 GB (Hu_287).
+  aggregate_labels_from_paper_text: >-
+    349 tested variants -> 754 assayed 20-mer peptides; 199 (26%) POSITIVE by IFN-g ELISpot -> 555
+    TESTED_NEGATIVE. (Per-peptide S1/S2 rows are paywalled; only these aggregates are public.)
+  public_routes_exhausted_for_labels: >-
+    Crossref (only paywalled PDF link), Unpaywall (is_oa=false, no OA location), NCBI PMC (0 hits),
+    Europe PMC (not OA, no suppl), science.org suppl listing + direct file patterns (Cloudflare 403),
+    Zenodo/GitHub author-repo search (none). => S1/S2 requires institutional subscription or an author
+    request; not obtainable via safe public CLI. EXTERNAL ACTION REQUIRED.
 
 why_this_cohort: >-
   The only fully-OPEN end-to-end (Level-3) build prospect: raw WES + RNA-seq are public (no DAR), and the
@@ -29,9 +47,12 @@ preflight_gates:
   - id: label_table_open
     check: >-
       Supplementary data files S1/S2 (individual peptides tested per patient + ELISpot POSITIVE/NEGATIVE
-      outcome) are downloadable. science.org returned HTTP 403 to automated fetch -> REQUIRES A HUMAN BROWSER
-      CHECK at https://www.science.org/doi/suppl/10.1126/scitranslmed.abj9905
-    status: UNVERIFIED_BLOCKER
+      outcome) are downloadable. ALL public CLI/API routes exhausted (Cloudflare 403; not OA anywhere) ->
+      EXTERNAL ACTION REQUIRED: institutional-subscription browser download of
+      https://www.science.org/doi/suppl/10.1126/scitranslmed.abj9905 (data files S1/S2), or an author request.
+      Ingestion contract is pre-built (benchmark.miller_ingest.validate_recognition_labels) and will validate
+      S1/S2 on arrival.
+    status: EXTERNAL_ACTION_REQUIRED
   - id: explicit_negative_counts
     check: exact POSITIVE vs TESTED_NEGATIVE peptide counts (in S1/S2; only >40% PPV on the prioritized set is public)
     status: UNVERIFIED
