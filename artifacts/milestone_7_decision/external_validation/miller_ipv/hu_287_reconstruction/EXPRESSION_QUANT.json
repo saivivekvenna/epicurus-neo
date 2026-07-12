@@ -1,0 +1,19 @@
+{
+  "status": "OK",
+  "n_transcripts": 251955,
+  "n_genes": 60883,
+  "sum_tpm": 1000000.0,
+  "top10_genes_tpm": {
+    "ENSG00000283907": 14666.9,
+    "NPIPB3": 14370.67,
+    "RNA5-8SN2": 9070.18,
+    "COL1A1": 6690.77,
+    "UBC": 5488.6,
+    "ACTB": 5450.25,
+    "EEF1A1": 4955.61,
+    "B2M": 4808.85,
+    "TMSB10": 3867.93,
+    "NPIPB5": 3672.77
+  },
+  "quant_sf": "data/raw/miller_ipv/hu_287/salmon_quant/quant.sf"
+}

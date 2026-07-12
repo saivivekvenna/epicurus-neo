@@ -25,7 +25,7 @@
       "purpose": "RNA quantification (salmon index)",
       "dest": "data/raw/refs/gencode/gencode.v44.transcripts.fa",
       "acquire": "curl -L https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.transcripts.fa.gz | gunzip > <dest>; salmon index -t <dest> -i data/raw/refs/gencode/salmon_index -k 31",
-      "present": false
+      "present": true
     },
     {
       "name": "VEP_cache_GRCh38",
@@ -45,6 +45,7 @@
   "reconstruction_stages": [
     {
       "stage": "sra_to_fastq",
+      "ref_paths": [],
       "references": [],
       "produces": "paired FASTQ per run",
       "status": "RUNNABLE",
@@ -54,6 +55,9 @@
     },
     {
       "stage": "hla_typing_classI",
+      "ref_paths": [
+        "data/raw/refs/hla/hla_reference_dna.fasta"
+      ],
       "references": [
         "IMGT/HLA DNA reference (hla_reference_dna.fasta)"
       ],
@@ -64,11 +68,16 @@
     },
     {
       "stage": "wes_alignment",
+      "ref_paths": [
+        "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+        "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt"
+      ],
       "references": [
         "GRCh38 primary assembly FASTA + .fai + BWA index"
       ],
       "produces": "coordinate-sorted tumor & normal BAM",
-      "status": "RUNNABLE",
+      "status": "NOT_EVALUABLE",
+      "reason": "tools present (bwa+samtools) but missing reference/index: ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa', 'data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt']",
       "resolved_tools": {
         "bwa": "/opt/homebrew/bin/bwa",
         "samtools": "/opt/homebrew/bin/samtools"
@@ -76,6 +85,9 @@
     },
     {
       "stage": "somatic_calling",
+      "ref_paths": [
+        "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+      ],
       "references": [
         "GRCh38 FASTA",
         "germline resource + PoN (Mutect2)"
@@ -88,6 +100,9 @@
     },
     {
       "stage": "rna_quant",
+      "ref_paths": [
+        "data/raw/refs/gencode/salmon_index/info.json"
+      ],
       "references": [
         "GENCODE transcriptome FASTA + salmon/kallisto index"
       ],
@@ -99,6 +114,9 @@
     },
     {
       "stage": "mutanome_enumeration",
+      "ref_paths": [
+        "data/raw/refs/vep/homo_sapiens"
+      ],
       "references": [
         "GRCh38 + GENCODE annotation + Ensembl VEP cache"
       ],
@@ -109,14 +127,19 @@
     },
     {
       "stage": "scoring_prime_epicurus",
+      "ref_paths": [],
       "references": [
         "genuine PRIME 2.1 + MixMHCpred 3.0 (gitignored local)",
         "configs/frozen/epicurus_v0_1.json",
         "configs/frozen/expression_policy_v1.json"
       ],
       "produces": "genuine PRIME AND frozen Epicurus ranks over the IDENTICAL candidate universe",
+      "resolved_tools": {
+        "PRIME": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/tools/PRIME/PRIME",
+        "MixMHCpred": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/tools/MixMHCpred/MixMHCpred"
+      },
       "status": "NOT_EVALUABLE",
-      "reason": "missing tool(s): need [PRIME OR MixMHCpred] on PATH"
+      "reason": "local PRIME/MixMHCpred present but UPSTREAM-BLOCKED: needs the re-enumerated candidate universe + class-I HLA before any peptide can be scored"
     }
   ],
   "note": "PRIME/MixMHCpred binaries are present on disk (gitignored) but scoring is upstream-blocked until the candidate universe is re-enumerated. HLA typing, somatic calling, and mutanome enumeration are the hard blockers on this toolchain; expression via salmon is reachable once the GENCODE index is built. No released processed Hu_287 VCF/TPM/HLA exists (web 2026-07-12)."

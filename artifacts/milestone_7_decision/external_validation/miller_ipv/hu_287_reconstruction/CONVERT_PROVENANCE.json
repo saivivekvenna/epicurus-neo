@@ -1,0 +1,41 @@
+[
+  {
+    "sra": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/miller_ipv/hu_287/SRR24836169.sra",
+    "run": "SRR24836169",
+    "status": "OK",
+    "fastqs": [
+      "SRR24836169_1.fastq",
+      "SRR24836169_2.fastq"
+    ],
+    "reads_per_file": {
+      "SRR24836169_1.fastq": 35935879,
+      "SRR24836169_2.fastq": 35935879
+    }
+  },
+  {
+    "sra": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/miller_ipv/hu_287/SRR24836183.sra",
+    "run": "SRR24836183",
+    "status": "OK",
+    "fastqs": [
+      "SRR24836183_1.fastq",
+      "SRR24836183_2.fastq"
+    ],
+    "reads_per_file": {
+      "SRR24836183_1.fastq": 42504009,
+      "SRR24836183_2.fastq": 42504009
+    }
+  },
+  {
+    "sra": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/miller_ipv/hu_287/SRR24836184.sra",
+    "run": "SRR24836184",
+    "status": "OK",
+    "fastqs": [
+      "SRR24836184_1.fastq",
+      "SRR24836184_2.fastq"
+    ],
+    "reads_per_file": {
+      "SRR24836184_1.fastq": 16916111,
+      "SRR24836184_2.fastq": 16916111
+    }
+  }
+]

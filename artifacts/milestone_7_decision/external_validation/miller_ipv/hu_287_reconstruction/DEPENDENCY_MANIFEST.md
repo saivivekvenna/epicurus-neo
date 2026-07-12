@@ -19,18 +19,18 @@ _LOCKED_TEST. PRIME/MixMHCpred binaries are present on disk (gitignored) but sco
 |---|---|---|---|---|
 | sra_to_fastq | **RUNNABLE** | paired FASTQ per run | {'fasterq-dump': '/opt/homebrew/bin/fasterq-dump'} |  |
 | hla_typing_classI | **NOT_EVALUABLE** | 4-digit class-I HLA (A/B/C) from normal exome — REQUIRED for candidate-HLA pairing | missing tool(s): need [OptiType OR arcasHLA OR hla-la] on PATH | conda install -c bioconda optitype razers3   # or: conda install -c bioconda arcas-hla |
-| wes_alignment | **RUNNABLE** | coordinate-sorted tumor & normal BAM | {'bwa': '/opt/homebrew/bin/bwa', 'samtools': '/opt/homebrew/bin/samtools'} |  |
+| wes_alignment | **NOT_EVALUABLE** | coordinate-sorted tumor & normal BAM | tools present (bwa+samtools) but missing reference/index: ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa', 'data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt'] |  |
 | somatic_calling | **NOT_EVALUABLE** | somatic SNV/indel VCF with tumor VAF + depth | missing tool(s): need [gatk OR strelka] on PATH | conda install -c bioconda gatk4   # Mutect2 tumor-vs-normal; or bioconda strelka |
 | rna_quant | **RUNNABLE** | per-gene TPM + mutant-allele RNA evidence | {'salmon': '/opt/homebrew/bin/salmon'} |  |
 | mutanome_enumeration | **NOT_EVALUABLE** | full class-I 8-11mer candidate universe (the SHARED denominator for both arms) | missing tool(s): need [pvacseq OR pvactools] on PATH | pip install pvactools && conda install -c bioconda ensembl-vep   # + VEP cache |
-| scoring_prime_epicurus | **NOT_EVALUABLE** | genuine PRIME AND frozen Epicurus ranks over the IDENTICAL candidate universe | missing tool(s): need [PRIME OR MixMHCpred] on PATH |  |
+| scoring_prime_epicurus | **NOT_EVALUABLE** | genuine PRIME AND frozen Epicurus ranks over the IDENTICAL candidate universe | local PRIME/MixMHCpred present but UPSTREAM-BLOCKED: needs the re-enumerated candidate universe + class-I HLA before any peptide can be scored |  |
 
 ## References required (not auto-fetched)
 
 | name | purpose | present | dest |
 |---|---|:--:|---|
 | GRCh38_primary_assembly | WES alignment + somatic calling | n | `data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa` |
-| GENCODE_v44_transcripts | RNA quantification (salmon index) | n | `data/raw/refs/gencode/gencode.v44.transcripts.fa` |
+| GENCODE_v44_transcripts | RNA quantification (salmon index) | y | `data/raw/refs/gencode/gencode.v44.transcripts.fa` |
 | VEP_cache_GRCh38 | variant annotation for mutanome enumeration (pVACtools) | n | `data/raw/refs/vep/homo_sapiens` |
 | IMGT_HLA_dna | class-I HLA typing (OptiType/arcasHLA reference) | n | `data/raw/refs/hla/hla_reference_dna.fasta` |
 

@@ -120,28 +120,50 @@ def test_resumable_get_oversized_partial_restarts_clean(tmp_path):
 
 
 # ---- machine-actionable stage map + manifest -------------------------------------------------------
-def test_reconstruction_stages_status_reflects_tool_presence():
+def test_reconstruction_stages_gate_on_tools_AND_references():
     present = {"fasterq-dump": "/x/fasterq-dump", "bwa": "/x/bwa", "samtools": "/x/samtools",
                "bcftools": "/x/bcftools", "salmon": "/x/salmon"}
-    stages = md.reconstruction_stages(which=lambda t: present.get(t))
-    by = {s["stage"]: s for s in stages}
-    assert by["sra_to_fastq"]["status"] == "RUNNABLE"
-    assert by["wes_alignment"]["status"] == "RUNNABLE"
-    assert by["rna_quant"]["status"] == "RUNNABLE"
-    # no HLA typer / no pVACtools / no PRIME on this fake PATH -> NOT_EVALUABLE with a concrete reason
+    def ref(p):                                   # only the salmon index exists; GRCh38 absent
+        return "salmon_index" in p
+    by = {s["stage"]: s for s in md.reconstruction_stages(which=lambda t: present.get(t), ref_exists=ref)}
+    assert by["sra_to_fastq"]["status"] == "RUNNABLE"                       # needs no reference
+    assert by["rna_quant"]["status"] == "RUNNABLE"                          # salmon + index present
+    # tools present but reference ABSENT -> NOT_EVALUABLE with a DISTINCT missing-reference reason (Fix 2)
+    assert by["wes_alignment"]["status"] == "NOT_EVALUABLE"
+    assert "missing reference" in by["wes_alignment"]["reason"] and "tools present" in by["wes_alignment"]["reason"]
+    # missing TOOL -> distinct missing-tool reason
     assert by["hla_typing_classI"]["status"] == "NOT_EVALUABLE" and "missing tool" in by["hla_typing_classI"]["reason"]
-    assert by["mutanome_enumeration"]["status"] == "NOT_EVALUABLE"
-    assert by["scoring_prime_epicurus"]["status"] == "NOT_EVALUABLE"
+    assert by["mutanome_enumeration"]["status"] == "NOT_EVALUABLE" and "missing tool" in by["mutanome_enumeration"]["reason"]
+
+
+def test_scoring_stage_recognizes_local_prime_but_stays_upstream_blocked():
+    # Fix 4: scoring must recognize the on-disk PRIME/MixMHCpred (not require PATH), yet stay NOT_EVALUABLE
+    by = {s["stage"]: s for s in md.reconstruction_stages(which=lambda t: None, ref_exists=lambda p: False)}
+    sc = by["scoring_prime_epicurus"]
+    assert sc["status"] == "NOT_EVALUABLE"
+    assert "PRIME" in sc["resolved_tools"]                                  # local path recognized
+    if md.PRIME_BIN.exists():
+        assert "UPSTREAM-BLOCKED" in sc["reason"] and sc["resolved_tools"]["PRIME"]
 
 
 def test_build_manifest_records_provenance_and_isolation():
     targets = md.patient_targets(FIXTURE, "Hu_287")
-    results = {t["run"]: {"bytes": 100, "sha256": "deadbeef", "complete": True, "resumed_from": 0}
-               for t in targets}
-    man = md.build_manifest("Hu_287", targets, results, which=lambda t: None)
+    results = {t["run"]: {"bytes": 100, "expected_size_bytes": 100, "sha256": "deadbeef",
+                          "complete": True, "resumed_from": 0} for t in targets}
+    man = md.build_manifest("Hu_287", targets, results, which=lambda t: None, ref_exists=lambda p: False)
     assert man["patient_id"] == "Hu_287" and man["bioproject"] == "PRJNA980652" and man["tranche"] == "T1"
     assert man["download_complete"] is True and len(man["runs"]) == 3
+    assert all(r["size_verified"] and r["expected_size_bytes"] == r["downloaded_bytes"] for r in man["runs"])
     assert "labels never consulted" in man["isolation"]
-    # with an empty PATH every stage is NOT_EVALUABLE and each names its missing tools
     assert all(s["status"] == "NOT_EVALUABLE" for s in man["reconstruction_stages"])
-    assert "no released processed Hu_287" in man["note"].lower() or "no released processed" in man["note"].lower()
+    assert "no released processed" in man["note"].lower()
+
+
+def test_build_manifest_size_mismatch_fails_verification(tmp_path):
+    # Fix 1: expected_size_bytes persisted; a byte-size mismatch => size_verified False => not complete
+    targets = md.patient_targets(FIXTURE, "Hu_287")
+    results = {t["run"]: {"bytes": 100, "expected_size_bytes": 100, "complete": True} for t in targets}
+    results[targets[0]["run"]] = {"bytes": 99, "expected_size_bytes": 100, "complete": True}  # short read
+    man = md.build_manifest("Hu_287", targets, results, which=lambda t: None, ref_exists=lambda p: False)
+    bad = [r for r in man["runs"] if r["run"] == targets[0]["run"]][0]
+    assert bad["size_verified"] is False and man["download_complete"] is False
