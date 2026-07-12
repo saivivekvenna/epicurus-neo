@@ -1,8 +1,8 @@
 {
   "experiment": "epicurus_v0.5_context_conditioned_pairwise",
   "purpose": "Provenance pinned BEFORE the first Q/R fit (pre-fit CORRECTION of commit 06cb1d1). Runner recomputes and fails fast on any mismatch.",
-  "git_head": "06cb1d159ff175d1f3c2b7a609d97898497be573",
-  "git_head_note": "the prior pre-fit commit (the original v0.5 preregistration) this correction is committed on top of; same semantics as before (pinned parent state), advanced from d650eef",
+  "git_head": "03488b896eddb2e6be3f8c74801ef49292004d6d",
+  "git_head_note": "the prior pre-fit commit (the first PRE-FIT CORRECTION of the original v0.5 preregistration) this micro-correction is committed on top of; same semantics as before (pinned parent state), advanced from 06cb1d1",
   "frozen_comparators": {
     "P": {
       "source": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
@@ -13,8 +13,8 @@
     "A": {
       "source": "artifacts/milestone_7_decision/epicurus_v03/DEV_RESULT.json",
       "path_in_json": "ladder.rung2_additive.folds",
-      "reconstruction": "REFIT from frozen code (event_b.epicurus_v03.AdditiveLogistic) on each original outer-train fold at the stored per-fold C; ZERO retuning; deterministic",
-      "note": "DESCRIPTIVE comparator only: pointwise additive_logistic on exact-witness positives (instance-level negatives; NOT bag-disciplined). Makes the Q-P objective-vs-supervision split visible (A-Q objective form; A-P supervision granularity). Same caveat as P: coefficients stored, but no scaler/intercept -> refit, reproduction-verified."
+      "reconstruction": "REFIT from frozen code (event_b.epicurus_v03.AdditiveRanker) on each original outer-train fold at the stored per-fold C; ZERO retuning; deterministic",
+      "note": "DESCRIPTIVE comparator only: pointwise additive_logistic on exact-witness positives (instance-level negatives; NOT bag-disciplined). Makes the Q-P objective-vs-supervision split visible (A-Q changes objective form AND Gartner negative aggregation/bag discipline -> not a pure objective isolation; A-P supervision granularity). Same caveat as P: coefficients stored, but no scaler/intercept -> refit, reproduction-verified."
     },
     "F": {
       "source": "artifacts/milestone_7_decision/epicurus_v04/DEV_RESULT.json",
@@ -69,8 +69,8 @@
     "frozen_comparator_P_v03_result": "5cbec0536ba330a044d073650579a3148d30fd393498d272e27b6ad59608c738",
     "frozen_comparator_A_v03_result": "5cbec0536ba330a044d073650579a3148d30fd393498d272e27b6ad59608c738",
     "frozen_comparator_F_v04_result": "ace401266c5d639ed11b43539a2858020af4f3f2d07910250690764fd7894d77",
-    "design_spec": "90ecf87c9b25445e2622e4c69c0c5a57f64a2b389fac609614dc8f856a0671ba",
-    "prereg_protocol": "4ee9512c6e5590ae63fdee591631903afd858dd19a38bf4db5136fe7e0731718",
+    "design_spec": "9e6bf02012ad616c942c00265157bb47e4c76a5602632e4569de9fc58ff2b1fe",
+    "prereg_protocol": "be54e2f162d795b4c6262cb70850bc979153fadcc1f491c5438162b59aa6cf8a",
     "context_audit_code": "04f93217e363f4fda40c3e56c55cb30b262e102490be30c8d56eea9f490139db",
     "context_audit_json": "7280a2f4c0fca1166afd80bf76850d18b232d0c27b0f80dc70f83879a937de38"
   },

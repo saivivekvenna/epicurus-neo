@@ -36,8 +36,9 @@ Two changes vs v0.4: (i) **objective** — Q replaces the MIL log-sum-exp bag NL
 loss (kills the v0.4 multi-init score wobble); (ii) **context** — R adds a small portable context-interaction
 block on top of Q. **R−Q isolates context.** **Q−P is NOT a pure objective isolation** — for Gartner, Q uses
 exact-witness positives while P uses bag labels, so Q−P mixes pairwise objective **and** exact-witness
-supervision; the frozen additive rung **A** (pointwise, exact-witness) makes the split visible (A−Q objective
-form; A−P supervision granularity). **R−F** compares portable context to the source-name ceiling.
+supervision; the frozen additive rung **A** (pointwise, exact-witness) makes the split visible (A−Q changes
+objective form **and** Gartner negative aggregation/bag discipline — descriptive, **not a pure objective
+isolation**; A−P supervision granularity). **R−F** compares portable context to the source-name ceiling.
 
 ## 2. Candidate ladder (§2 of design)
 
@@ -60,7 +61,7 @@ objective strictly convex. P/A/F keep the intercepts they were fit with, but a g
 The result JSONs do not persist scoreable state: v0.4 `members.F_feature_tower.folds[*]` stores only `(C, tau,
 lam)` and **no coefficients**; v0.3 `ladder.rung3_MIL.folds[*]` / `ladder.rung2_additive.folds[*]` store
 coefficients but **no feature standardizer** (`mean_`/`std_`) and **no intercept**. So P/A/F are reconstructed by
-re-running their **exact frozen code** (`MILRanker`, `AdditiveLogistic`, `TowerMILRanker`) on **each original
+re-running their **exact frozen code** (`MILRanker`, `AdditiveRanker`, `TowerMILRanker`) on **each original
 outer-train fold** at the **already-selected per-fold hyperparameters**, with **ZERO retuning**. Fits are
 deterministic (fixed zero init, deterministic L-BFGS-B), so a refit reproduces the frozen model. The runner
 **verifies reproduction to numerical tolerance before any comparison**: P and A (convex) reproduce the frozen
@@ -183,8 +184,9 @@ pool.
 ## 9. Required diagnostics (all reported; none used for selection)
 
 1. **Contrasts** with CIs: R vs PRIME (gate), R vs strongest presentation (non-regression), **R−Q** (context),
-   **Q−P** (objective **+ exact-witness supervision**, not a pure isolation), **A−Q** and **A−P** (the
-   objective-vs-supervision split, descriptive), **R−F** (portable vs source-name ceiling).
+   **Q−P** (objective **+ exact-witness supervision**, not a pure isolation), **A−Q** (objective form **+ Gartner
+   negative aggregation/bag discipline**, not a pure objective isolation) and **A−P** (supervision granularity),
+   both descriptive, **R−F** (portable vs source-name ceiling).
 2. **Per-source** hits@20 / recall@20 / best-positive-rank / nDCG@20, R vs each baseline; **PRIME
    availability/masking rate per source**.
 3. **Context alias audit** (transferability guard): re-run the §4 patient-grouped source-balanced

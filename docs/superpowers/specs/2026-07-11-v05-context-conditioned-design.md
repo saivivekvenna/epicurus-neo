@@ -73,8 +73,9 @@ they do not affect hits@20 — they are shown only to describe the frozen scorer
   changes: pairwise-vs-pointwise *objective* **and** exact-witness-vs-bag *supervision*.
 - **A (frozen v0.3 rung-2 additive_logistic)** is a pointwise logistic on the **same exact-witness positives** as
   Q (instance-level negatives; **not** bag-disciplined — a caveat, so A is descriptive only). It lets the split
-  be seen: **A vs Q** ≈ pointwise-vs-pairwise on exact witnesses (objective form); **A vs P** ≈
-  exact-witness-pointwise vs bag-MIL (supervision granularity). No causal isolation is claimed from any single
+  be seen: **A vs Q** ≈ pointwise-vs-pairwise on exact witnesses (objective form) **and** instance-vs-bag
+  negatives (Gartner negative aggregation/bag discipline) — descriptive, **not a pure objective isolation**; **A
+  vs P** ≈ exact-witness-pointwise vs bag-MIL (supervision granularity). No causal isolation is claimed from any single
   contrast; the three together describe the mechanism.
 - **R−Q** isolates *context* (both new, same objective, same supervision, R ⊃ Q). **R−F** asks whether portable
   context matches the source-name ceiling.
@@ -85,7 +86,7 @@ The frozen result JSONs **do not persist the state needed to score**: v0.4 `memb
 records only the selected hyperparameters `(C, tau, lam)` and **no fitted coefficients**; v0.3
 `ladder.rung3_MIL.folds[*]` / `ladder.rung2_additive.folds[*]` record coefficients but **no feature
 standardizer** (`mean_`, `std_`) and **no intercept**. So P/A/F cannot be "loaded." Each is reconstructed by
-**re-running its exact frozen code** (`MILRanker`, `AdditiveLogistic`, `TowerMILRanker`) on **each original
+**re-running its exact frozen code** (`MILRanker`, `AdditiveRanker`, `TowerMILRanker`) on **each original
 outer-train fold** using the **already-selected per-fold hyperparameters**, with **ZERO retuning**. Because those
 fits are deterministic (fixed zero init, deterministic L-BFGS-B), a refit reproduces the frozen model. The runner
 **verifies reproduction to numerical tolerance** before any comparison: P and A (convex) must reproduce the
@@ -243,8 +244,9 @@ verbatim. Primary metric = **source-balanced mean patient hits@20**. Baselines: 
   source-balanced mean hits@20. Otherwise an honest **REJECT/TIE** ("failed to establish superiority," not
   necessarily "worse"). No victory language unless this clears.
 - **A. Non-regression** vs the strongest presentation (point ≥ 0, 95% CI not entirely < 0); **R vs Q** mechanism
-  contrast; **Q vs P** (objective **+ exact-witness supervision** — not a pure isolation); **A vs Q** and **A vs
-  P** (the objective-vs-supervision split, descriptive); **R vs F** (portable vs source-name ceiling).
+  contrast; **Q vs P** (objective **+ exact-witness supervision** — not a pure isolation); **A vs Q** (objective
+  form **+ Gartner negative aggregation/bag discipline** — not a pure objective isolation) and **A vs P**
+  (supervision granularity), both descriptive; **R vs F** (portable vs source-name ceiling).
 - **B. Per-source** deltas + best-positive rank + nDCG@20 + recall@20, R vs each baseline; **PRIME
   availability/masking** report per source.
 - **C. Context alias audit (the transferability guard).** Re-run the §3 source-classification alias audit at fit
