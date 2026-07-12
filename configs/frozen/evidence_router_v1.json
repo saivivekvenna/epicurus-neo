@@ -58,6 +58,8 @@
     "incumbent_score_default_column": "epicurus_lower_evidence_score",
     "incumbent_score_preferred": "genuine_PRIME_where_available",
     "tie_break": "md5(mutant_peptide|hla_allele)",
+    "rank_selected_by": "incumbent_score_desc_then_tie_break",
+    "relax_diversity_caps_to_fill_k": false,
     "immunogenicity_claim_without_set_labels": false
   },
   "funnel_stages": ["generated", "valid", "rankable", "selected"],

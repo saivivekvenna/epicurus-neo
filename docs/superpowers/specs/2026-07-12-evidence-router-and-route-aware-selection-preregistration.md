@@ -205,9 +205,13 @@ multi-caller raw variant union is the candidate-generation-recall denominator, �
   (`epicurus_lower_evidence_score`). The selection is score-agnostic; it only orders and reserves.
 - **Diversity caps (existing):** `max_per_mutation = 2`, `max_per_gene = 4`, `max_per_hla = None`.
 - **Graceful backfill:** if a reserved route is absent (or its only candidates are exhausted by caps),
-  the freed slot returns to the score-fill pool — the final set always has `min(k, n_rankable)` rows.
+  the freed slot returns to the score-fill pool. Diversity caps are never silently relaxed, so the
+  final set may contain fewer than `k` when fewer than `k` candidates are admissible under those caps.
 - **Determinism:** ties broken by `md5(mutant_peptide | hla_allele)`, `mergesort`, stable across input
   permutation.
+- **Rank semantics:** reserves affect membership only. After the set is selected, `route_rank` is
+  assigned by descending incumbent score (then the deterministic tie-break), so an exploratory reserve
+  is not mislabeled rank #1 merely because it was selected in the reserve phase.
 
 **Guardrail:** this reserves *representation*, spreading selection across evidence routes and diversity
 axes. Absent set-level outcome labels it makes **no claim** to improve immunogenicity or response — it
@@ -322,3 +326,7 @@ _(appended chronologically; the design is fixed above before any route-aware eva
 - **D3 (variant-vs-candidate granularity, before implementation/results).** A populated peptide/HLA
   extends the base variant key by exact peptide–HLA identity. This prevents a coordinate-level union
   from silently collapsing many generated candidate routes for one mutation into the first peptide.
+- **D4 (portfolio output semantics, before implementation/results).** Route reserves change set
+  membership, not score rank; selected rows are ranked by the frozen incumbent score after membership
+  is fixed. Diversity caps remain hard and may yield fewer than `k` rows rather than being silently
+  relaxed. This corrects two ambiguous reporting promises without changing any quota or score.

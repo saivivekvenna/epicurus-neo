@@ -31,7 +31,9 @@ audit motivated the router; Sid is not presented as independent validation of th
 7. **Constrained route-aware top-20**: k=20; modest exploration reserve of `reserve_per_route=1` per
    present non-CORE route capped at `max_reserve=3`; remaining slots by frozen incumbent score; diversity
    caps `max_per_mutation=2 / max_per_gene=4 / max_per_hla=None`; graceful backfill; deterministic
-   `md5(peptide|hla)` tie-break. No immunogenicity claim without set-level labels.
+   `md5(peptide|hla)` tie-break. Reserves affect membership only; final rank remains incumbent-score
+   order. Caps are not relaxed, so fewer than k may be returned. No immunogenicity claim without
+   set-level labels.
 8. **Funnel** separates `generated → valid → rankable → selected` (machine-readable JSON + Markdown + CSV).
 9. **Acceptance metrics**: candidate-generation recall (only where a raw denominator exists), ranker
    hits@20 conditional on reachability, end-to-end hits@20, route composition, no-regression on measured
@@ -53,3 +55,5 @@ No edit to `epicurus_v0_1.json`. Legacy gate preserved.
   This closes cross-patient hotspot and cross-gene notation collisions before implementation/results.
 - **D3** — candidate rows extend the base variant key by exact peptide–HLA identity, preventing
   coordinate-level collapse of multiple candidates generated from one mutation.
+- **D4** — reserves affect membership but not score-rank semantics; diversity caps are never relaxed
+  merely to fill k. This clarification was frozen before evaluation.
