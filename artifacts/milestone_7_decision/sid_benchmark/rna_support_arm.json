@@ -3,7 +3,23 @@
     "frozen_epicurus_v0_1": {
       "n_mutations_after_gate": 112,
       "rna_gated": {
-        "hits_at_20": 1,
+        "hits_at_20_guaranteed_under_any_tiebreak": 1,
+        "hits_at_20_nominal_lexical_tiebreak": 1,
+        "hits_at_20_possible_under_some_tiebreak": 1,
+        "positive_rank_intervals_for_exact_score_ties": {
+          "ASPM-chr1-197102716": [
+            39,
+            39
+          ],
+          "DYNC1H1-chr14-101980529": [
+            1,
+            1
+          ],
+          "MAP2-chr2-209694772": [
+            65,
+            66
+          ]
+        },
         "positive_ranks": {
           "ASPM-chr1-197102716": 39,
           "DYNC1H1-chr14-101980529": 1,
@@ -11,7 +27,23 @@
         }
       },
       "ungated": {
-        "hits_at_20": 1,
+        "hits_at_20_guaranteed_under_any_tiebreak": 1,
+        "hits_at_20_nominal_lexical_tiebreak": 1,
+        "hits_at_20_possible_under_some_tiebreak": 1,
+        "positive_rank_intervals_for_exact_score_ties": {
+          "ASPM-chr1-197102716": [
+            39,
+            39
+          ],
+          "DYNC1H1-chr14-101980529": [
+            1,
+            1
+          ],
+          "MAP2-chr2-209694772": [
+            65,
+            66
+          ]
+        },
         "positive_ranks": {
           "ASPM-chr1-197102716": 39,
           "DYNC1H1-chr14-101980529": 1,
@@ -22,7 +54,23 @@
     "genuine_prime": {
       "n_mutations_after_gate": 112,
       "rna_gated": {
-        "hits_at_20": 2,
+        "hits_at_20_guaranteed_under_any_tiebreak": 2,
+        "hits_at_20_nominal_lexical_tiebreak": 2,
+        "hits_at_20_possible_under_some_tiebreak": 2,
+        "positive_rank_intervals_for_exact_score_ties": {
+          "ASPM-chr1-197102716": [
+            29,
+            29
+          ],
+          "DYNC1H1-chr14-101980529": [
+            2,
+            2
+          ],
+          "MAP2-chr2-209694772": [
+            7,
+            8
+          ]
+        },
         "positive_ranks": {
           "ASPM-chr1-197102716": 29,
           "DYNC1H1-chr14-101980529": 2,
@@ -30,7 +78,23 @@
         }
       },
       "ungated": {
-        "hits_at_20": 2,
+        "hits_at_20_guaranteed_under_any_tiebreak": 2,
+        "hits_at_20_nominal_lexical_tiebreak": 2,
+        "hits_at_20_possible_under_some_tiebreak": 2,
+        "positive_rank_intervals_for_exact_score_ties": {
+          "ASPM-chr1-197102716": [
+            39,
+            39
+          ],
+          "DYNC1H1-chr14-101980529": [
+            3,
+            3
+          ],
+          "MAP2-chr2-209694772": [
+            9,
+            10
+          ]
+        },
         "positive_ranks": {
           "ASPM-chr1-197102716": 39,
           "DYNC1H1-chr14-101980529": 3,
@@ -41,7 +105,23 @@
     "mixmhcpred": {
       "n_mutations_after_gate": 112,
       "rna_gated": {
-        "hits_at_20": 3,
+        "hits_at_20_guaranteed_under_any_tiebreak": 2,
+        "hits_at_20_nominal_lexical_tiebreak": 3,
+        "hits_at_20_possible_under_some_tiebreak": 3,
+        "positive_rank_intervals_for_exact_score_ties": {
+          "ASPM-chr1-197102716": [
+            16,
+            16
+          ],
+          "DYNC1H1-chr14-101980529": [
+            2,
+            2
+          ],
+          "MAP2-chr2-209694772": [
+            19,
+            21
+          ]
+        },
         "positive_ranks": {
           "ASPM-chr1-197102716": 16,
           "DYNC1H1-chr14-101980529": 2,
@@ -49,11 +129,27 @@
         }
       },
       "ungated": {
-        "hits_at_20": 2,
+        "hits_at_20_guaranteed_under_any_tiebreak": 2,
+        "hits_at_20_nominal_lexical_tiebreak": 2,
+        "hits_at_20_possible_under_some_tiebreak": 2,
+        "positive_rank_intervals_for_exact_score_ties": {
+          "ASPM-chr1-197102716": [
+            20,
+            20
+          ],
+          "DYNC1H1-chr14-101980529": [
+            2,
+            2
+          ],
+          "MAP2-chr2-209694772": [
+            24,
+            26
+          ]
+        },
         "positive_ranks": {
           "ASPM-chr1-197102716": 20,
           "DYNC1H1-chr14-101980529": 2,
-          "MAP2-chr2-209694772": 26
+          "MAP2-chr2-209694772": 25
         }
       }
     }
@@ -85,5 +181,5 @@
   ],
   "rna_source": "data/raw/osteosarc/site_cache/variant_vafs_long.tsv (tumor RNA assay; all 130 covered)",
   "status": "exploratory; frozen baselines untouched; no label tuning; absence is never a veto",
-  "verdict": "EXPLORATORY, NOT a superiority claim. The gate is NON-TUNED (hardest biological boundary: TPM==0 AND zero mutant RNA reads; absence never vetoes; 0 positives removed). Effect is scorer-specific: presentation-only MixMHCpred reaches 3/3 (MAP2 #26\u2192EXACTLY #20), but the primary genuine-PRIME baseline stays 2/3 (ASPM #39\u2192#29) and frozen Epicurus stays 1/3. The MixMHCpred 3/3 is FRAGILE and must not be reported as beating PRIME: (a) n=1 patient / 3 labels, post-hoc; (b) MAP2 sits on the exact #20 boundary; (c) upstream coverage is only 88.4% \u2014 the 17 uncovered eligible variants could add competitors that displace MAP2; (d) it is presentation-only, weaker than the PRIME baseline which does NOT reach 3/3. Matched RNA confirms all 3 positives are transcribed \u21d2 the residual wall is conditional RANKING of EXPRESSED decoys, not expression. Real, principled, but not a win."
+  "verdict": "EXPLORATORY, NOT a superiority claim. The gate is NON-TUNED (hardest biological boundary: TPM==0 AND zero mutant RNA reads; absence never vetoes; 0 positives removed). Effect is scorer-specific: presentation-only MixMHCpred reaches nominal 3/3 with lexical tie-breaking, but MAP2 is in an exact-score tie spanning ranks 19\u201321, so guaranteed hits remain 2/3. The primary genuine-PRIME baseline stays 2/3 (ASPM #39\u2192#29) and frozen Epicurus stays 1/3. The MixMHCpred 3/3 is FRAGILE and must not be reported as beating PRIME: (a) n=1 patient / 3 labels, post-hoc; (b) MAP2 sits on the exact #20 boundary; (c) upstream coverage is only 88.4% \u2014 the 17 uncovered eligible variants could add competitors that displace MAP2; (d) it is presentation-only, weaker than the PRIME baseline which does NOT reach 3/3. DYNC1H1 and ASPM have mutant RNA support; MAP2 has nonzero gene TPM but zero observed mutant-allele RNA reads. Real, principled, but not a win."
 }

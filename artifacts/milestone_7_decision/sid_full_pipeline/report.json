@@ -111,27 +111,25 @@
     },
     "full_current_epicurus_stack": {
       "hit_variant_ids": [
-        "ASPM-chr1-197102716",
         "DYNC1H1-chr14-101980529"
       ],
-      "hits_at_20": 2,
+      "hits_at_20": 1,
       "positive_ranks": {},
-      "recall_at_20": 0.6667,
+      "recall_at_20": 0.3333,
       "selected_routes": 20,
       "unique_selected_mutations": 10
     },
     "full_stack_mutation_level_fair": {
       "hit_variant_ids": [
-        "ASPM-chr1-197102716",
         "DYNC1H1-chr14-101980529"
       ],
-      "hits_at_20": 2,
+      "hits_at_20": 1,
       "positive_ranks": {
-        "ASPM-chr1-197102716": 4,
+        "ASPM-chr1-197102716": 34,
         "DYNC1H1-chr14-101980529": 1,
-        "MAP2-chr2-209694772": 34
+        "MAP2-chr2-209694772": 32
       },
-      "recall_at_20": 0.6667,
+      "recall_at_20": 0.3333,
       "selected_routes": 20,
       "unique_selected_mutations": 20
     },
@@ -152,12 +150,11 @@
     },
     "product_v1_as_shipped": {
       "hit_variant_ids": [
-        "ASPM-chr1-197102716",
         "DYNC1H1-chr14-101980529"
       ],
-      "hits_at_20": 2,
+      "hits_at_20": 1,
       "positive_ranks": {},
-      "recall_at_20": 0.6667,
+      "recall_at_20": 0.3333,
       "selected_routes": 20,
       "unique_selected_mutations": 10
     }
@@ -165,11 +162,12 @@
   "experiment": "sid_full_filter_stack_label_blind",
   "feature_availability": {
     "hla_loh": "NOT_ASSESSED_FOR_SID",
+    "longitudinal_rna_support": "COMPLETE_ON_GENERATED_PREDECISION_T0_T1_T2_BULK_AND_SINGLE_CELL",
     "mixmhcpred_and_genuine_prime": "COMPLETE_ON_GENERATED",
     "multi_caller_timepoint_support": "COMPLETE_ON_GENERATED",
     "patient_hla": "COMPLETE_MATCHED_SID_A01_B08_B27_C01_C07",
     "peptide_sequence": "COMPLETE_ON_GENERATED",
-    "rna_vaf_and_mutant_reads": "NOT_ASSESSED_AT_THIS_BOUNDARY",
+    "rna_vaf_and_mutant_reads": "COMPLETE_ON_GENERATED_MATCHED_T2_BULK_RNA",
     "tumor_dna_vaf": "COMPLETE_ON_GENERATED_LONGITUDINAL_WES_WGS",
     "tumor_gene_tpm": "COMPLETE_ON_GENERATED_MATCHED_T2_RSEM"
   },
@@ -224,27 +222,25 @@
       "status": "POST_HOC_UNIT_CORRECTION_WITH_FROZEN_THRESHOLD_NOT_A_VALIDATED_POLICY"
     },
     "product_v1_expression_evidence_policy": {
-      "candidate_rows_excluded": 6915,
+      "candidate_rows_excluded": 27875,
       "exclusion_reasons": {
+        "NO_MUTANT_RNA_SUPPORT": 20960,
         "NO_RNA_EXPRESSION": 6915
       },
-      "mutations_remaining": 111
+      "mutations_remaining": 62
     },
     "route_distributions": {
       "frozen_epicurus": {
-        "CORE": 765,
-        "LONGITUDINAL": 37290,
-        "RESCUE": 20139
+        "LONGITUDINAL": 12269,
+        "RESCUE": 45925
       },
       "full_stack": {
-        "CORE": 765,
-        "LONGITUDINAL": 36982,
-        "RESCUE": 13675
+        "LONGITUDINAL": 12198,
+        "RESCUE": 18854
       },
       "prime": {
-        "CORE": 765,
-        "LONGITUDINAL": 37290,
-        "RESCUE": 20139
+        "LONGITUDINAL": 12269,
+        "RESCUE": 45925
       }
     }
   },
@@ -267,7 +263,7 @@
   "verdict": {
     "filters_improve_prime": false,
     "full_stack_beats_prime": false,
-    "full_stack_hits_at_20": 2,
+    "full_stack_hits_at_20": 1,
     "genuine_prime_hits_at_20": 2
   }
 }

@@ -6,7 +6,6 @@ recognized positives are never removed.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 
 from event_b.sid_rna_support import (
@@ -59,7 +58,8 @@ def test_real_sid_positives_are_never_unexpressed():
     """On the real Sid RNA table, none of the 3 recognized positives are flagged unexpressed."""
     rna = load_tumor_rna_support()
     pos = pd.Series(["ASPM-chr1-197102716", "DYNC1H1-chr14-101980529", "MAP2-chr2-209694772"])
-    # recognized positives are transcribed (they carry mutant RNA reads) -> never removed, regardless of TPM
+    # DYNC1H1/ASPM carry mutant RNA reads. MAP2 has nonzero gene TPM but no observed mutant RNA reads;
+    # the conjunctive rule correctly keeps it because RNA absence alone is not a veto.
     tpm = pd.Series([16.49, 100.0, 5.2])
     flag = confidently_unexpressed(pos, tpm, rna)
     assert not flag.any()

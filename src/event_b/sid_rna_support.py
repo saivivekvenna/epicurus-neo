@@ -8,8 +8,9 @@ AND gene `expression_tpm == 0`). ABSENCE IS NEVER A VETO — a mutation with no 
 read, or any expression, is KEPT. No threshold is tuned on the three Hudson labels.
 
 Audit result (see the arm runner): this gate flags 18/130 mutations, never a recognized positive, and
-improves the missed positives' ranks (ASPM #39→~29 PRIME / #20→~16 MixMHCpred; MAP2 #26→~21 MixMHCpred) but
-does NOT reach 3/3 — the missed positive stays just outside top-20. It is a principled partial, not a win.
+improves the missed positives' ranks. MixMHCpred puts MAP2 in a three-way exact-score tie spanning ranks
+19–21 after gating; a deterministic lexical tie-break calls it #20 and nominally 3/3, but tie-aware
+guaranteed hits remain 2/3. Genuine PRIME remains 2/3. It is a principled partial, not a proven win.
 The exact per-peptide mutant-read fallback (public T2 RNA BAM via remote pysam) is unnecessary for
 variant-level gating and would not change this verdict.
 """
@@ -29,7 +30,13 @@ def load_tumor_rna_support(vaf_table: Path = VAF_TABLE) -> pd.DataFrame:
     Label-blind (no recognition label touched)."""
     d = pd.read_csv(vaf_table, sep="\t")
     tumor = d[d["tissue"].astype(str).str.lower().eq("tumor")]
-    rna = tumor[tumor["assay_type"].astype(str).str.contains("RNA", case=False, na=False)]
+    # Decision-valid longitudinal window: exclude T3 (collected after the T2 decision package) and the
+    # organoid. Including later evidence could rescue a mutation that would have been unavailable at the
+    # decision point. This restriction happens without consulting recognition labels.
+    rna = tumor[
+        tumor["assay_type"].astype(str).str.contains("RNA", case=False, na=False)
+        & tumor["timepoint"].isin({"T0", "T1", "T2"})
+    ]
     g = rna.groupby("variant_id").agg(rna_max_alt_reads=("alt_reads", "max"),
                                       rna_max_vaf=("vaf", "max")).reset_index()
     g["rna_assay_present"] = True

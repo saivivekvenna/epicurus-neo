@@ -37,13 +37,49 @@ def prepare_sid_gate_frame(
         vaf["tissue"].astype(str).str.lower().eq("tumor")
         & (pd.to_numeric(vaf["alt_reads"], errors="coerce").fillna(0) > 0)
     ].copy()
-    provenance = tumor.groupby("variant_id").agg(
+    # DNA provenance must be DNA-only.  Earlier benchmark code accidentally allowed RNA/scRNA VAFs
+    # into ``dna_vaf`` by aggregating every tumour assay together.
+    tumor_dna = tumor[tumor["assay_type"].isin({"WES", "WGS"})].copy()
+    provenance = tumor_dna.groupby("variant_id").agg(
         n_callers=("pipeline", lambda x: x.dropna().astype(str).nunique()),
         n_timepoints=("timepoint", lambda x: x.dropna().astype(str).nunique()),
         dna_vaf=("vaf", "max"),
     ).reset_index()
     out = candidates.merge(provenance, left_on="mutation_id", right_on="variant_id", how="left")
     out = out.drop(columns=["variant_id"])
+
+    # Matched decision-time RNA: T2 bulk RNA from UCLA, the same tumour/timepoint as the RSEM TPM and
+    # pVAC package.  Multiple rows are alternative count derivations of the same public data; max depth,
+    # alt reads, and VAF preserve observed support without summing duplicates.  Longitudinal features are
+    # kept separately as rescue/provenance and never substituted for the matched T2 values.
+    t2_rna = vaf[
+        vaf["tissue"].astype(str).str.lower().eq("tumor")
+        & vaf["assay_type"].eq("RNA")
+        & vaf["timepoint"].eq("T2")
+        & vaf["data_source"].eq("UCLA")
+    ].copy()
+    t2_evidence = t2_rna.groupby("variant_id").agg(
+        rna_depth=("total_reads", "max"),
+        rna_mutant_reads=("alt_reads", "max"),
+        rna_vaf=("vaf", "max"),
+    ).reset_index()
+    out = out.merge(t2_evidence, left_on="mutation_id", right_on="variant_id", how="left").drop(
+        columns=["variant_id"])
+
+    all_rna = vaf[
+        vaf["tissue"].astype(str).str.lower().eq("tumor")
+        & vaf["assay_type"].isin({"RNA", "scRNA", "scRNA_ONT"})
+        & vaf["timepoint"].isin({"T0", "T1", "T2"})
+    ].copy()
+    all_rna["_supported_timepoint"] = all_rna["timepoint"].where(
+        pd.to_numeric(all_rna["alt_reads"], errors="coerce").fillna(0) > 0)
+    longitudinal = all_rna.groupby("variant_id").agg(
+        longitudinal_rna_max_alt_reads=("alt_reads", "max"),
+        longitudinal_rna_max_vaf=("vaf", "max"),
+        longitudinal_rna_positive_timepoints=("_supported_timepoint", lambda x: x.dropna().astype(str).nunique()),
+    ).reset_index()
+    out = out.merge(longitudinal, left_on="mutation_id", right_on="variant_id", how="left").drop(
+        columns=["variant_id"])
 
     # Stable candidate identity is independent of row order and contains no assay label.
     identity = (

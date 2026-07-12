@@ -3,7 +3,8 @@
 Applies the leakage-safe RNA-support gate (src/event_b/sid_rna_support.py) UPSTREAM of the unchanged
 scorers on the frozen scored-candidate pool, then reports mutation-level recognized hits@20 vs the ungated
 baselines. Frozen baselines (genuine PRIME, MixMHCpred, frozen Epicurus v0.1) are NOT modified. No
-threshold is tuned on the 3 labels. Honest expectation: improves the missed positives' ranks but stays 2/3.
+threshold is tuned on the 3 labels. Exact-score ties at the top-20 boundary are reported as rank intervals,
+not hidden by an unstable sort order.
 
     python -m scripts.sid_rna_support_arm
 
@@ -20,26 +21,40 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import pandas as pd
 
-from event_b.sid_benchmark import hudson_positive_variant_ids
 from event_b.sid_rna_support import load_tumor_rna_support, rna_support_gate
 
 ART = Path("artifacts/milestone_7_decision/sid_benchmark")
 SCORED = ART / "scored_candidates.csv.gz"
 K = 20
-POS = {"ASPM-chr1-197102716", "DYNC1H1-chr14-101980529", "MAP2-chr2-209694772"}
 SCORERS = [("genuine_prime", "prime_rank", True), ("mixmhcpred", "mixmhcpred_rank", True),
            ("frozen_epicurus_v0_1", "arm_frozen_epicurus_v0_1", False)]
 
 
-def _mutation_ranks(c: pd.DataFrame, col: str, ascending: bool) -> tuple[dict, int]:
+def _mutation_ranks(c: pd.DataFrame, col: str, ascending: bool) -> tuple[dict, dict, int]:
     best = c.groupby("mutation_id")[col].min() if ascending else c.groupby("mutation_id")[col].max()
-    order = best.sort_values(ascending=ascending)
-    return {m: i + 1 for i, m in enumerate(order.index)}, len(order)
+    ordered = best.rename("score").reset_index().sort_values(
+        ["score", "mutation_id"], ascending=[ascending, True], kind="mergesort")
+    ranks = {m: i + 1 for i, m in enumerate(ordered["mutation_id"])}
+    intervals = {}
+    for mutation, score in best.items():
+        strictly_better = int((best < score).sum()) if ascending else int((best > score).sum())
+        at_least_as_good = int((best <= score).sum()) if ascending else int((best >= score).sum())
+        intervals[mutation] = [strictly_better + 1, at_least_as_good]
+    return ranks, intervals, len(ordered)
 
 
-def _hits(ranks: dict) -> dict:
-    per = {p: ranks.get(p) for p in sorted(POS)}
-    return {"positive_ranks": per, "hits_at_20": sum(1 for v in per.values() if v and v <= K)}
+def _hits(ranks: dict, intervals: dict, positives: set[str]) -> dict:
+    per = {p: ranks.get(p) for p in sorted(positives)}
+    bounds = {p: intervals.get(p) for p in sorted(positives)}
+    return {
+        "positive_ranks": per,
+        "positive_rank_intervals_for_exact_score_ties": bounds,
+        "hits_at_20_nominal_lexical_tiebreak": sum(1 for v in per.values() if v and v <= K),
+        "hits_at_20_guaranteed_under_any_tiebreak": sum(
+            1 for v in bounds.values() if v and v[1] <= K),
+        "hits_at_20_possible_under_some_tiebreak": sum(
+            1 for v in bounds.values() if v and v[0] <= K),
+    }
 
 
 def main() -> int:
@@ -49,16 +64,26 @@ def main() -> int:
     kept = gated[gated["rna_gate_keep"]]
     removed_muts = sorted(set(gated.loc[~gated["rna_gate_keep"], "mutation_id"]))
 
-    positives = sorted(hudson_positive_variant_ids())
-    assert set(positives) == POS, "exact positive set mismatch"
+    frozen_ranks = {}
+    for name, col, asc in SCORERS:
+        frozen_ranks[name] = {
+            "ungated": _mutation_ranks(c, col, asc),
+            "rna_gated": _mutation_ranks(kept, col, asc),
+        }
+
+    # Evaluation labels are imported only after gate decisions and all scorer ranks are frozen in memory.
+    from event_b.sid_benchmark import hudson_positive_variant_ids
+
+    positives = set(hudson_positive_variant_ids())
     # invariant: the gate must never remove a recognized positive
-    assert not (POS & set(removed_muts)), "RNA gate removed a recognized positive — INVALID"
+    assert not (positives & set(removed_muts)), "RNA gate removed a recognized positive — INVALID"
 
     arms = {}
-    for name, col, asc in SCORERS:
-        base_ranks, _ = _mutation_ranks(c, col, asc)
-        gate_ranks, n = _mutation_ranks(kept, col, asc)
-        arms[name] = {"ungated": _hits(base_ranks), "rna_gated": _hits(gate_ranks),
+    for name in frozen_ranks:
+        base_ranks, base_intervals, _ = frozen_ranks[name]["ungated"]
+        gate_ranks, gate_intervals, n = frozen_ranks[name]["rna_gated"]
+        arms[name] = {"ungated": _hits(base_ranks, base_intervals, positives),
+                      "rna_gated": _hits(gate_ranks, gate_intervals, positives),
                       "n_mutations_after_gate": n}
 
     report = {
@@ -69,7 +94,7 @@ def main() -> int:
         "n_mutations_total": int(c["mutation_id"].nunique()),
         "n_mutations_removed_unexpressed": len(removed_muts),
         "removed_mutation_ids": removed_muts,
-        "positives_removed": sorted(POS & set(removed_muts)),
+        "positives_removed": sorted(positives & set(removed_muts)),
         "arms": arms,
         "verdict": _verdict(arms),
     }
@@ -77,7 +102,9 @@ def main() -> int:
     print(f"RNA gate removed {len(removed_muts)}/{report['n_mutations_total']} unexpressed mutations "
           f"(positives removed: {report['positives_removed']})")
     for name, a in arms.items():
-        print(f"  [{name}] hits@20 {a['ungated']['hits_at_20']}/3 -> {a['rna_gated']['hits_at_20']}/3  "
+        print(f"  [{name}] nominal hits@20 "
+              f"{a['ungated']['hits_at_20_nominal_lexical_tiebreak']}/3 -> "
+              f"{a['rna_gated']['hits_at_20_nominal_lexical_tiebreak']}/3  "
               f"positive ranks {a['ungated']['positive_ranks']} -> {a['rna_gated']['positive_ranks']}")
     print(f"VERDICT: {report['verdict']}")
     return 0
@@ -87,13 +114,14 @@ def _verdict(arms) -> str:
     return (
         "EXPLORATORY, NOT a superiority claim. The gate is NON-TUNED (hardest biological boundary: TPM==0 "
         "AND zero mutant RNA reads; absence never vetoes; 0 positives removed). Effect is scorer-specific: "
-        "presentation-only MixMHCpred reaches 3/3 (MAP2 #26→EXACTLY #20), but the primary genuine-PRIME "
+        "presentation-only MixMHCpred reaches nominal 3/3 with lexical tie-breaking, but MAP2 is in an "
+        "exact-score tie spanning ranks 19–21, so guaranteed hits remain 2/3. The primary genuine-PRIME "
         "baseline stays 2/3 (ASPM #39→#29) and frozen Epicurus stays 1/3. The MixMHCpred 3/3 is FRAGILE and "
         "must not be reported as beating PRIME: (a) n=1 patient / 3 labels, post-hoc; (b) MAP2 sits on the "
         "exact #20 boundary; (c) upstream coverage is only 88.4% — the 17 uncovered eligible variants could "
         "add competitors that displace MAP2; (d) it is presentation-only, weaker than the PRIME baseline "
-        "which does NOT reach 3/3. Matched RNA confirms all 3 positives are transcribed ⇒ the residual wall "
-        "is conditional RANKING of EXPRESSED decoys, not expression. Real, principled, but not a win.")
+        "which does NOT reach 3/3. DYNC1H1 and ASPM have mutant RNA support; MAP2 has nonzero gene TPM but "
+        "zero observed mutant-allele RNA reads. Real, principled, but not a win.")
 
 
 if __name__ == "__main__":

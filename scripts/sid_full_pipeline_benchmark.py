@@ -158,7 +158,8 @@ def main() -> int:
             "multi_caller_timepoint_support": "COMPLETE_ON_GENERATED",
             "mixmhcpred_and_genuine_prime": "COMPLETE_ON_GENERATED",
             "hla_loh": "NOT_ASSESSED_FOR_SID",
-            "rna_vaf_and_mutant_reads": "NOT_ASSESSED_AT_THIS_BOUNDARY",
+            "rna_vaf_and_mutant_reads": "COMPLETE_ON_GENERATED_MATCHED_T2_BULK_RNA",
+            "longitudinal_rna_support": "COMPLETE_ON_GENERATED_PREDECISION_T0_T1_T2_BULK_AND_SINGLE_CELL",
         },
         "filter_effects_before_label_join": {
             "deterministic": {
@@ -250,7 +251,7 @@ def _markdown(r: dict) -> str:
         f"- Dynamic gate v1: removed **{effects['dynamic_v1']['candidate_rows_removed']:,}** rows "
         f"({100 * effects['dynamic_v1']['candidate_row_removal_fraction']:.1f}%) but "
         f"**{effects['dynamic_v1']['mutations_removed']} mutations**.",
-        f"- Product expression policy: excluded **{effects['product_v1_expression_evidence_policy']['candidate_rows_excluded']:,}** "
+        f"- Product RNA policy: excluded **{effects['product_v1_expression_evidence_policy']['candidate_rows_excluded']:,}** "
         f"rows; {effects['product_v1_expression_evidence_policy']['mutations_remaining']} mutations remained.",
         "",
         "## Recognized mutations in the selected top 20",
@@ -274,11 +275,13 @@ def _markdown(r: dict) -> str:
         "",
         "The deterministic gate has nothing impossible to remove in the generated pool. The dynamic gate "
         "removes low-scoring peptide×HLA routes but no whole mutations and does not change PRIME's "
-        "mutation-level top-20. The product evidence policy changes which second positive is recovered, "
-        "but the complete stack does not exceed PRIME's hit count.",
+        "mutation-level top-20. With the newly recovered matched T2 RNA counts, the legacy product policy "
+        "hard-excludes zero-mutant-read mutations and falls to 1/3. That policy is over-aggressive here: "
+        "MAP2 is experimentally recognized despite zero observed mutant-allele RNA reads.",
         "",
-        "HLA-LOH and candidate-level RNA mutant-read/RNA-VAF filters remain not evaluable for Sid at this "
-        "input boundary; they are not silently imputed.",
+        "Matched T2 RNA depth, mutant reads, and RNA VAF are now evaluated for every generated mutation. "
+        "Sid-specific HLA-LOH remains unavailable and is not silently imputed. A separate absence-safe RNA "
+        "gate is reported in sid_benchmark/rna_support_arm.json.",
     ])
     return "\n".join(lines) + "\n"
 
