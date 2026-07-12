@@ -5,6 +5,36 @@ read anywhere in the design, dev, or freeze of this task. This document is the b
 and tests implement it exactly. Any deviation must be recorded as an explicit "PROTOCOL CORRECTION" section
 here, committed separately, before it takes effect._
 
+## PROTOCOL CORRECTION 2 (recorded and committed BEFORE the runner reads any cohort data — audit fixes)
+
+Audit of the (unrun) runner surfaced leakage/serialization issues; fixed here before any data read:
+
+1. **No in-fold weight leakage.** Inner-OOF fold models are fit with weights recomputed on that fold's own
+   train subset (`balanced_weights(train.iloc[tr])`), never with weights derived from the full outer-train
+   (which would use validation-fold class totals).
+2. **τ from OUT-OF-FOLD scores, never in-sample.** Both (a) the outer-test application and (b) the final
+   full-DEV freeze calibrate τ on **patient-grouped OOF scores** for the selected (model, C, m); the full
+   model is then refit only to *score* the untouched target (outer-test / — for freeze — to serialize
+   coefficients). In-sample τ calibration (optimistic retention) is prohibited.
+3. **HGB is EVALUATION-ONLY and INELIGIBLE for the frozen payload.** A monotonic HGB cannot be serialized to
+   applyable JSON coefficients under this task's apply-only constraint, so it is reported as a *diagnostic*
+   (does a monotone tree ensemble beat the nonnegative logistic in nested LOSO?) but is **excluded from
+   `inner_select`'s selectable/freezable set** — the deployable recipe space is **{NULL, nonnegative-
+   logistic(C-grid)} × m**. This prevents freezing an unusable payload. (If a future task needs trees, it
+   must first commit deterministic tree serialization + an apply-equivalence test.)
+4. **Aggregate CP eligibility is enforced.** §5.iii is applied to BOTH the pooled DEV aggregate
+   (Σ n_pos, Σ pos_removed over all outer-test folds) AND the IMPROVE outer-test stratum: both CP-95%-LB
+   retention values must be ≥ 0.95 and both are recorded.
+5. **Deployment recipe is chosen by the SAME preregistered `inner_select` run once on ALL DEV** (not a
+   post-hoc majority vote across outer folds); the full-DEV candidate table is recorded, then τ is
+   OOF-calibrated and the model refit on all DEV for the payload.
+6. **Provenance.** The runner records the git commit, SHA-256 of every data file actually read, config +
+   model-payload SHA-256, sklearn/scipy versions, and a cross-`PYTHONHASHSEED` reproducibility check
+   (identical frozen SHA in a second process). Per-fold **full inner candidate tables** are stored in JSON.
+7. **`fit_nnlogistic` fails closed.** If the optimizer does not converge or returns non-finite parameters, it
+   falls back to a constant keep-score (zero coefficients) ⇒ the gate removes nothing (KEEP-all), never
+   garbage removals.
+
 ## PROTOCOL CORRECTION 1 (recorded and committed BEFORE any code/experiment — supersedes §3.4, §3.3, §4, §5)
 
 **Fatal flaw fixed.** Protecting the *full* original PRIME top-20 as an unremovable safety lane forces the
