@@ -837,12 +837,15 @@ def _adjudicate(hudson_rows, vafs_idx, pv_genes, cat_by_id) -> dict:
     map2 = [v for v in vafs_idx.values() if v["gene"] == "MAP2" and protein_fs_position(v["protein_change"])]
     labels = sorted({f"{v['variant_id']}({v['protein_change']})" for v in map2})
     out[("MAP2", "G868FS")] = (
-        f"MAP2 frameshift (Hudson label p.GYCVFNKYTV868fs, recognized May) maps by residue-868 to a "
-        f"site MAP2 frameshift; the site carries two frameshift annotations {labels} 4bp apart "
-        f"(caller-dependent 867fs vs 868fs of one event), both called by DRAGEN/Sarek/oncoanalyser and "
-        f"BOTH absent from the pVACtools 2025 candidate universe. Lost at candidate generation. The prior "
-        f"'low-TPM expression-filter drop' attribution is not confirmable from these files (it is simply "
-        f"absent from the pVACtools output).")
+        f"MAP2 frameshift (Hudson label p.GYCVFNKYTV868fs, recognized May): the site carries two "
+        f"overlapping frameshift annotations {labels} 4bp apart. Whether these are alternate representations "
+        f"of one event or distinct overlapping deletions cannot be resolved from the public tables. The "
+        f"vaccine (JLF V1/V2/V3) + ELISPOT-strong record is on MAP2-chr2-209694768 (p.Leu867fs); "
+        f"the Hudson '868fs' label position-matches MAP2-chr2-209694772 (p.Gly868fs, no vaccine/experiments). "
+        f"The frameshift neo-peptide GYCVFNKYTV is not present in either page's blocks, so sequence cannot "
+        f"disambiguate. BOTH are called by DRAGEN/Sarek/oncoanalyser and BOTH are absent from the pVACtools "
+        f"2025 candidate universe -> lost at candidate generation. The prior 'low-TPM expression-filter drop' "
+        f"attribution is not confirmable from these files (MAP2 is simply absent from the pVACtools output).")
     return out
 
 
