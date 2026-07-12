@@ -1,0 +1,123 @@
+{
+  "cohort": "miller_ipv",
+  "patient_id": "Hu_287",
+  "tranche": "T1",
+  "isolation": "LOCKED_TEST: labels define the metric only; never used for HLA/expr/calling/generation/ranking",
+  "tool_versions": {
+    "fasterq-dump": "fasterq-dump : 3.4.1",
+    "bwa": "Program: bwa (alignment via Burrows-Wheeler transformation)",
+    "samtools": "samtools 1.24",
+    "bcftools": "bcftools 1.24",
+    "salmon": "salmon 2.3.3",
+    "PRIME": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/tools/PRIME/PRIME",
+    "MixMHCpred": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/tools/MixMHCpred/MixMHCpred"
+  },
+  "references": [
+    {
+      "name": "GRCh38_primary_assembly",
+      "purpose": "WES alignment + somatic calling",
+      "dest": "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+      "acquire": "curl -L https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz | gunzip > <dest>; bwa index <dest>; samtools faidx <dest>",
+      "present": false
+    },
+    {
+      "name": "GENCODE_v44_transcripts",
+      "purpose": "RNA quantification (salmon index)",
+      "dest": "data/raw/refs/gencode/gencode.v44.transcripts.fa",
+      "acquire": "curl -L https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.transcripts.fa.gz | gunzip > <dest>; salmon index -t <dest> -i data/raw/refs/gencode/salmon_index -k 31",
+      "present": false
+    },
+    {
+      "name": "VEP_cache_GRCh38",
+      "purpose": "variant annotation for mutanome enumeration (pVACtools)",
+      "dest": "data/raw/refs/vep/homo_sapiens",
+      "acquire": "curl -L https://ftp.ensembl.org/pub/release-110/variation/indexed_vep_cache/homo_sapiens_vep_110_GRCh38.tar.gz | tar xz -C data/raw/refs/vep",
+      "present": false
+    },
+    {
+      "name": "IMGT_HLA_dna",
+      "purpose": "class-I HLA typing (OptiType/arcasHLA reference)",
+      "dest": "data/raw/refs/hla/hla_reference_dna.fasta",
+      "acquire": "OptiType ships hla_reference_dna.fasta; arcasHLA: 'arcasHLA reference --version latest'",
+      "present": false
+    }
+  ],
+  "reconstruction_stages": [
+    {
+      "stage": "sra_to_fastq",
+      "references": [],
+      "produces": "paired FASTQ per run",
+      "status": "RUNNABLE",
+      "resolved_tools": {
+        "fasterq-dump": "/opt/homebrew/bin/fasterq-dump"
+      }
+    },
+    {
+      "stage": "hla_typing_classI",
+      "references": [
+        "IMGT/HLA DNA reference (hla_reference_dna.fasta)"
+      ],
+      "produces": "4-digit class-I HLA (A/B/C) from normal exome \u2014 REQUIRED for candidate-HLA pairing",
+      "status": "NOT_EVALUABLE",
+      "reason": "missing tool(s): need [OptiType OR arcasHLA OR hla-la] on PATH",
+      "install_hint": "conda install -c bioconda optitype razers3   # or: conda install -c bioconda arcas-hla"
+    },
+    {
+      "stage": "wes_alignment",
+      "references": [
+        "GRCh38 primary assembly FASTA + .fai + BWA index"
+      ],
+      "produces": "coordinate-sorted tumor & normal BAM",
+      "status": "RUNNABLE",
+      "resolved_tools": {
+        "bwa": "/opt/homebrew/bin/bwa",
+        "samtools": "/opt/homebrew/bin/samtools"
+      }
+    },
+    {
+      "stage": "somatic_calling",
+      "references": [
+        "GRCh38 FASTA",
+        "germline resource + PoN (Mutect2)"
+      ],
+      "produces": "somatic SNV/indel VCF with tumor VAF + depth",
+      "caveat": "bcftools alone is NOT a valid somatic caller (no tumor-vs-normal model); requires Mutect2 (gatk4) or Strelka2",
+      "status": "NOT_EVALUABLE",
+      "reason": "missing tool(s): need [gatk OR strelka] on PATH",
+      "install_hint": "conda install -c bioconda gatk4   # Mutect2 tumor-vs-normal; or bioconda strelka"
+    },
+    {
+      "stage": "rna_quant",
+      "references": [
+        "GENCODE transcriptome FASTA + salmon/kallisto index"
+      ],
+      "produces": "per-gene TPM + mutant-allele RNA evidence",
+      "status": "RUNNABLE",
+      "resolved_tools": {
+        "salmon": "/opt/homebrew/bin/salmon"
+      }
+    },
+    {
+      "stage": "mutanome_enumeration",
+      "references": [
+        "GRCh38 + GENCODE annotation + Ensembl VEP cache"
+      ],
+      "produces": "full class-I 8-11mer candidate universe (the SHARED denominator for both arms)",
+      "status": "NOT_EVALUABLE",
+      "reason": "missing tool(s): need [pvacseq OR pvactools] on PATH",
+      "install_hint": "pip install pvactools && conda install -c bioconda ensembl-vep   # + VEP cache"
+    },
+    {
+      "stage": "scoring_prime_epicurus",
+      "references": [
+        "genuine PRIME 2.1 + MixMHCpred 3.0 (gitignored local)",
+        "configs/frozen/epicurus_v0_1.json",
+        "configs/frozen/expression_policy_v1.json"
+      ],
+      "produces": "genuine PRIME AND frozen Epicurus ranks over the IDENTICAL candidate universe",
+      "status": "NOT_EVALUABLE",
+      "reason": "missing tool(s): need [PRIME OR MixMHCpred] on PATH"
+    }
+  ],
+  "note": "PRIME/MixMHCpred binaries are present on disk (gitignored) but scoring is upstream-blocked until the candidate universe is re-enumerated. HLA typing, somatic calling, and mutanome enumeration are the hard blockers on this toolchain; expression via salmon is reachable once the GENCODE index is built. No released processed Hu_287 VCF/TPM/HLA exists (web 2026-07-12)."
+}
