@@ -14,3 +14,6 @@ models/
 # RTTP is DUA-controlled patient data — keep patient-specific results (peptides, HLA, expression,
 # ranked neoantigen lists) OUT of version control. Only code + a scrubbed provenance manifest are tracked.
 artifacts/milestone_7_decision/rttp_sr24/
+
+# pool-size sensitivity: raw per-candidate snapshots embed genuine PRIME %rank (non-redistributable)
+artifacts/milestone_7_decision/pool_size_sensitivity/base_*.csv
