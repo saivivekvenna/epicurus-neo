@@ -26,7 +26,8 @@ Public osteosarc / Sid. Complete label-blind universe = **all 200 unique `varian
 `data/raw/osteosarc/site_cache/variant_vafs_long.tsv` (longitudinal, multi-pipeline). **Consequence
 eligibility, declared BEFORE any label join:** a variant is class-I-eligible iff its consequence ∈
 {missense, frameshift, stop_gained, inframe_deletion/insertion/indel} AND it has somatic tumor read
-support (max tumor `alt_reads` > 0) ⇒ **147 eligible** variants (128 missense + 12 fs + 7 stop + indels;
+support (max tumor `alt_reads` > 0) ⇒ **147 eligible** variants (127 missense + 10 frameshift + 7
+stop-gain + 3 in-frame deletions;
 excludes synonymous/intron/splice/UTR/blank). All 3 exact recognized mutations are eligible: ASPM
 `chr1:197102716`, DYNC1H1 `chr14:101980529`, and MAP2 `chr2:209694772`.
 

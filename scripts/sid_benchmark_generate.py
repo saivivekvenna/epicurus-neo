@@ -27,6 +27,7 @@ import pandas as pd
 
 from event_b.lossless_peptide_generation import EnsemblClient, generate_variant_candidates, read_hla_panel
 from event_b.prime_adapter import PRIME_COMMIT, score_prime
+from event_b.prime_transfer import score_with_frozen
 from event_b.sid_benchmark import (
     assert_generation_label_blind,
     eligible_universe_ids,
@@ -37,9 +38,17 @@ from event_b.sid_benchmark import (
 RAW = Path("data/raw/osteosarc")
 CACHE_DIR = RAW / "ensembl_cache"
 PVAC_PATH = RAW / "pvactools_all_epitopes.tsv"
+RSEM_PATH = RAW / "rsem.2025.01.genes.results"
 ART = Path("artifacts/milestone_7_decision/sid_benchmark")
 K = 20
 SUPPORTED = {"missense_variant": "missense", "frameshift_variant": "frameshift"}
+
+
+def _expression_by_ensg() -> dict[str, float]:
+    """Tumour RNA expression keyed by stable Ensembl gene id (version suffix removed)."""
+    rsem = pd.read_csv(RSEM_PATH, sep="\t")
+    ensg = rsem["gene_id"].astype(str).str.split(".").str[0]
+    return dict(zip(ensg, pd.to_numeric(rsem["TPM"], errors="coerce"), strict=False))
 
 
 def _variant_rows(u: pd.DataFrame) -> tuple[list[dict], list[dict]]:
@@ -67,6 +76,7 @@ def main() -> int:
     elig_ids = eligible_universe_ids(u)
     supported, unsupported = _variant_rows(u)
     hla_panel = read_hla_panel(PVAC_PATH)
+    expression = _expression_by_ensg()
     client = EnsemblClient(CACHE_DIR, offline=args.offline)
 
     per_variant, all_candidates = [], []
@@ -77,7 +87,9 @@ def main() -> int:
             cand = out["candidates"]
             rec.update(status="ok", n_windows=out["provenance"]["n_windows"],
                        n_unique_peptides=out["provenance"]["n_unique_peptides"],
-                       n_peptide_hla=len(cand), transcript_id=out["provenance"]["transcript_id"])
+                       n_peptide_hla=len(cand), transcript_id=out["provenance"]["transcript_id"],
+                       gene_id=out["provenance"]["gene_id"])
+            cand["expression_tpm"] = expression.get(str(out["provenance"]["gene_id"]).split(".")[0], np.nan)
             all_candidates.append(cand)
         except Exception as e:  # noqa: BLE001 — record every failure, never silently exclude
             rec.update(status="FAILED", reason=f"{type(e).__name__}: {str(e)[:160]}")
@@ -109,6 +121,14 @@ def main() -> int:
         # arms: presentation-only MixMHCpred (binding-first) and genuine PRIME (lower rank = better)
         cand["arm_mixmhcpred"] = -cand["mixmhcpred_rank"]
         cand["arm_genuine_prime"] = -cand["prime_rank"]
+        # Frozen Epicurus v0.1: genuine PRIME + presentation + tumour RNA, applied unchanged.
+        frozen_input = pd.DataFrame({
+            "patient_id": cand["patient_id"],
+            "prime": cand["prime_rank"],
+            "el": cand["mixmhcpred_rank"],
+            "expr": cand["expression_tpm"],
+        })
+        cand["arm_frozen_epicurus_v0_1"] = score_with_frozen(frozen_input)
 
     # ---- JOIN EXACT labels AFTER generation+scoring is frozen ----
     positives = hudson_positive_variant_ids(u)  # exactly the 3 IDs present in the universe
@@ -127,9 +147,10 @@ def main() -> int:
               "arms": {}}
 
     if len(cand):
-        for arm, col, sc in [("presentation_only_mixmhcpred", "arm_mixmhcpred", "mixmhcpred_rank"),
-                             ("genuine_prime", "arm_genuine_prime", "prime_rank")]:
-            ranked = cand.rename(columns={"mutation_id": "variant_id"})[["variant_id", col, sc]].rename(
+        for arm, col in [("presentation_only_mixmhcpred", "arm_mixmhcpred"),
+                         ("genuine_prime", "arm_genuine_prime"),
+                         ("frozen_epicurus_v0_1", "arm_frozen_epicurus_v0_1")]:
+            ranked = cand.rename(columns={"mutation_id": "variant_id"})[["variant_id", col]].rename(
                 columns={col: "score"})
             m = _mutation_top(ranked, positives, K)
             report["arms"][arm] = m
@@ -139,6 +160,7 @@ def main() -> int:
     pd.DataFrame(per_variant).to_csv(ART / "per_variant.csv", index=False)
     if len(cand):
         _write_top20(cand, positives)
+        cand.to_csv(ART / "scored_candidates.csv.gz", index=False, compression="gzip")
     (ART / "REPORT.md").write_text(_md(report))
     print(json.dumps({k: report[k] for k in ["universe", "generation", "coverage_guard"]}, indent=2, default=str))
     for arm, m in report.get("arms", {}).items():
@@ -181,18 +203,30 @@ def _stage_of_loss(u, per_variant, cand, positives) -> dict:
 
 
 def _write_top20(cand, positives):
-    best = cand.sort_values("mixmhcpred_rank", kind="mergesort").drop_duplicates("mutation_id", keep="first")
-    best = best.assign(is_recognized=best["mutation_id"].isin(positives)).head(40)
-    best[["mutation_id", "gene_symbol", "mutant_peptide", "hla_allele", "mixmhcpred_rank", "prime_rank",
-          "is_recognized"]].to_csv(ART / "top20.csv", index=False)
+    rows = []
+    for arm, score_col, ascending in [
+        ("presentation_only_mixmhcpred", "mixmhcpred_rank", True),
+        ("genuine_prime", "prime_rank", True),
+        ("frozen_epicurus_v0_1", "arm_frozen_epicurus_v0_1", False),
+    ]:
+        best = (cand.dropna(subset=[score_col]).sort_values(score_col, ascending=ascending, kind="mergesort")
+                .drop_duplicates("mutation_id", keep="first").head(K).copy())
+        best["arm"] = arm
+        best["rank"] = np.arange(1, len(best) + 1)
+        best["is_recognized"] = best["mutation_id"].isin(positives)
+        rows.append(best)
+    pd.concat(rows, ignore_index=True)[
+        ["arm", "rank", "mutation_id", "gene_symbol", "mutant_peptide", "hla_allele",
+         "mixmhcpred_rank", "prime_rank", "expression_tpm", "is_recognized"]
+    ].to_csv(ART / "top20.csv", index=False)
 
 
 def _md(r) -> str:
     L = [f"# Sid end-to-end benchmark — label-blind generation\n\n`{r['command']}` · mode {r['mode']} · "
          f"PRIME `{r['prime_commit'][:10]}`\n",
          "_Post-hoc n=1 patient / 3 recognized positives — descriptive only. Generation is over the "
-         "COMPLETE label-blind eligible universe (guard-enforced); the 3 exact labels are joined only "
-         "after generation+scoring are frozen._\n"]
+         "complete label-blind eligible INPUT universe; output coverage is guard-measured and incomplete. "
+         "The 3 exact labels are joined only after generation+scoring are frozen._\n"]
     u, g = r["universe"], r["generation"]
     L.append(f"\n**Universe:** {u['total']} public → {u['eligible']} eligible → "
              f"{u['supported_missense_frameshift']} generator-supported (missense/frameshift), "
@@ -201,6 +235,16 @@ def _md(r) -> str:
              f"{g['variants_unsupported']} unsupported → {g['n_peptide_hla_candidates']} peptide×HLA candidates.\n")
     L.append(f"**Coverage guard:** {r['coverage_guard'].get('guard')} "
              f"(coverage {r['coverage_guard'].get('coverage', r['coverage_guard'].get('generated_eligible_covered'))}).\n")
+    L.append("\n## Verdict\n")
+    L.append("- **Full all-consequence product claim: NOT_EVALUABLE.** Only 130/147 eligible mutations "
+             "produced candidates (88.4%); 10 consequence classes are unsupported and 7 supported "
+             "mutations failed transcript generation.")
+    L.append("- **Supported-scope, label-blind diagnostic:** all 3 recognized mutations reached scoring. "
+             "Genuine PRIME recovered 2/3 in its mutation-level top 20; frozen Epicurus v0.1 recovered "
+             "1/3. Therefore this run does **not** prove Epicurus reranking beats PRIME.")
+    L.append("- **Separate-boundary reference only:** the pre-existing 2025.01 pVAC+PRIME arm recovered "
+             "1/3, but it did not consume the same longitudinal 147-variant input and is not a matched "
+             "head-to-head competitor.")
     L.append("\n## Mutation-level recognized hits@20 (labels joined post-freeze)\n")
     L.append("| arm | hits@20 / 3 | recognized ranks (variant → rank) |")
     L.append("|---|--:|---|")
