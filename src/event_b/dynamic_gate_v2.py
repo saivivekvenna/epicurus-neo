@@ -137,7 +137,7 @@ def fit_risk_ensemble(train: pd.DataFrame, n: int = 12, seed: int = 0) -> RiskEn
 
 
 def counterfactual_reselect(frame: pd.DataFrame, ens: RiskEnsemble, *, max_budget: int = 8,
-                            conservative: bool = True) -> np.ndarray:
+                            conservative: bool = True, gain_margin: float = 0.0) -> np.ndarray:
     """Counterfactual top-20 replacement policy. For each patient, the current frozen-Epicurus top-20 are
     removal candidates and ranks 21..20+m are their replacements under UNCHANGED reranking. Remove the m
     lowest-q top-20 candidates ONLY while the replacements are expected to add more recognized hits than
@@ -164,8 +164,8 @@ def counterfactual_reselect(frame: pd.DataFrame, ens: RiskEnsemble, *, max_budge
                 gain = float(lcb[replaced].sum() - ucb[removed].sum())
             else:
                 gain = float(mean[replaced].sum() - mean[removed].sum())
-            if gain > 0:
-                best_m = m  # keep extending while net expected (conservative) gain stays positive
+            if gain > gain_margin:
+                best_m = m  # keep extending while net expected (conservative) gain clears the margin
             else:
                 break
         if best_m > 0:

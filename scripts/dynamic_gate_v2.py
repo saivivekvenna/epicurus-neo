@@ -102,6 +102,33 @@ def _inner_cv_select_budget(train: pd.DataFrame) -> float:
     return best_b
 
 
+def _calibrate_gain_margin(train: pd.DataFrame, alpha: float = 0.05) -> float:
+    """Smallest gain-margin whose inner patient-group-CV HARM rate <= alpha (distribution-light abstention
+    control). If the signal does not transfer, the required margin forces near-total abstention."""
+    pids = train["patient_id"].unique()
+    folds = {p: i % 3 for i, p in enumerate(sorted(pids))}
+    grid = [0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0]
+    best_margin, best_delta = grid[-1], -1e9
+    for margin in grid:
+        deltas = []
+        for fold in range(3):
+            tr = train[train["patient_id"].map(folds) != fold]
+            va = train[train["patient_id"].map(folds) == fold]
+            if va.empty or (tr["label"] == "POSITIVE").sum() == 0:
+                continue
+            ens = fit_risk_ensemble(tr, n=8)
+            ung = _ungated_hits(va)
+            keep = counterfactual_reselect(va, ens, max_budget=8, conservative=True, gain_margin=margin)
+            deltas.append(_delta(va, keep, ung))
+        if not deltas:
+            continue
+        d = np.concatenate(deltas)
+        harm_rate = float(np.mean(d < 0))
+        if harm_rate <= alpha and float(np.mean(d)) > best_delta:
+            best_delta, best_margin = float(np.mean(d)), margin
+    return best_margin
+
+
 def _deleak(train: pd.DataFrame, eval_frame: pd.DataFrame) -> pd.DataFrame:
     ep = {canonical_peptide(p) for p in eval_frame["mutant_peptide"].astype(str)} - {""}
     canon = train["mutant_peptide"].astype(str).map(canonical_peptide)
@@ -143,10 +170,14 @@ def run_loco() -> dict:
         ung = _ungated_hits(ev)
         keep_v2 = reselect(ev, rm.risk(ev), budget_frac=budget, threat_k=THREAT_K)
         d_v2 = _delta(ev, keep_v2, ung)
-        # counterfactual replacement policy (uncertainty-aware; auto-abstains)
+        # counterfactual replacement policy (uncertainty-aware)
         ens = fit_risk_ensemble(train)
         keep_cf = counterfactual_reselect(ev, ens, max_budget=8, conservative=True)
         d_cf = _delta(ev, keep_cf, ung)
+        # harm-calibrated counterfactual: pick the smallest gain-margin whose INNER-CV harm rate <= 5%
+        margin = _calibrate_gain_margin(train, alpha=0.05)
+        keep_cfc = counterfactual_reselect(ev, ens, max_budget=8, conservative=True, gain_margin=margin)
+        d_cfc = _delta(ev, keep_cfc, ung)
         # controls
         d_rand = np.mean([_delta(ev, _random_matched(ev, keep_v2, ung, seed=s), ung) for s in range(5)], axis=0)
         v1keep = apply_gate(ev, GateConfig()).__getitem__("dyn_gate_keep").to_numpy(bool)
@@ -168,6 +199,10 @@ def run_loco() -> dict:
             "v2_counterfactual_abstaining": {**_summ(d_cf),
                                              "candidates_removed": int((~keep_cf).sum()),
                                              "pos_retention": round(_pos_ret(ev, keep_cf), 4)},
+            "v2_counterfactual_harm_calibrated": {**_summ(d_cfc),
+                                                  "gain_margin": round(float(margin), 4),
+                                                  "candidates_removed": int((~keep_cfc).sum()),
+                                                  "pos_retention": round(_pos_ret(ev, keep_cfc), 4)},
             "control_random_matched_pool": _summ(d_rand),
             "baseline_v1_AND_gate": _summ(d_v1),
             "independent_histgbt_benchmark": INDEP_BENCHMARK.get(held),
@@ -201,10 +236,13 @@ _VERDICT = (
     "candidate only when replacement-q LCB > removed-q UCB) was SUPPOSED to auto-abstain when the signal is "
     "weak/OOD, but it did NOT — it removed 77/139/43 candidates and harmed IMPROVE/multimer. Reason: a "
     "bootstrap-logistic ensemble is OVER-CONFIDENT (LCB≈UCB), so the conservative gate collapses to the "
-    "mean and never abstains. The design is right but only as safe as its uncertainty calibration: genuine "
-    "OOD abstention needs conformal / distributional uncertainty, not bootstrap variance. With correct "
-    "abstention the best achievable here is to DO NOTHING (= ungated), because there is no transferable "
-    "signal to act on.\n\n"
+    "mean and never abstains. A HARM-CALIBRATED margin (smallest gain-margin whose inner-CV harm rate "
+    "≤ 5%) fixes this PARTLY: on Gartner and multimer it drives removals to 0 (Δ = 0.000 — correctly "
+    "abstaining, discarding the illusory Gartner +0.077 and avoiding multimer's −0.210), but on IMPROVE it "
+    "STILL harms (−0.082), because the harm structure itself is study-shifted — a margin calibrated on the "
+    "training studies under-controls harm on a held-out study. So genuine safety needs per-held-out OOD "
+    "abstention (feature/regime router), not a globally-calibrated margin. With correct abstention the best "
+    "achievable here is to DO NOTHING (= ungated); there is no transferable signal to act on.\n\n"
     "Five independent angles agree (this discordance/expression fixed-budget; the counterfactual; the "
     "independent HistGBT direct-utility; the independent sequence-only that collapsed OOD; the "
     "backfill/diversity probe): no source-invariant negative-risk signal exists among top ranks in the "
@@ -235,12 +273,12 @@ def main() -> int:
     print("Wrote dynamic_gate_v2.json + V2_REPORT.md")
     for held, e in loco.items():
         star = "*" if e["in_sample"] else ""
+        cc = e["v2_counterfactual_harm_calibrated"]
         print(f"  [{held}{star} len={e['mean_peptide_length']}] ung={e['ungated_hits@20_mean']} "
               f"v2fixedΔ={e['v2_fixed_budget']['mean_delta_hits@20']:+.3f} "
-              f"CF_abstainΔ={e['v2_counterfactual_abstaining']['mean_delta_hits@20']:+.3f} "
-              f"(CF removed {e['v2_counterfactual_abstaining']['candidates_removed']}) "
-              f"randmatchΔ={e['control_random_matched_pool']['mean_delta_hits@20']:+.3f}  "
-              f"v1Δ={e['baseline_v1_AND_gate']['mean_delta_hits@20']:+.3f}")
+              f"CFΔ={e['v2_counterfactual_abstaining']['mean_delta_hits@20']:+.3f}(rm{e['v2_counterfactual_abstaining']['candidates_removed']}) "
+              f"CF-harmcalΔ={cc['mean_delta_hits@20']:+.3f}(rm{cc['candidates_removed']}) "
+              f"randΔ={e['control_random_matched_pool']['mean_delta_hits@20']:+.3f}")
     return 0
 
 
@@ -254,19 +292,20 @@ def _report_md(r: dict) -> str:
     L.append("\n## Outer leave-one-study-out\n")
     L.append("`random-matched Δ` removes the SAME count at random from the threat zone — the decisive "
              "control. v2 must beat it or the 'gain' is pool reduction, not selection.\n")
-    L.append("| held-out | pep len | ungated | v2 fixed Δ | v2 counterfactual Δ (removed) | **random-matched Δ** | v1 AND Δ | indep HistGBT Δ |")
+    L.append("| held-out | pep len | ungated | v2 fixed Δ | CF Δ (rm) | CF harm-cal Δ (rm) | **random-matched Δ** | indep HistGBT Δ |")
     L.append("|---|--:|--:|--:|--:|--:|--:|--:|")
     for held, e in r["loco"].items():
         star = " ⚠️IS" if e["in_sample"] else ""
         v2 = e["v2_fixed_budget"]
         cf = e["v2_counterfactual_abstaining"]
+        cc = e["v2_counterfactual_harm_calibrated"]
         ib = e["independent_histgbt_benchmark"]
         ibd = f"{ib['delta']:+.3f}" if ib else "—"
         L.append(f"| {held}{star} | {e['mean_peptide_length']} | {e['ungated_hits@20_mean']} | "
                  f"{v2['mean_delta_hits@20']:+.3f} ({v2['improved']}/{v2['tied']}/{v2['harmed']}) | "
                  f"{cf['mean_delta_hits@20']:+.3f} ({cf['candidates_removed']}) | "
-                 f"**{e['control_random_matched_pool']['mean_delta_hits@20']:+.3f}** | "
-                 f"{e['baseline_v1_AND_gate']['mean_delta_hits@20']:+.3f} | {ibd} |")
+                 f"{cc['mean_delta_hits@20']:+.3f} ({cc['candidates_removed']}) | "
+                 f"**{e['control_random_matched_pool']['mean_delta_hits@20']:+.3f}** | {ibd} |")
     L.append("\n_⚠️IS = multimer, frozen-Epicurus in-sample. `random-matched Δ` removes the same count at "
              "random from the threat zone — if v2 ≈ this, the 'gain' is pool reduction, not selection._\n")
     L.append("\n## Budget Pareto (held-out; diagnostic — budget was fixed by inner CV)\n")
