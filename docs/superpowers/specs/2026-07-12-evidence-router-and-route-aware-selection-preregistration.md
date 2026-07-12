@@ -159,8 +159,10 @@ rankable candidates. The funnel (§6) reports these as `generated` and `valid` b
 `src/epicurus_neo/variant_union.py::union_variants` merges candidate/variant rows from multiple
 sources into one deduplicated frame:
 
-- **Identity key** (in priority order, never gene-only): `(chrom, pos, ref, alt)` if all present, else
-  exact normalized `protein_change`/`mutation_id`. If only a gene symbol is available, rows are **not**
+- **Identity key** (in priority order, never gene-only and always patient-scoped when a patient column
+  exists): `(patient_id, genome_build, chrom, pos, ref, alt)` if the genomic fields are present
+  (`genome_build` included when available), else `(patient_id, gene_symbol, exact normalized
+  protein_change/mutation_id)`. If only a gene symbol is available, rows are **not**
   merged (kept distinct) — a gene-only union is provably wrong (MAP2 and DYNC1H1 each carry two
   distinct coordinates; MAP2's two frameshift coordinates 4 bp apart are *distinct* keys and stay
   separate rows).
@@ -308,3 +310,8 @@ _(appended chronologically; the design is fixed above before any route-aware eva
   composes product.py's public API by import**, and product.py/gates.py/portfolio_selection.py are
   **neither edited nor committed** by this milestone. Behavior is identical to a thin product.py hook;
   only the file scope of the commit differs. Recorded here for transparency.
+- **D2 (union-key safety clarification, before implementation/results).** Every union identity is
+  patient-scoped when `patient_id` exists, and the non-coordinate fallback includes both gene and exact
+  protein/mutation identity. This prevents cross-patient hotspot merging and cross-gene `p.V600E`-style
+  collisions. It narrows the originally ambiguous phrase "exact protein/mutation key" without changing
+  any route or selection constant.
