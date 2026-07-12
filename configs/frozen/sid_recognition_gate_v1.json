@@ -4,7 +4,7 @@
   "stage": "1_non_sid_frozen",
   "frozen": {
     "arm": "core_deployable",
-    "C": 0.1,
+    "C": 0.5,
     "alpha": 0.1,
     "q": 1,
     "hits_clean": 88,
@@ -15,94 +15,200 @@
       "melanoma": 3.0
     },
     "worst_cohort": 2.0,
-    "matched_random_reserve_hits_clean": 82.3,
+    "matched_random_reserve_hits_clean": 82.15,
     "beats_random": true
   },
   "null_hits_clean": 80.0,
   "n_leaked_rows_quarantined": 731,
   "selected_on": "IMPROVE official partitions OOF, LEAKAGE-CLEAN only; matched-random; transport",
   "sid_never_consulted": true,
-  "declared_multiplicity_configs": 77,
-  "nested_cv_procedure": {
-    "nested_total_hits": 84,
-    "nested_null_hits": 80,
-    "nested_delta": 4,
-    "per_cohort_delta": {
-      "Basket": 1.0,
-      "bladder": 2.0,
-      "melanoma": 1.0
+  "declared_multiplicity_configs": 180,
+  "nested_cv_per_family": {
+    "core_deployable": {
+      "nested_total": 83,
+      "nested_null": 80,
+      "nested_delta": 3,
+      "per_cohort_delta": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "chosen_config_per_fold": [
+        {
+          "fold": 0,
+          "chosen": {
+            "arm": "core_deployable",
+            "C": 1.0,
+            "alpha": 0.1,
+            "q": 1
+          },
+          "outer_test_hits": 22,
+          "null_hits": 21,
+          "matched_random_hits": 21.2
+        },
+        {
+          "fold": 1,
+          "chosen": {
+            "arm": "core_deployable",
+            "C": 0.5,
+            "alpha": 0.0,
+            "q": 3
+          },
+          "outer_test_hits": 17,
+          "null_hits": 18,
+          "matched_random_hits": 15.1
+        },
+        {
+          "fold": 2,
+          "chosen": {
+            "arm": "core_deployable",
+            "C": 1.0,
+            "alpha": 0.5,
+            "q": 1
+          },
+          "outer_test_hits": 6,
+          "null_hits": 6,
+          "matched_random_hits": 5.3
+        },
+        {
+          "fold": 3,
+          "chosen": {
+            "arm": "core_deployable",
+            "C": 0.5,
+            "alpha": 0.1,
+            "q": 1
+          },
+          "outer_test_hits": 23,
+          "null_hits": 21,
+          "matched_random_hits": 21.15
+        },
+        {
+          "fold": 4,
+          "chosen": {
+            "arm": "core_deployable",
+            "C": 1.0,
+            "alpha": 0.2,
+            "q": 1
+          },
+          "outer_test_hits": 15,
+          "null_hits": 14,
+          "matched_random_hits": 14.25
+        }
+      ],
+      "nested_matched_random_total": 77.0,
+      "beats_nested_matched_random": true,
+      "paired_bootstrap_delta_vs_null": {
+        "mean_delta": 0.0429,
+        "ci95": [
+          -0.0429,
+          0.1286
+        ],
+        "p_gt_0": 0.8004,
+        "n_patients": 70,
+        "seed": 12345
+      },
+      "eligible": true
     },
-    "procedure_generalizes": true,
-    "chosen_config_per_fold": [
-      {
-        "fold": 0,
-        "chosen": {
-          "arm": "core_deployable",
-          "C": 1.0,
-          "alpha": 0.1,
-          "q": 1
-        },
-        "outer_test_hits": 22,
-        "null_hits": 21
+    "improve_rich_partial_bridge": {
+      "nested_total": 83,
+      "nested_null": 80,
+      "nested_delta": 3,
+      "per_cohort_delta": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
       },
-      {
-        "fold": 1,
-        "chosen": {
-          "arm": "core_deployable",
-          "C": 0.1,
-          "alpha": 0.0,
-          "q": 3
+      "chosen_config_per_fold": [
+        {
+          "fold": 0,
+          "chosen": {
+            "arm": "improve_rich_partial_bridge",
+            "C": 0.5,
+            "alpha": 0.1,
+            "q": 1
+          },
+          "outer_test_hits": 22,
+          "null_hits": 21,
+          "matched_random_hits": 21.2
         },
-        "outer_test_hits": 17,
-        "null_hits": 18
+        {
+          "fold": 1,
+          "chosen": {
+            "arm": "improve_rich_partial_bridge",
+            "C": 0.5,
+            "alpha": 0.0,
+            "q": 3
+          },
+          "outer_test_hits": 17,
+          "null_hits": 18,
+          "matched_random_hits": 15.1
+        },
+        {
+          "fold": 2,
+          "chosen": {
+            "arm": "improve_rich_partial_bridge",
+            "C": 0.5,
+            "alpha": 0.5,
+            "q": 3
+          },
+          "outer_test_hits": 6,
+          "null_hits": 6,
+          "matched_random_hits": 5.45
+        },
+        {
+          "fold": 3,
+          "chosen": {
+            "arm": "improve_rich_partial_bridge",
+            "C": 0.5,
+            "alpha": 0.3,
+            "q": 1
+          },
+          "outer_test_hits": 23,
+          "null_hits": 21,
+          "matched_random_hits": 21.25
+        },
+        {
+          "fold": 4,
+          "chosen": {
+            "arm": "improve_rich_partial_bridge",
+            "C": 0.5,
+            "alpha": 0.2,
+            "q": 1
+          },
+          "outer_test_hits": 15,
+          "null_hits": 14,
+          "matched_random_hits": 14.25
+        }
+      ],
+      "nested_matched_random_total": 77.25,
+      "beats_nested_matched_random": true,
+      "paired_bootstrap_delta_vs_null": {
+        "mean_delta": 0.0429,
+        "ci95": [
+          -0.0429,
+          0.1429
+        ],
+        "p_gt_0": 0.7726,
+        "n_patients": 70,
+        "seed": 12345
       },
-      {
-        "fold": 2,
-        "chosen": {
-          "arm": "core_deployable",
-          "C": 0.1,
-          "alpha": 0.1,
-          "q": 1
-        },
-        "outer_test_hits": 7,
-        "null_hits": 6
-      },
-      {
-        "fold": 3,
-        "chosen": {
-          "arm": "core_deployable",
-          "C": 0.1,
-          "alpha": 0.1,
-          "q": 1
-        },
-        "outer_test_hits": 23,
-        "null_hits": 21
-      },
-      {
-        "fold": 4,
-        "chosen": {
-          "arm": "core_deployable",
-          "C": 1.0,
-          "alpha": 0.2,
-          "q": 1
-        },
-        "outer_test_hits": 15,
-        "null_hits": 14
-      }
-    ]
+      "eligible": true
+    }
   },
+  "selected_family_by_nested_evidence": "core_deployable",
+  "deployment_params_by": "full non-Sid CV within the selected family only",
   "external_transport_gartner_multimer": {
     "gartner": {
       "base": 18,
       "gated": 18,
       "delta": 0,
-      "note": "VAF/RNA neutral where absent"
+      "note": "ANCHORED-COMPONENT-ONLY: q reserve DISABLED externally (no comparable mutant-RNA signal); VAF/RNA features neutral where absent. Not the full frozen policy."
     },
     "multimer": {
       "base": 21,
       "gated": 22,
       "delta": 1,
-      "note": "VAF/RNA neutral where absent"
+      "note": "ANCHORED-COMPONENT-ONLY: q reserve DISABLED externally (no comparable mutant-RNA signal); VAF/RNA features neutral where absent. Not the full frozen policy."
     }
   },
   "improve_to_sid_feature_map": {
@@ -113,6 +219,6 @@
     "rna_af": "variant_vafs_long tumor-RNA VAF",
     "CelPrev": "MISSING->neutral"
   },
-  "limitations": "bootstrap patient CI on +hits spans 0 (underpowered, n=70) -> reported not gated; Sid previously inspected -> Stage-2 is exploratory confirmation, not pristine validation.",
-  "sha256": "d69c498d04abe9ef4d44cf8731545bb2a1448a8943d1508b6860a6dabb96afd1"
+  "limitations": "patient-level paired bootstrap CI for the nested per-family delta is COMPUTED and reported (see nested_cv_per_family[*].paired_bootstrap_delta_vs_null; fixed seed 12345), NOT gated. Stage 1 was NARROWED to the exact runner vs the original contract (see CONTRACT.md 'STAGE-1 v2 PROTOCOL CORRECTION'): PRIME base only (MixMHCpred base deferred), 2 anchored full-feature arms (not the physchem/expression/absence families), 5 IMPROVE official partitions (Gartner/multimer are an ANCHORED-COMPONENT-ONLY external transport check, q disabled there). Sid previously inspected -> Stage 2 is exploratory confirmation, not pristine validation.",
+  "sha256": "f578b1662a4209dc8eb87fb4f30b3583572b3b5507fa85c58e59820778f310b8"
 }

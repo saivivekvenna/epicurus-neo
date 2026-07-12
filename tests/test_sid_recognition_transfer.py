@@ -50,3 +50,44 @@ def test_reserve_never_uses_zero_rna_evidence():
 def test_no_sid_files_in_allowed_set():
     for f in mod.ALLOWED_DATA_FILES:
         assert "osteosarc" not in f and "sid" not in f.lower() and "variant_vafs" not in f
+
+
+def test_full_pool_mask_leaked_positive_does_not_count_but_still_competes():
+    # one patient: rank1 positive is LEAKED (masked out of hits); a clean positive sits at rank 2.
+    df = pd.DataFrame({
+        "patient_id": ["p"] * 3,
+        "prime": [0.1, 0.2, 9.0], "rna_af": [0.0, 0.0, 0.0],
+        "label": ["POSITIVE", "POSITIVE", "TESTED_NEGATIVE"]})
+    pp = mod._pct(df, "prime", False)
+    clean = np.array([False, True, True])  # rank-1 positive is leaked
+    hits = mod.config_hits(df, pp, np.zeros(3), 0.0, 0, clean)
+    # the leaked rank-1 positive still occupies a slot (pool not shrunk) but contributes 0; clean rank-2
+    # positive counts -> exactly 1 clean hit
+    assert hits["p"] == 1.0
+
+
+def test_null_included_and_tie_break_prefers_null():
+    # equal hits -> tiebreak_key must rank the null (alpha=0,q=0) strictly before any acting config
+    kn = mod.tiebreak_key(("core_deployable", 1.0, 0.0, 0), 5)
+    ka = mod.tiebreak_key(("core_deployable", 1.0, 0.10, 1), 5)
+    kq = mod.tiebreak_key(("core_deployable", 1.0, 0.0, 1), 5)
+    assert kn < ka and kn < kq                 # null preferred over acting configs at equal hits
+    # lower q preferred, then lower alpha, then simpler (core) arm
+    assert mod.tiebreak_key(("core_deployable", 1.0, 0.10, 1), 5) < mod.tiebreak_key(("core_deployable", 1.0, 0.10, 2), 5)
+    assert mod.tiebreak_key(("core_deployable", 1.0, 0.10, 1), 5) < mod.tiebreak_key(("improve_rich_partial_bridge", 1.0, 0.10, 1), 5)
+
+
+def test_inner_leaked_mask_independent_of_outer_test():
+    # a peptide shared ONLY between an inner-validation partition and the OUTER-TEST partition must NOT be
+    # flagged leaked when the inner mask is recomputed on the outer-train subset (outer-test excluded).
+    df = pd.DataFrame({
+        "patient_id": ["a", "b", "c"], "partition": [0, 1, 2],
+        "mut_peptide": ["SHAREDPEP", "OTHERPEPT", "SHAREDPEP"],  # shared between p0 (inner) and p2 (outer-test)
+        "label": ["POSITIVE", "TESTED_NEGATIVE", "POSITIVE"],
+        "prime": [0.1, 0.2, 0.3], "rna_af": [0.0, 0.0, 0.0]})
+    outer_test = 2
+    inner = df[df["partition"] != outer_test].reset_index(drop=True)  # partitions 0,1
+    m = mod.leaked_mask(inner)  # recomputed within outer-train only
+    # 'SHAREDPEP' in inner appears once (p0); its only cross-partition match is the OUTER-TEST copy, which
+    # is absent from `inner` -> so within inner it is NOT leaked.
+    assert not m.any()

@@ -38,6 +38,30 @@ own within-patient percentile (genuine PRIME as primary; MixMHCpred as the prese
 and `residual` = a recognition model over the comparable NON-presentation features (physchem, expression).
 `α=0` reproduces the base exactly (no-op). The base ranker is never replaced; the gate only reselects.
 
+## 3a. STAGE-1 v2 PROTOCOL CORRECTION (registered before rerun; narrows §1–§6 to the exact runner)
+
+The original §1–§6 below (preserved as audit history) over-promised relative to what Stage 1 implements.
+To keep the contract truthful, Stage 1 is NARROWED as follows; anything excluded here is deferred, not
+silently dropped:
+- **Base:** genuine PRIME only. The MixMHCpred base is DEFERRED (EL↔MixMHCpred cross-cohort comparability
+  is unresolved; it would double the multiplicity without a validated bridge).
+- **Arms (2, both anchored full-feature logistics — NOT residual-over-non-presentation):**
+  `core_deployable = {PRIME, EL, Expression, VarAlFreq}` and
+  `improve_rich_partial_bridge = {PRIME, EL, Expression, rna_var, rna_af, ValMutRNACoef, VarAlFreq, CelPrev}`,
+  each optionally combined with a q-slot mutant-RNA(`rna_af`) reserve. The physchem/expression/absence-gate
+  families (2–5) and a presentation-EXCLUDED residual are DEFERRED — the anchored form already contains the
+  presentation anchor by construction (`score = prime_pct + α·OOF_pred_pct`).
+- **Selection data + splits:** 5 IMPROVE official patient-disjoint Partitions (per-cancer-cohort transport =
+  bladder/melanoma/Basket). This is NOT a 3-study leave-one-study-out over IMPROVE/multimer/Gartner; Gartner
+  and multimer appear ONLY as an **anchored-component-only** external transport check (the q reserve is
+  disabled externally — no comparable mutant-RNA/VAF signal there).
+- **Statistics:** a patient-level paired bootstrap CI for the nested per-family Δ vs null is COMPUTED and
+  reported (fixed seed 12345); it is a disclosed figure, never a gate. A nested matched-random reserve
+  comparator is reported for any q>0.
+The §6 freeze rule (family eligibility by nested outer evidence → deployment params by full-CV within the
+selected family; null included with conservative tie-break; leakage-clean; transport; beats matched-random)
+is implemented exactly.
+
 ## 3b. Two-stage protocol with a hard pre-Sid checkpoint
 
 **Stage 1 (non-Sid only):** select and FREEZE one arm/null using only IMPROVE (+ multimer/Gartner for the
@@ -100,12 +124,21 @@ q-reserve/combined policy is applied on the held-out score — so the reported t
 patient-grouped CV on the outer-train selects C/α/q for the nested-CV validation number (reported to show
 the SELECTION PROCEDURE generalizes and is not overfit to the multiplicity).
 
-Freeze rule (registered; NO significance/CI gate): among ALL declared configs, select the one with the
-largest nested-outer hits total that satisfies **(i)** positive Δ vs the null (α=0, q=0), **(ii)** no
-catastrophic regression (worst cancer-cohort Δ ≥ −0.10), **(iii)** transport (every cancer-cohort Δ ≥ 0),
-and **(iv)** beats the matched-random reserve control (mean over ≥20 seeds). If no config qualifies, freeze
-the null. The bootstrap patient CI is REPORTED as a disclosed limitation, never used as a gate. Serialize
-the winner + SHA-256 to `configs/frozen/sid_recognition_gate_v1.json` BEFORE touching Sid.
+Freeze rule (registered; NO significance/CI gate), two steps:
+- **Family eligibility by nested outer evidence.** Run the nested procedure SEPARATELY per family/arm; the
+  per-config space INCLUDES the null (α=0, q=0), and inner selection uses a conservative deterministic
+  tie-break (prefer null, then lower q, lower α, simpler core arm, lower C) with the inner leakage mask
+  RECOMPUTED within the outer-train subset (so outer-test peptide membership cannot leak into inner
+  selection). A family is eligible iff its nested-outer total > its nested-null AND transports (every
+  cancer-cohort Δ ≥ 0, worst ≥ −0.10). Choose the family with the largest nested total (tie → simpler core).
+- **Deployment params by full non-Sid CV within the SELECTED family only.** Among that family's configs,
+  pick the one with the largest leakage-clean full-CV hits satisfying positive Δ, transport, no
+  catastrophic regression, and beats matched-random (≥20 seeds), with the same conservative tie-break. A
+  joint pass never authorizes freezing a config from a non-selected family. If no family is eligible,
+  freeze the null.
+The bootstrap patient CI is REPORTED as a disclosed limitation, never a gate. Serialize the winner +
+SHA-256 to `configs/frozen/sid_recognition_gate_v1.json` BEFORE touching Sid. Grid = §4 exactly
+(α∈{0,.1,.2,.25,.3,.5}, C∈{.5,1,2}, q∈{0,1,2,3,4}).
 
 ## 7. The single Sid evaluation
 
