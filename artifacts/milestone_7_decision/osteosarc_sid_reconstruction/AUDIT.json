@@ -1,0 +1,403 @@
+{
+  "role": "PUBLIC recognition-record reconstruction (evidence-graded ledger). Not a model, not a gate. Supersedes dd3efd1 (assumed-negatives + single-positive AUROC).",
+  "invariants": {
+    "variants": 182,
+    "vaccine_targeted": 44,
+    "site_elispot_positive": 14,
+    "all_passed": true
+  },
+  "summary": {
+    "unique_variants": 182,
+    "vaccine_targeted_variants": 44,
+    "site_elispot_positive_variants": 14,
+    "peptide_blocks": 94,
+    "assay_ledger_rows": 128,
+    "site_experiment_rows_tested": 68,
+    "individual_peptide_tests": 0,
+    "long_peptide_tests": 29,
+    "pool_tests": 39,
+    "hudson_mutation_tcr_rows": 15,
+    "hudson_distinct_timepoint_mutation_tests": 5,
+    "positives_strong": 7,
+    "positives_weak": 15,
+    "positives_unqualified": 10,
+    "negatives_total": 36,
+    "defensible_negatives_individual_or_longpeptide": 12,
+    "pool_negatives_not_perpeptide_defensible": 24,
+    "resolved_nonpool_rows": 29,
+    "resolved_nonpool_positive_rows": 17,
+    "resolved_nonpool_negative_rows": 12,
+    "resolved_unique_peptide_units": 15,
+    "resolved_unique_positive_units": 13,
+    "resolved_unique_negative_units": 10,
+    "resolved_unique_contradictory_units": 8,
+    "ambiguous": 0,
+    "untested_vaccine_peptide_blocks": 60,
+    "contradictions": 10,
+    "hudson_recognized_genes": [
+      "ASPM",
+      "DYNC1H1",
+      "MAP2"
+    ],
+    "site_vs_hudson_overlap_variants": [
+      "DYNC1H1-chr14-101980529"
+    ],
+    "recognized_first_failure_stage": {
+      "ASPM": "pvactools_2025_candidate",
+      "DYNC1H1": "reached_shortlist",
+      "MAP2": "pvactools_2025_candidate"
+    }
+  },
+  "contradictions": [
+    {
+      "variant_id": "BTD-chr3-15645183",
+      "peptide": "RPTLSKELYALGVVDGLHTVHGT",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE_STRONG"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L1",
+          "result": "Negative",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Positive (Strong)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "EPG5-chr18-45925851",
+      "peptide": "KELPLYLWQPSTSEIAVIRDWKK",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE_WEAK"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L1",
+          "result": "Negative",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Positive (Weak)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "KDM3B-chr5-138391529",
+      "peptide": "HENLFLQPPKLSREESSNPFLAFVEK",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE_STRONG"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L1",
+          "result": "Negative",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Positive (Strong)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "KIF1C-chr17-5007293",
+      "peptide": "TEKIIAELNKTWEEKLRKTEA",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE_WEAK"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L1",
+          "result": "Negative",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Positive (Weak)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "MYO15B-chr17-75589953",
+      "peptide": "AGRRAQAPTRVLGLAPP",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE_WEAK"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L1",
+          "result": "Negative",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Positive (Weak)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "MYO9A-chr15-71994488",
+      "peptide": "KKFDWIVFRINHALLNSKVLEHNTK",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE",
+        "POSITIVE_STRONG",
+        "POSITIVE_WEAK"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L3",
+          "result": "Positive",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "PFO Lab ex vivo ELISPOT, PFO-S45 (Fall, 2025)",
+          "pool": "Pool 1",
+          "result": "Positive (Weak)",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "PFO Lab ex vivo ELISPOT, PFO-S45 (Fall, 2025)",
+          "pool": "\u2014",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Positive (Strong)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "NR2F2-chr15-96332299",
+      "peptide": "AQTAAGGQGGPGVPGSDKQQQQQHIE",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L3",
+          "result": "Positive",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "SLC25A12-chr2-171813470",
+      "peptide": "GSVAGAVGATAVYPTDLVKTRMQNQR",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE",
+        "POSITIVE_WEAK"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L2",
+          "result": "Positive",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "PFO Lab ex vivo ELISPOT, PFO-S45 (Fall, 2025)",
+          "pool": "Pool 1",
+          "result": "Positive (Weak)",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "PFO Lab ex vivo ELISPOT, PFO-S45 (Fall, 2025)",
+          "pool": "\u2014",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "TECPR1-chr7-98241127",
+      "peptide": "GSEEASTLTIPAAPVGLRWLVR",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE",
+        "POSITIVE_WEAK"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L2",
+          "result": "Positive",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Positive (Weak)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    },
+    {
+      "variant_id": "TECPR1-chr7-98241127",
+      "peptide": "TSRWESAWSGLSPRTGR",
+      "states": [
+        "NEGATIVE",
+        "POSITIVE",
+        "POSITIVE_WEAK"
+      ],
+      "evidence": [
+        {
+          "date": "2023-09-22",
+          "experiment": "PFO Lab 14-day stim, PFO-S18 (Spring, 2025)",
+          "pool": "L2",
+          "result": "Positive",
+          "resolution": "POOL"
+        },
+        {
+          "date": "2023-09-22",
+          "experiment": "UNC Immune Monitoring (Spring, 2024)",
+          "pool": "NA",
+          "result": "Negative",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        },
+        {
+          "date": "2024-05-15",
+          "experiment": "UNC Immune Monitoring (Summer, 2024)",
+          "pool": "NA",
+          "result": "Positive (Weak)",
+          "resolution": "MUTATION_LONG_PEPTIDE"
+        }
+      ]
+    }
+  ],
+  "site_declared_experiment_count_discrepancies": [],
+  "adjudications": {
+    "ASPM G2179R": "ASPM p.G2179R (Hudson-recognized May+Aug) = site variant ASPM-chr1-197102716 (p.Gly2179Arg), called by DRAGEN/Sarek/oncoanalyser, vaccine-included and site-ELISPOT-listed, but ABSENT from the pVACtools 2025.01 candidate universe (pVACtools has no ASPM). Lost at candidate generation, NOT variant calling \u2014 corrects dd3efd1's 'off-callset' claim.",
+    "DYNC1H1 V314I": "DYNC1H1 p.V314I (recognized May+Aug) = site variant DYNC1H1-chr14-101980529 (p.Val314Ile); present in pVACtools 2025 AND curated-21 -> reaches the shortlist (the only recognized target Epicurus could rank).",
+    "MAP2 G868FS": "MAP2 frameshift (Hudson label p.GYCVFNKYTV868fs, recognized May) maps by residue-868 to a site MAP2 frameshift; the site carries two frameshift annotations ['MAP2-chr2-209694768(p.Leu867fs)', 'MAP2-chr2-209694772(p.Gly868fs)'] 4bp apart (caller-dependent 867fs vs 868fs of one event), both called by DRAGEN/Sarek/oncoanalyser and BOTH absent from the pVACtools 2025 candidate universe. Lost at candidate generation. The prior 'low-TPM expression-filter drop' attribution is not confirmable from these files (it is simply absent from the pVACtools output)."
+  },
+  "label_states": [
+    "AMBIGUOUS",
+    "NEGATIVE",
+    "POSITIVE",
+    "POSITIVE_STRONG",
+    "POSITIVE_WEAK",
+    "UNTESTED"
+  ],
+  "resolution_states": [
+    "INDIVIDUAL_PEPTIDE",
+    "MUTATION_LONG_PEPTIDE",
+    "MUTATION_TCR",
+    "POOL",
+    "UNKNOWN"
+  ]
+}
