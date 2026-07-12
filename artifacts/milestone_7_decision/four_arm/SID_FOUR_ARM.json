@@ -1,0 +1,215 @@
+{
+  "patient_id": "osteosarc_sid",
+  "status": "post_hoc_diagnostic_n3_single_patient_not_blinded_not_powered",
+  "k": 20,
+  "positives_evaluation_only": [
+    "ASPM-chr1-197102716",
+    "DYNC1H1-chr14-101980529",
+    "MAP2-chr2-209694772"
+  ],
+  "available_inputs": [
+    "epicurus_features",
+    "genuine_prime",
+    "lossless_generation",
+    "measured_labels",
+    "pvac_candidates",
+    "router_features"
+  ],
+  "primary_frozen_epicurus": {
+    "el_feature": "NetMHCpan-EL MT %rank (frozen Epicurus feature); MISSING on lossless-recovered candidates -> NaN -> 0.5 percentile (frozen policy)",
+    "arms": {
+      "pvac_prime": {
+        "arm_id": "pvac_prime",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 1,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 1,
+          "of": 3
+        },
+        "hits_at_20": 1,
+        "recall_at_20": 0.3333,
+        "n_selected": 20,
+        "covered_mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "lossless_prime": {
+        "arm_id": "lossless_prime",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 3,
+        "recall_at_20": 1.0,
+        "n_selected": 20,
+        "covered_mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529",
+          "MAP2-chr2-209694772"
+        ]
+      },
+      "lossless_epicurus": {
+        "arm_id": "lossless_epicurus",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 1,
+        "recall_at_20": 0.3333,
+        "n_selected": 20,
+        "covered_mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "full_epicurus": {
+        "arm_id": "full_epicurus",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 1,
+        "recall_at_20": 0.3333,
+        "n_selected": 20,
+        "covered_mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      }
+    },
+    "stage_attribution": {
+      "evaluable": true,
+      "generation": 2,
+      "scorer": -2,
+      "selection": 0,
+      "total": 0,
+      "hits": {
+        "pvac_prime": 1,
+        "lossless_prime": 3,
+        "lossless_epicurus": 1,
+        "full_epicurus": 1
+      }
+    }
+  },
+  "sensitivity_mixmhcpred_el": {
+    "el_feature": "MixMHCpred %rank for ALL candidates (present on recovered rows too). NON-FROZEN sensitivity: isolates the missing-EL-feature confound on recovered rows.",
+    "arms": {
+      "pvac_prime": {
+        "arm_id": "pvac_prime",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 1,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 1,
+          "of": 3
+        },
+        "hits_at_20": 1,
+        "recall_at_20": 0.3333,
+        "n_selected": 20,
+        "covered_mutations": [
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "lossless_prime": {
+        "arm_id": "lossless_prime",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 3,
+        "recall_at_20": 1.0,
+        "n_selected": 20,
+        "covered_mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529",
+          "MAP2-chr2-209694772"
+        ]
+      },
+      "lossless_epicurus": {
+        "arm_id": "lossless_epicurus",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 2,
+        "recall_at_20": 0.6667,
+        "n_selected": 20,
+        "covered_mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529"
+        ]
+      },
+      "full_epicurus": {
+        "arm_id": "full_epicurus",
+        "evaluable": true,
+        "generation_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "rankable_recall": {
+          "n": 3,
+          "of": 3
+        },
+        "hits_at_20": 2,
+        "recall_at_20": 0.6667,
+        "n_selected": 20,
+        "covered_mutations": [
+          "ASPM-chr1-197102716",
+          "DYNC1H1-chr14-101980529"
+        ]
+      }
+    },
+    "stage_attribution": {
+      "evaluable": true,
+      "generation": 2,
+      "scorer": -1,
+      "selection": 0,
+      "total": 1,
+      "hits": {
+        "pvac_prime": 1,
+        "lossless_prime": 3,
+        "lossless_epicurus": 2,
+        "full_epicurus": 2
+      }
+    }
+  },
+  "leakage_controls": {
+    "epicurus_training_cohort": "cd8_multimer",
+    "sid_is_epicurus_out_of_sample": true,
+    "n_candidate_peptides": 1471,
+    "n_near_or_exact_prime_training_peptides": 1,
+    "prime_training_leak_fraction": 0.0007,
+    "label_isolation": "measured positives joined only AFTER each arm's ranking (harness-enforced)",
+    "note": "Frozen Epicurus v0.1 was fit on cd8_multimer; Sid shares no patient with it. PRIME training overlap is reported at candidate granularity; the 3 measured-positive mutations are never a model input.",
+    "_hudson_pep_in_prime": null
+  },
+  "interpretation": "Generation recovers all 3 recognized mutations (recall 1/3 -> 3/3; +2 top-20 hits under genuine PRIME). Under the FROZEN Epicurus scorer the recovered ASPM+MAP2 fall back out of the top-20 (scorer stage -2, net 0) \u2014 but this is partly a missing-EL-feature artifact: the sensitivity arm (EL populated for recovered rows) recovers ASPM (scorer -1, net +1). Low-expression MAP2 still drops under Epicurus (a real expression-reweighting effect, consistent with prior cohorts where a learned recognition score on top of presentation hurts). Net: the RELIABLE, reproducible win here is candidate GENERATION feeding genuine PRIME; the Epicurus scorer neither clearly helps nor is fairly testable until presentation features are computed on recovered candidates. n=3, post-hoc \u2014 not a gate."
+}

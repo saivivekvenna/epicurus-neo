@@ -1,0 +1,565 @@
+{
+  "policy": "three-level-benchmark-1.0.0",
+  "levels": [
+    {
+      "level": 1,
+      "name": "reachability",
+      "description": "raw variants/WES/RNA/HLA through peptide generation, with stage-loss attribution (recognized mutations lost at generation vs rankable vs top-k)",
+      "requirements": [
+        "lossless_generation",
+        "measured_labels",
+        "pvac_candidates"
+      ]
+    },
+    {
+      "level": 2,
+      "name": "conditional_ranking",
+      "description": "ranking only among candidates actually generated/rankable, interpreted strictly within this cohort's own assay/denominator (never pooled)",
+      "requirements": [
+        "genuine_prime",
+        "measured_labels",
+        "pvac_candidates"
+      ]
+    },
+    {
+      "level": 3,
+      "name": "end_to_end_patient_utility",
+      "description": "PRIMARY north star: recognized mutations in the final top-20 from common raw inputs, vs a standard pVAC-style pipeline + genuine PRIME",
+      "requirements": [
+        "genuine_prime",
+        "lossless_generation",
+        "measured_labels",
+        "pvac_candidates"
+      ]
+    }
+  ],
+  "no_pooling": "These cohorts serve DIFFERENT tasks over DIFFERENT denominators (broad-somatic Gartner, prefiltered IMPROVE, presentation/T-cell multimer, external CheckMate, end-to-end Sid) and are NEVER pooled into one headline metric. A single cross-cohort reranker number would be a category error. Each level and each cohort is reported and interpreted on its own.",
+  "four_arm_harness_role": "reusable infrastructure; produces an end-to-end headline ONLY for Level-3-eligible cohorts (currently osteosarc_sid, post-hoc).",
+  "arms": [
+    {
+      "arm_id": "pvac_prime",
+      "generation": "pvac",
+      "scorer": "genuine_prime",
+      "selection": "plain_topk",
+      "label": "Standard pVAC candidates + genuine PRIME (incumbent baseline)"
+    },
+    {
+      "arm_id": "lossless_prime",
+      "generation": "lossless_union",
+      "scorer": "genuine_prime",
+      "selection": "plain_topk",
+      "label": "Lossless-generation union + genuine PRIME (isolates the generation/recall stage)"
+    },
+    {
+      "arm_id": "lossless_epicurus",
+      "generation": "lossless_union",
+      "scorer": "epicurus",
+      "selection": "plain_topk",
+      "label": "Lossless-generation union + Epicurus (isolates the scorer swap)"
+    },
+    {
+      "arm_id": "full_epicurus",
+      "generation": "lossless_union",
+      "scorer": "epicurus",
+      "selection": "route_aware",
+      "label": "Lossless-generation union + Epicurus + route-aware selection (full stack)"
+    }
+  ],
+  "requirement_keys": [
+    "measured_labels",
+    "pvac_candidates",
+    "lossless_generation",
+    "genuine_prime",
+    "epicurus_features",
+    "router_features"
+  ],
+  "n_cohorts": 8,
+  "n_end_to_end_eligible": 1,
+  "cohorts": [
+    {
+      "cohort_id": "osteosarc_sid",
+      "role": "End-to-end diagnostic (all 3 levels; post-hoc, n=3, single patient)",
+      "available_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "lossless_generation",
+        "measured_labels",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [],
+      "denominator": "per-patient somatic pVAC universe (21 curated muts) + input-only lossless recovery",
+      "labels": "Hudson IFNg peptide-expansion; 3 recognized mutations (only 1 in the pVAC universe)",
+      "levels": {
+        "reachability": {
+          "eligible": true,
+          "missing": []
+        },
+        "conditional_ranking": {
+          "eligible": true,
+          "missing": []
+        },
+        "end_to_end_patient_utility": {
+          "eligible": true,
+          "missing": []
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_epicurus": {
+          "evaluable": true,
+          "missing": []
+        },
+        "full_epicurus": {
+          "evaluable": true,
+          "missing": []
+        }
+      },
+      "note": "ONLY cohort with a raw callset carried to generation AND a measured label -> the only Level-3 (end-to-end) instance. POST-HOC, n=3, 1 patient: diagnostic, not a powered/blinded gate. Frozen Epicurus is OUT-OF-SAMPLE here (trained on cd8_multimer)."
+    },
+    {
+      "cohort_id": "gartner_nci",
+      "role": "Conditional broad-denominator ranking (Level 2)",
+      "available_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "measured_labels",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [
+        "lossless_generation"
+      ],
+      "denominator": "Gartner TEST minimal peptide-HLA list (SEMI-CONSUMED holdout); no raw callset->gen",
+      "labels": "TIL/ELISpot screening positives + tested negatives",
+      "levels": {
+        "reachability": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "conditional_ranking": {
+          "eligible": true,
+          "missing": []
+        },
+        "end_to_end_patient_utility": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_prime": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "lossless_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "full_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        }
+      },
+      "note": "Level-2 only. No lossless-generation arm: the stored artifact is a pre-generated peptide list, not a raw multi-caller callset. Holdout semi-consumed -> not a fresh test. Broadest somatic denominator of the ranking cohorts; interpret ONLY within itself."
+    },
+    {
+      "cohort_id": "improve_srhgroup",
+      "role": "Conditional prefiltered-subset ranking (Level 2)",
+      "available_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "measured_labels",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [
+        "lossless_generation"
+      ],
+      "denominator": "pre-screened ~200 candidates/patient \u2014 NOT the full somatic universe",
+      "labels": "functional response POSITIVE vs TESTED_NEGATIVE",
+      "levels": {
+        "reachability": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "conditional_ranking": {
+          "eligible": true,
+          "missing": []
+        },
+        "end_to_end_patient_utility": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_prime": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "lossless_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "full_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        }
+      },
+      "note": "Level-2 only; denominator is range-restricted (prefiltered) so top-20 recall is optimistic and NOT comparable to Gartner's broad denominator. No raw callset -> no lossless arm."
+    },
+    {
+      "cohort_id": "checkmate153",
+      "role": "External conditional ranking (Level 2; small, PRIME-untouched)",
+      "available_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "measured_labels",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [
+        "lossless_generation"
+      ],
+      "denominator": "HLA-resolved 9-mer candidate list (14 patients); raw WES/RNA behind dbGaP",
+      "labels": "combinatorial tetramer+ vs tested-negative",
+      "levels": {
+        "reachability": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "conditional_ranking": {
+          "eligible": true,
+          "missing": []
+        },
+        "end_to_end_patient_utility": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_prime": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "lossless_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "full_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        }
+      },
+      "note": "Level-2 only, underpowered (14 pts). Acquiring dbGaP WES/RNA would upgrade it toward Level 1/3. Independent + PRIME-untouched but range-restricted."
+    },
+    {
+      "cohort_id": "cd8_multimer",
+      "role": "Presentation / T-cell compatibility asset (and Epicurus v0.1 training set)",
+      "available_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "measured_labels",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [
+        "lossless_generation"
+      ],
+      "denominator": "pMHC-multimer peptide-HLA candidate list",
+      "labels": "multimer POSITIVE vs TESTED_NEGATIVE",
+      "levels": {
+        "reachability": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "conditional_ranking": {
+          "eligible": true,
+          "missing": []
+        },
+        "end_to_end_patient_utility": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_prime": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "lossless_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "LEAKAGE:epicurus_v0_1_training_cohort"
+          ]
+        },
+        "full_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "LEAKAGE:epicurus_v0_1_training_cohort"
+          ]
+        }
+      },
+      "note": "Presentation/T-cell-compatibility role. It IS the frozen Epicurus v0.1 training cohort -> the Epicurus arms are leakage-INVALID here even with inputs present; only the genuine-PRIME scorer is honest. No raw callset -> no lossless arm. Level-2 for genuine PRIME only."
+    },
+    {
+      "cohort_id": "cedar_tcell",
+      "role": "Training / recognition-prior asset",
+      "available_inputs": [
+        "measured_labels",
+        "pvac_candidates"
+      ],
+      "missing_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "lossless_generation",
+        "router_features"
+      ],
+      "denominator": "mutation-derived cancer T-cell recognition rows (not a per-patient ranking denom.)",
+      "labels": "curated recognition POSITIVE / explicit NEGATIVE rows",
+      "levels": {
+        "reachability": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "conditional_ranking": {
+          "eligible": false,
+          "missing": [
+            "genuine_prime"
+          ]
+        },
+        "end_to_end_patient_utility": {
+          "eligible": false,
+          "missing": [
+            "genuine_prime",
+            "lossless_generation"
+          ]
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": false,
+          "missing": [
+            "genuine_prime"
+          ]
+        },
+        "lossless_prime": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "genuine_prime"
+          ]
+        },
+        "lossless_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "epicurus_features"
+          ]
+        },
+        "full_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "epicurus_features",
+            "router_features"
+          ]
+        }
+      },
+      "note": "Recognition-PRIOR / training asset, not a ranking cohort: no per-patient somatic denominator, no genuine-PRIME incumbent, no raw callset. Feeds priors/representation, never a benchmark headline. Eligible for none of the three levels."
+    },
+    {
+      "cohort_id": "zhao_dc_2026",
+      "role": "Training / recognition-prior asset (genuine PRIME blocked)",
+      "available_inputs": [
+        "measured_labels",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "lossless_generation"
+      ],
+      "denominator": "352 pts / 2317 SNV peptide-HLA list",
+      "labels": "DC-presentation POSITIVE vs explicit NEGATIVE",
+      "levels": {
+        "reachability": {
+          "eligible": false,
+          "missing": [
+            "lossless_generation"
+          ]
+        },
+        "conditional_ranking": {
+          "eligible": false,
+          "missing": [
+            "genuine_prime"
+          ]
+        },
+        "end_to_end_patient_utility": {
+          "eligible": false,
+          "missing": [
+            "genuine_prime",
+            "lossless_generation"
+          ]
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": false,
+          "missing": [
+            "genuine_prime"
+          ]
+        },
+        "lossless_prime": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "genuine_prime"
+          ]
+        },
+        "lossless_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "epicurus_features"
+          ]
+        },
+        "full_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "lossless_generation",
+            "epicurus_features"
+          ]
+        }
+      },
+      "note": "Recognition-prior/training asset. genuine PRIME is BLOCKED (only a MixMHCpred proxy; the incumbent guard forbids labeling a proxy PRIME) -> no Level-2/3 incumbent, no genuine-PRIME feature -> no Epicurus arm, no raw callset -> no Level 1. Eligible for none of the levels."
+    },
+    {
+      "cohort_id": "rttp_sr24_58221",
+      "role": "Deployment only (no measured recognition label)",
+      "available_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "lossless_generation",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [
+        "measured_labels"
+      ],
+      "denominator": "complete North-Star INPUT (WES+RNA+HLA+candidate universe), 1 patient",
+      "labels": "NONE measured (Personalis immunogenicity score is PREDICTED, not an assay)",
+      "levels": {
+        "reachability": {
+          "eligible": false,
+          "missing": [
+            "measured_labels"
+          ]
+        },
+        "conditional_ranking": {
+          "eligible": false,
+          "missing": [
+            "measured_labels"
+          ]
+        },
+        "end_to_end_patient_utility": {
+          "eligible": false,
+          "missing": [
+            "measured_labels"
+          ]
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": false,
+          "missing": [
+            "measured_labels"
+          ]
+        },
+        "lossless_prime": {
+          "evaluable": false,
+          "missing": [
+            "measured_labels"
+          ]
+        },
+        "lossless_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "measured_labels"
+          ]
+        },
+        "full_epicurus": {
+          "evaluable": false,
+          "missing": [
+            "measured_labels"
+          ]
+        }
+      },
+      "note": "Deployment/DEMO asset, not a benchmark: no measured recognition label -> no denominator -> eligible for none of the three levels. Inputs would otherwise support all three."
+    }
+  ],
+  "interpretation": "Exactly one cohort (osteosarc_sid) is END-TO-END (Level-3) eligible, and only post-hoc with n=3. Conditional-ranking (Level-2) cohorts each stand alone within their own denominator and are never pooled. Reachability (Level-1) needs a raw callset carried to generation, which only Sid provides among labelled cohorts. The binding constraint is a DENSE-denominator, PRIME-untouched, end-to-end patient \u2014 acquire/identify one; do not manufacture a pooled reranker headline."
+}

@@ -204,6 +204,26 @@ count at the BAG level, never the ~285k/1.09M child rows.
   only *after* a development candidate clears the gate — none of v0.3/v0.4/v0.5 did, so the holdout stays closed.
   **A superiority claim still requires a win on a genuinely untouched cohort.**
 
+- **DECISION (2026-07-12) — the benchmark is a THREE-LEVEL hierarchy; never pool cohorts into one headline.**
+  Product review: do NOT make heterogeneous pooled reranker performance the central metric. Three DISTINCT
+  tasks, each reported/interpreted on its own: **(1) REACHABILITY** — raw variants/WES/RNA/HLA *through peptide
+  generation*, with stage-loss attribution; **(2) CONDITIONAL RANKING** — only among generated/rankable
+  candidates, strictly within each cohort's own assay/denominator; **(3) END-TO-END PATIENT UTILITY = the
+  PRIMARY north star** — recognized mutations in the final top-20 from *common raw inputs* vs standard pVAC +
+  genuine PRIME. **Fixed cohort roles (never merge):** CEDAR/Zhao = training/recognition-prior; cd8_multimer =
+  presentation/T-cell compatibility (+ Epicurus v0.1 training ⇒ Epicurus arms leakage-invalid there); Gartner =
+  conditional *broad-denominator* ranking; IMPROVE = *prefiltered-subset* ranking; CheckMate153 = external
+  conditional (small); osteosarc/Sid = end-to-end diagnostic (all 3 levels, post-hoc n=3); RTTP SR24 =
+  deployment only. The four-arm generation×scorer harness (`src/benchmark/four_arm.py`, tested) is **reusable
+  infrastructure**; it yields an end-to-end HEADLINE only where a cohort is Level-3 eligible — **currently Sid
+  only.** Eligibility audit encodes all three levels + roles + the no-pooling invariant
+  (`src/benchmark/cohort_audit.py`; runner `scripts/four_arm_benchmark.py`; artifacts
+  `artifacts/milestone_7_decision/four_arm/`). Sid L1 reachability = generation recall 1/3→3/3; L3 end-to-end:
+  under genuine PRIME `lossless_prime` recovers all 3 (protected incumbent), and the frozen Epicurus scorer nets
+  0 (−2 scorer, partly a missing-EL-feature artifact on recovered rows: MixMHCpred-EL sensitivity nets +1).
+  Next = acquire/identify an **untouched end-to-end patient**, not more rerankers. See
+  `memory/benchmark-three-level-hierarchy.md`.
+
 ## Maintenance
 
 Update this ledger (row in the chronological table + any role/verdict change) as the final step of each
