@@ -1,0 +1,89 @@
+{
+  "arms": {
+    "frozen_epicurus_v0_1": {
+      "n_mutations_after_gate": 112,
+      "rna_gated": {
+        "hits_at_20": 1,
+        "positive_ranks": {
+          "ASPM-chr1-197102716": 39,
+          "DYNC1H1-chr14-101980529": 1,
+          "MAP2-chr2-209694772": 66
+        }
+      },
+      "ungated": {
+        "hits_at_20": 1,
+        "positive_ranks": {
+          "ASPM-chr1-197102716": 39,
+          "DYNC1H1-chr14-101980529": 1,
+          "MAP2-chr2-209694772": 66
+        }
+      }
+    },
+    "genuine_prime": {
+      "n_mutations_after_gate": 112,
+      "rna_gated": {
+        "hits_at_20": 2,
+        "positive_ranks": {
+          "ASPM-chr1-197102716": 29,
+          "DYNC1H1-chr14-101980529": 2,
+          "MAP2-chr2-209694772": 8
+        }
+      },
+      "ungated": {
+        "hits_at_20": 2,
+        "positive_ranks": {
+          "ASPM-chr1-197102716": 39,
+          "DYNC1H1-chr14-101980529": 3,
+          "MAP2-chr2-209694772": 10
+        }
+      }
+    },
+    "mixmhcpred": {
+      "n_mutations_after_gate": 112,
+      "rna_gated": {
+        "hits_at_20": 3,
+        "positive_ranks": {
+          "ASPM-chr1-197102716": 16,
+          "DYNC1H1-chr14-101980529": 2,
+          "MAP2-chr2-209694772": 20
+        }
+      },
+      "ungated": {
+        "hits_at_20": 2,
+        "positive_ranks": {
+          "ASPM-chr1-197102716": 20,
+          "DYNC1H1-chr14-101980529": 2,
+          "MAP2-chr2-209694772": 26
+        }
+      }
+    }
+  },
+  "experiment": "sid_rna_support_arm_EXPLORATORY",
+  "gate_rule": "remove iff RNA row exists AND mutant alt_reads==0 AND expression_tpm==0",
+  "n_mutations_removed_unexpressed": 18,
+  "n_mutations_total": 130,
+  "positives_removed": [],
+  "removed_mutation_ids": [
+    "CSHL1-chr17-63910807",
+    "CTSE-chr1-206022947",
+    "DEFB131A-chr4-9450500",
+    "DRD1-chr5-175441851",
+    "FZD9-chr7-73434684",
+    "GDF2-chr10-47325480",
+    "KRT37-chr17-41422418",
+    "LCE1B-chr1-152812486",
+    "MARCOL-chr5-148242907",
+    "ODF1-chr8-102560579",
+    "OR10H1-chr19-15807703",
+    "OR10P1-chr12-55637502",
+    "OR2T12-chr1-248294753",
+    "PCDH15-chr10-54079389",
+    "SERPINB10-chr18-63915540",
+    "SLC17A4-chr6-25769158",
+    "TMEM139-chr7-143286139",
+    "ZAR1-chr4-48490989"
+  ],
+  "rna_source": "data/raw/osteosarc/site_cache/variant_vafs_long.tsv (tumor RNA assay; all 130 covered)",
+  "status": "exploratory; frozen baselines untouched; no label tuning; absence is never a veto",
+  "verdict": "EXPLORATORY, NOT a superiority claim. The gate is NON-TUNED (hardest biological boundary: TPM==0 AND zero mutant RNA reads; absence never vetoes; 0 positives removed). Effect is scorer-specific: presentation-only MixMHCpred reaches 3/3 (MAP2 #26\u2192EXACTLY #20), but the primary genuine-PRIME baseline stays 2/3 (ASPM #39\u2192#29) and frozen Epicurus stays 1/3. The MixMHCpred 3/3 is FRAGILE and must not be reported as beating PRIME: (a) n=1 patient / 3 labels, post-hoc; (b) MAP2 sits on the exact #20 boundary; (c) upstream coverage is only 88.4% \u2014 the 17 uncovered eligible variants could add competitors that displace MAP2; (d) it is presentation-only, weaker than the PRIME baseline which does NOT reach 3/3. Matched RNA confirms all 3 positives are transcribed \u21d2 the residual wall is conditional RANKING of EXPRESSED decoys, not expression. Real, principled, but not a win."
+}
