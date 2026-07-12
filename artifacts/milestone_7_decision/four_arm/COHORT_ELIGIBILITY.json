@@ -73,8 +73,8 @@
     "epicurus_features",
     "router_features"
   ],
-  "n_cohorts": 8,
-  "n_end_to_end_eligible": 1,
+  "n_cohorts": 9,
+  "n_end_to_end_eligible": 2,
   "cohorts": [
     {
       "cohort_id": "osteosarc_sid",
@@ -123,6 +123,54 @@
         }
       },
       "note": "ONLY cohort with a raw callset carried to generation AND a measured label -> the only Level-3 (end-to-end) instance. POST-HOC, n=3, 1 patient: diagnostic, not a powered/blinded gate. Frozen Epicurus is OUT-OF-SAMPLE here (trained on cd8_multimer)."
+    },
+    {
+      "cohort_id": "miller_ipv",
+      "role": "End-to-end LOCKED_TEST (labels ingested; run blocked on WES download + HLA/expr compute)",
+      "available_inputs": [
+        "epicurus_features",
+        "genuine_prime",
+        "lossless_generation",
+        "measured_labels",
+        "pvac_candidates",
+        "router_features"
+      ],
+      "missing_inputs": [],
+      "denominator": "13 patients; 754 tested 20-mers over 343 IPV-prefiltered mutations (re-enumerate full mutanome from open WES for a fair denominator)",
+      "labels": "IFN-g ELISpot on 20-mers (in hand): 180 IFN-g+ / 199 any+ peptides; POSITIVE vs TESTED_NEGATIVE; no HLA in the label table (recover from WES)",
+      "levels": {
+        "reachability": {
+          "eligible": true,
+          "missing": []
+        },
+        "conditional_ranking": {
+          "eligible": true,
+          "missing": []
+        },
+        "end_to_end_patient_utility": {
+          "eligible": true,
+          "missing": []
+        }
+      },
+      "arms": {
+        "pvac_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_prime": {
+          "evaluable": true,
+          "missing": []
+        },
+        "lossless_epicurus": {
+          "evaluable": true,
+          "missing": []
+        },
+        "full_epicurus": {
+          "evaluable": true,
+          "missing": []
+        }
+      },
+      "note": "INDEPENDENT, PRIME-untouched (2024, La Jolla). Raw WES/RNA OPEN (PRJNA980652); the S1/S2 label table is now INGESTED + validated (LOCKED_TEST, never used for development). ELIGIBLE but NOT-YET-EXECUTED: the four-arm run is blocked on the WES download + HLA typing + RNA expression + full-mutanome re-enumeration, not on any missing file. Labels are 20-mer/mutation-level (no HLA) -> benchmark runs at MUTATION granularity."
     },
     {
       "cohort_id": "gartner_nci",

@@ -17,6 +17,8 @@ import pandas as pd
 from benchmark.miller_ingest import (
     SRA_RUNINFO_FIXTURE,
     build_download_tranches,
+    mutation_recognition,
+    parse_miller_labels,
     parse_sra_runinfo,
     patient_input_crosswalk,
     validate_recognition_labels,
@@ -133,3 +135,72 @@ def test_invalid_peptide_is_flagged():
     rep = validate_recognition_labels(frame, sra_patients={"Hu_048"})
     assert rep["ok"] is False
     assert rep["n_invalid_peptides"] == 1
+
+
+# ---------------------------------------------------------------------------
+# S2 recognition-label adapter (raw supplement -> unified schema)
+# ---------------------------------------------------------------------------
+def _raw_s2(rows):
+    cols = ["patient code", "chr", "chr position", "ref nt", "alt nt", "variant type",
+            "gene symbol", "gene id", "transcript id", "cdna hgvs code", "protein hgvs code",
+            "mut peptide", "ref peptide", "IFN-g", "IL-5", "both", "any"]
+    return pd.DataFrame(rows)[cols]
+
+
+S2_ROW = {
+    "patient code": "Hu_048", "chr": "chrX", "chr position": 77618864, "ref nt": "A", "alt nt": "G",
+    "variant type": "snp", "gene symbol": "ATRX", "gene id": "ENSG00000085224",
+    "transcript id": "ENST00000373344.9", "cdna hgvs code": "c.5390T>C", "protein hgvs code": "p.Val1797Ala",
+    "mut peptide": "STMVDARVMKKRAHILYEML", "ref peptide": "STMVDVRVMKKRAHILYEML",
+    "IFN-g": "POS", "IL-5": "POS", "both": True, "any": True,
+}
+
+
+def test_parse_miller_labels_maps_ifng_to_three_state():
+    raw = _raw_s2([
+        {**S2_ROW, "IFN-g": "POS"},
+        {**S2_ROW, "mut peptide": "PIQNGQCADSTMVDARVMKK", "ref peptide": "PIQNGQCADSTMVDVRVMKK", "IFN-g": "NEG", "IL-5": "NEG", "both": False, "any": False},
+    ])
+    out = parse_miller_labels(raw, readout="IFN-g")
+    assert list(out["label"]) == ["POSITIVE", "TESTED_NEGATIVE"]
+    assert (out["assay"] == "IFNg_ELISpot").all()
+    assert out["assay_timepoint"].notna().all()
+
+
+def test_parse_miller_labels_derives_mutation_id_and_position():
+    out = parse_miller_labels(_raw_s2([S2_ROW]), readout="IFN-g")
+    assert out["mutation_id"].iloc[0] == "ATRX-chrX-77618864"
+    # mutant residue is at position 6 (STMVD[A/V]RV...) -> 1-based diff of mut vs ref
+    assert out["mut_position_in_peptide"].iloc[0] == 6
+
+
+def test_parse_miller_labels_preserves_all_cytokine_readouts():
+    out = parse_miller_labels(_raw_s2([S2_ROW]), readout="IFN-g")
+    for col in ("ifn_g", "il_5", "both_cytokines", "any_cytokine"):
+        assert col in out.columns
+
+
+def test_parse_miller_labels_readout_any_matches_paper_positive_set():
+    # 'any' (IFN-g OR IL-5) is the paper's 199-positive definition; readout switches the label source
+    raw = _raw_s2([{**S2_ROW, "IFN-g": "NEG", "IL-5": "POS", "both": False, "any": True}])
+    ifng = parse_miller_labels(raw, readout="IFN-g")["label"].iloc[0]
+    anyc = parse_miller_labels(raw, readout="any")["label"].iloc[0]
+    assert ifng == "TESTED_NEGATIVE"
+    assert anyc == "POSITIVE"
+
+
+def test_parsed_miller_frame_passes_the_ingestion_contract():
+    out = parse_miller_labels(_raw_s2([S2_ROW]), readout="IFN-g")
+    rep = validate_recognition_labels(out, sra_patients={"Hu_048"})
+    assert rep["ok"] is True
+
+
+def test_mutation_recognition_is_positive_if_any_tested_peptide_is_positive():
+    raw = _raw_s2([
+        {**S2_ROW, "mut peptide": "STMVDARVMKKRAHILYEML", "IFN-g": "NEG", "any": False},
+        {**S2_ROW, "mut peptide": "PIQNGQCADSTMVDARVMKK", "ref peptide": "PIQNGQCADSTMVDVRVMKK", "IFN-g": "POS", "any": True},
+    ])
+    out = parse_miller_labels(raw, readout="IFN-g")
+    mut = mutation_recognition(out)
+    assert len(mut) == 1  # both peptides are the same mutation
+    assert bool(mut.iloc[0]["recognized"])

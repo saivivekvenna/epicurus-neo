@@ -113,6 +113,92 @@ def _valid_peptide(value: object) -> bool:
     return bool(pep) and not (set(pep) - _STD_AA)
 
 
+# ---------------------------------------------------------------------------
+# S2 recognition-label adapter (raw supplement sheet -> unified label schema)
+# ---------------------------------------------------------------------------
+# S2 columns (verified): patient code, chr, chr position, ref nt, alt nt, variant type, gene symbol,
+# gene id, transcript id, cdna hgvs code, protein hgvs code, mut peptide, ref peptide, IFN-g, IL-5,
+# both, any. Labels are per (patient, mutation, 20-mer peptide); there is NO HLA column (20-mer ELISpot),
+# so peptide-HLA pairing must be recovered downstream from WES-typed HLA + class-I deconvolution.
+_READOUTS = {"IFN-g": "IFN-g", "IL-5": "IL-5", "any": "any", "both": "both"}
+
+
+def _mut_position(mut: str, ref: str) -> int | None:
+    """1-based index of the first residue that differs between mut and ref peptide (the mutant residue)."""
+    m, r = str(mut), str(ref)
+    for i, (a, b) in enumerate(zip(m, r), start=1):
+        if a != b:
+            return i
+    return None
+
+
+def parse_miller_labels(raw: pd.DataFrame, *, readout: str = "IFN-g") -> pd.DataFrame:
+    """Map a raw Miller S2 sheet to the unified recognition-label schema (pure transform).
+
+    ``readout`` selects the label source: "IFN-g" (CD8/class-I biased; the pre-registered PRIMARY),
+    "IL-5" (Th2/CD4), "any" (IFN-g OR IL-5 = the paper's 199-positive set), or "both". POS -> POSITIVE,
+    anything else -> TESTED_NEGATIVE (every S2 row was tested; there is no UNTESTED here). All cytokine
+    readouts are preserved so nothing is collapsed.
+    """
+    if readout not in _READOUTS:
+        raise ValueError(f"readout must be one of {sorted(_READOUTS)}")
+    src = _READOUTS[readout]
+    df = raw.copy()
+
+    def _pos(col: str) -> pd.Series:
+        v = df[col]
+        if v.dtype == bool:
+            return v
+        return v.astype(str).str.strip().str.upper().isin({"POS", "TRUE", "1", "YES"})
+
+    label_pos = _pos(src)
+    out = pd.DataFrame({
+        "patient_id": df["patient code"].astype(str),
+        "gene_symbol": df["gene symbol"].astype(str),
+        "chrom": df["chr"].astype(str),
+        "pos": pd.to_numeric(df["chr position"], errors="coerce").astype("Int64"),
+        "ref": df["ref nt"].astype(str),
+        "alt": df["alt nt"].astype(str),
+        "source_variant_type": df["variant type"].astype(str).str.upper().map(
+            lambda v: "SNV" if v in {"SNP", "SNV", "MISSENSE"} else v),
+        "transcript_id": df["transcript id"].astype(str),
+        "cdna_hgvs": df["cdna hgvs code"].astype(str),
+        "protein_hgvs": df["protein hgvs code"].astype(str),
+        "mutant_peptide": df["mut peptide"].astype(str).str.strip().str.upper(),
+        "ref_peptide": df["ref peptide"].astype(str).str.strip().str.upper(),
+        "hla_allele": pd.NA,                       # GAP: no HLA in S2 (20-mer ELISpot); recover from WES
+        "assay": f"{'IFNg' if readout == 'IFN-g' else readout.replace('-', '')}_ELISpot",
+        "assay_timepoint": "ex_vivo_stim",         # single ex-vivo stimulation timepoint (no longitudinal)
+        "label_readout": readout,
+        "label": pd.Series(pd.NA, index=df.index, dtype="object"),
+        "ifn_g": _pos("IFN-g"),
+        "il_5": _pos("IL-5"),
+        "both_cytokines": _pos("both"),
+        "any_cytokine": _pos("any"),
+    })
+    out["label"] = label_pos.map(lambda p: "POSITIVE" if p else "TESTED_NEGATIVE")
+    out["mutation_id"] = [f"{g}-{c}-{p}" for g, c, p in zip(out["gene_symbol"], out["chrom"], out["pos"])]
+    out["mut_position_in_peptide"] = [
+        _mut_position(m, r) for m, r in zip(out["mutant_peptide"], out["ref_peptide"])
+    ]
+    return out
+
+
+def mutation_recognition(labels: pd.DataFrame) -> pd.DataFrame:
+    """Collapse peptide-level labels to the MUTATION level: a mutation is recognized if ANY of its tested
+    peptides is POSITIVE. This is the benchmark's granularity (labels are per 20-mer, ranking is per
+    mutation). Peptide rows are NOT dropped elsewhere; this is a derived view."""
+    rows = []
+    for (pid, mid), g in labels.groupby(["patient_id", "mutation_id"], sort=True):
+        rows.append({
+            "patient_id": pid,
+            "mutation_id": mid,
+            "n_tested_peptides": int(len(g)),
+            "recognized": bool((g["label"] == "POSITIVE").any()),
+        })
+    return pd.DataFrame(rows)
+
+
 def validate_recognition_labels(frame: pd.DataFrame, *, sra_patients: set[str]) -> dict:
     """Validate an ingested S1/S2 recognition-label frame against the north-star ingestion contract.
 

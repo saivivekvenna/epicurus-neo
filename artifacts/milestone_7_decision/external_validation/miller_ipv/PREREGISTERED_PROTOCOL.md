@@ -25,10 +25,13 @@ no expression rank penalty. No model retuning.
   `NOT_EVALUABLE` and excluded from the paired test, reported explicitly.
 - Labels are three-state: `POSITIVE` / `TESTED_NEGATIVE` / `UNTESTED`. **UNTESTED is never a negative.**
   Only `POSITIVE` counts as a recognized hit; the denominator for recall is the patient's `POSITIVE` set.
-- Contradictory longitudinal rows (same peptide, different timepoint/outcome) are **preserved**; the
-  primary analysis uses the pre-registered timepoint (baseline/pre-stimulation ELISpot). A peptide is
-  `POSITIVE` for the primary metric iff it is `POSITIVE` at that timepoint. Alternate-timepoint sensitivity
-  is reported separately, not as the headline.
+- **Now that S2 is ingested (2026-07-12):** the label is per (patient, mutation, 20-mer), with a single
+  ex-vivo-stimulation timepoint (no longitudinal contradictions to reconcile). **PRIMARY label = IFN-g**
+  (CD8/class-I biased): a mutation is `POSITIVE` iff any of its tested 20-mers is IFN-g POS (134 recognized
+  mutations across 13 patients). **Sensitivity = `any`** (IFN-g OR IL-5 = the paper's 199-peptide / 145-
+  mutation headline set), reported separately, never as the headline. Both are frozen here, before ranking.
+- The metric granularity is the **MUTATION** (labels are per 20-mer, not per peptide-HLA; there is no HLA
+  in S2). A recognized mutation is a top-20 hit iff any class-I candidate generated from it is selected.
 
 ## Pre-registered leakage controls (decided now)
 - **Split by patient** (and this whole cohort is a locked study-level holdout); never a random peptide split.

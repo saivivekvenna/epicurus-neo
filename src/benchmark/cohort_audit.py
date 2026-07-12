@@ -106,6 +106,20 @@ COHORTS: list[Cohort] = [
              "gate. Frozen Epicurus is OUT-OF-SAMPLE here (trained on cd8_multimer).",
     ),
     Cohort(
+        "miller_ipv",
+        available={REQ_LABELS, REQ_PVAC, REQ_LOSSLESS, REQ_PRIME, REQ_EPICURUS, REQ_ROUTER},
+        role="End-to-end LOCKED_TEST (labels ingested; run blocked on WES download + HLA/expr compute)",
+        denominator="13 patients; 754 tested 20-mers over 343 IPV-prefiltered mutations (re-enumerate full "
+                    "mutanome from open WES for a fair denominator)",
+        labels="IFN-g ELISpot on 20-mers (in hand): 180 IFN-g+ / 199 any+ peptides; POSITIVE vs "
+               "TESTED_NEGATIVE; no HLA in the label table (recover from WES)",
+        note="INDEPENDENT, PRIME-untouched (2024, La Jolla). Raw WES/RNA OPEN (PRJNA980652); the S1/S2 "
+             "label table is now INGESTED + validated (LOCKED_TEST, never used for development). ELIGIBLE "
+             "but NOT-YET-EXECUTED: the four-arm run is blocked on the WES download + HLA typing + RNA "
+             "expression + full-mutanome re-enumeration, not on any missing file. Labels are 20-mer/"
+             "mutation-level (no HLA) -> benchmark runs at MUTATION granularity.",
+    ),
+    Cohort(
         "gartner_nci",
         available={REQ_LABELS, REQ_PVAC, REQ_PRIME, REQ_EPICURUS, REQ_ROUTER},
         role="Conditional broad-denominator ranking (Level 2)",

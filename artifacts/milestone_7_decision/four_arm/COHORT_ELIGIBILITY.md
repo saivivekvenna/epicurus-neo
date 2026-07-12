@@ -1,6 +1,6 @@
 # Benchmark cohort eligibility audit — three-level hierarchy
 
-> Policy `three-level-benchmark-1.0.0`. 8 cohorts; **1** end-to-end (Level-3) eligible.
+> Policy `three-level-benchmark-1.0.0`. 9 cohorts; **2** end-to-end (Level-3) eligible.
 
 > **No pooling.** These cohorts serve DIFFERENT tasks over DIFFERENT denominators (broad-somatic Gartner, prefiltered IMPROVE, presentation/T-cell multimer, external CheckMate, end-to-end Sid) and are NEVER pooled into one headline metric. A single cross-cohort reranker number would be a category error. Each level and each cohort is reported and interpreted on its own.
 
@@ -19,6 +19,7 @@
 | cohort | role | L1 reachability | L2 conditional ranking | L3 end-to-end (north star) | denominator |
 |---|---|---|---|---|---|
 | **osteosarc_sid** | End-to-end diagnostic (all 3 levels; post-hoc, n=3, single patient) | ✅ | ✅ | ✅ | per-patient somatic pVAC universe (21 curated muts) + input-only lossless recovery |
+| **miller_ipv** | End-to-end LOCKED_TEST (labels ingested; run blocked on WES download + HLA/expr compute) | ✅ | ✅ | ✅ | 13 patients; 754 tested 20-mers over 343 IPV-prefiltered mutations (re-enumerate full mutanome from open WES for a fair denominator) |
 | **gartner_nci** | Conditional broad-denominator ranking (Level 2) | ❌ | ✅ | ❌ | Gartner TEST minimal peptide-HLA list (SEMI-CONSUMED holdout); no raw callset->gen |
 | **improve_srhgroup** | Conditional prefiltered-subset ranking (Level 2) | ❌ | ✅ | ❌ | pre-screened ~200 candidates/patient — NOT the full somatic universe |
 | **checkmate153** | External conditional ranking (Level 2; small, PRIME-untouched) | ❌ | ✅ | ❌ | HLA-resolved 9-mer candidate list (14 patients); raw WES/RNA behind dbGaP |
@@ -34,6 +35,7 @@ The generation×scorer matrix is reusable infra; read it as a HEADLINE only for 
 | cohort | pvac_prime | lossless_prime | lossless_epicurus | full_epicurus |
 |---|---|---|---|---|
 | **osteosarc_sid** | ✅ | ✅ | ✅ | ✅ |
+| **miller_ipv** | ✅ | ✅ | ✅ | ✅ |
 | **gartner_nci** | ✅ | ❌ no-lossless-gen | ❌ no-lossless-gen | ❌ no-lossless-gen |
 | **improve_srhgroup** | ✅ | ❌ no-lossless-gen | ❌ no-lossless-gen | ❌ no-lossless-gen |
 | **checkmate153** | ✅ | ❌ no-lossless-gen | ❌ no-lossless-gen | ❌ no-lossless-gen |
@@ -45,6 +47,7 @@ The generation×scorer matrix is reusable infra; read it as a HEADLINE only for 
 ## Notes
 
 - **osteosarc_sid** (End-to-end diagnostic (all 3 levels; post-hoc, n=3, single patient)) — ONLY cohort with a raw callset carried to generation AND a measured label -> the only Level-3 (end-to-end) instance. POST-HOC, n=3, 1 patient: diagnostic, not a powered/blinded gate. Frozen Epicurus is OUT-OF-SAMPLE here (trained on cd8_multimer).
+- **miller_ipv** (End-to-end LOCKED_TEST (labels ingested; run blocked on WES download + HLA/expr compute)) — INDEPENDENT, PRIME-untouched (2024, La Jolla). Raw WES/RNA OPEN (PRJNA980652); the S1/S2 label table is now INGESTED + validated (LOCKED_TEST, never used for development). ELIGIBLE but NOT-YET-EXECUTED: the four-arm run is blocked on the WES download + HLA typing + RNA expression + full-mutanome re-enumeration, not on any missing file. Labels are 20-mer/mutation-level (no HLA) -> benchmark runs at MUTATION granularity.
 - **gartner_nci** (Conditional broad-denominator ranking (Level 2)) — Level-2 only. No lossless-generation arm: the stored artifact is a pre-generated peptide list, not a raw multi-caller callset. Holdout semi-consumed -> not a fresh test. Broadest somatic denominator of the ranking cohorts; interpret ONLY within itself.
 - **improve_srhgroup** (Conditional prefiltered-subset ranking (Level 2)) — Level-2 only; denominator is range-restricted (prefiltered) so top-20 recall is optimistic and NOT comparable to Gartner's broad denominator. No raw callset -> no lossless arm.
 - **checkmate153** (External conditional ranking (Level 2; small, PRIME-untouched)) — Level-2 only, underpowered (14 pts). Acquiring dbGaP WES/RNA would upgrade it toward Level 1/3. Independent + PRIME-untouched but range-restricted.

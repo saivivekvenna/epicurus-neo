@@ -1,8 +1,31 @@
 manifest_version: event-b-cohort-source-1.0.0
 source_id: miller_ipv
-status: INPUTS_VERIFIED_OPEN__LABELS_BLOCKED_ON_PAYWALL   # inputs public; S1/S2 label table needs subscription/browser
+status: LABELS_INGESTED__RUN_BLOCKED_ON_WES_COMPUTE   # S1/S2 labels validated; ranking arms need WES download+compute
 role: CANDIDATE_INDEPENDENT_PRIME_UNTOUCHED_END_TO_END_COHORT
 intended_use: LOCKED_TEST                        # independent, low-leakage; fixed before any label touches the model
+
+ingested_2026_07_12:
+  supplement_source: user-provided ZIP scitranslmed.abj9905_data_files_s1_to_s4.zip (v2 canonical)
+  checksums_sha256:
+    zip: 098767f1f975a36cf7a6b6cbc1984dd85e217aaa8b229f96b8e6ced8fafd8bf1
+    s1_v1_standalone: 2a2f775bcf0527076ac5da84ce1b535c516e5efeb9c22575ecdaa5708fc84f98
+  canonical_label_source: "S2 (abj9905_Data_file_S2.xlsx, 'Sheet 1'): 754 tested 20-mers x 13 patients"
+  sheet_map:
+    S1_v2: single-patient (Hu_159) detail + 'mut position in peptide'
+    S2: CANONICAL per-peptide tested table (patient/variant/peptide + IFN-g/IL-5/both/any)
+    S3: figure source data (IFN-g/IL-5 SFC) — not a per-candidate label table
+    S4: reagents/RRID — irrelevant
+  label_semantics: >-
+    per (patient, mutation, 20-mer peptide); PRIMARY label = IFN-g POS->POSITIVE / else TESTED_NEGATIVE
+    (180 IFN-g+ peptides -> 134 recognized mutations); 'any'(IFN-g|IL-5)=199+ = the paper's headline set
+    (145 recognized mutations). Single ex-vivo-stim timepoint (no longitudinal contradictions).
+  verified_counts: {peptides: 754, patients: 13, mutations: 343, ifng_pos: 180, il5_pos: 143, any_pos: 199}
+  crosswalk: all 13 label patients (Hu_NNN) match the SRA input crosswalk; input trios complete.
+  gaps: >-
+    NO HLA in the label table (20-mer ELISpot) -> type from WES; NO expression -> quantify RNA; 343 tested
+    mutations are IPV-PREFILTERED -> re-enumerate full class-I mutanome from WES. 349(paper) vs 343(S2
+    coords) = 6-variant gap documented, not resolved. Runner scripts/miller_corpus.py; audit
+    artifacts/milestone_7_decision/external_validation/miller_ipv/CORPUS_AUDIT.{md,json}.
 
 cite: >-
   Miller AM et al. A functional identification platform reveals frequent, spontaneous neoantigen-specific

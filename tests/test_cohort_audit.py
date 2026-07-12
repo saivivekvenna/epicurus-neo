@@ -83,12 +83,13 @@ def test_rttp_is_eligible_for_no_levels_no_labels():
         assert REQ_LABELS in lv[level]["missing"]
 
 
-def test_only_one_cohort_is_end_to_end_eligible():
+def test_end_to_end_eligible_cohorts_are_sid_and_miller():
+    # osteosarc_sid = executed (descriptive, n=3); miller_ipv = labels ingested, run blocked on WES compute.
     audit = run_cohort_audit()
-    assert audit["n_end_to_end_eligible"] == 1
-    end = [c["cohort_id"] for c in audit["cohorts"]
-           if c["levels"]["end_to_end_patient_utility"]["eligible"]]
-    assert end == ["osteosarc_sid"]
+    end = sorted(c["cohort_id"] for c in audit["cohorts"]
+                 if c["levels"]["end_to_end_patient_utility"]["eligible"])
+    assert end == ["miller_ipv", "osteosarc_sid"]
+    assert audit["n_end_to_end_eligible"] == 2
 
 
 # ---------------------------------------------------------------------------
