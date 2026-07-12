@@ -1,0 +1,111 @@
+{
+  "arms": {
+    "frozen_epicurus_v0_1": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_k": 1,
+      "k": 20,
+      "n_variants_ranked": 130,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 1,
+        "MAP2-chr2-209694772": 66
+      },
+      "positives_scoreable": [
+        "ASPM-chr1-197102716",
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "recall_at_k": 0.3333
+    },
+    "genuine_prime": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "hits_at_k": 2,
+      "k": 20,
+      "n_variants_ranked": 130,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 3,
+        "MAP2-chr2-209694772": 10
+      },
+      "positives_scoreable": [
+        "ASPM-chr1-197102716",
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "recall_at_k": 0.6667
+    },
+    "presentation_only_mixmhcpred": {
+      "hit_variant_ids": [
+        "ASPM-chr1-197102716",
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_k": 2,
+      "k": 20,
+      "n_variants_ranked": 130,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 20,
+        "DYNC1H1-chr14-101980529": 2,
+        "MAP2-chr2-209694772": 25
+      },
+      "positives_scoreable": [
+        "ASPM-chr1-197102716",
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "recall_at_k": 0.6667
+    }
+  },
+  "command": "python -m scripts.sid_benchmark_generate --offline",
+  "coverage_guard": {
+    "coverage": 0.8844,
+    "guard": "COVERAGE_BELOW_THRESHOLD",
+    "message": "generation covers only 88.4% of the eligible universe (< 95%); end-to-end generation must be over the COMPLETE label-blind universe, not a subset.",
+    "note": "generation covers missense+frameshift only; stop_gained/inframe unsupported => honest incomplete coverage, NOT leakage (positive-subset check passed)."
+  },
+  "experiment": "sid_benchmark_label_blind_generation",
+  "generation": {
+    "n_peptide_hla_candidates": 59755,
+    "variants_failed": 7,
+    "variants_generated_ok": 130,
+    "variants_unsupported": 10
+  },
+  "hla_panel": [
+    "HLA-A*01:01",
+    "HLA-B*08:01",
+    "HLA-B*27:05",
+    "HLA-C*01:02",
+    "HLA-C*07:01"
+  ],
+  "labels_joined_after_freeze": [
+    "ASPM-chr1-197102716",
+    "DYNC1H1-chr14-101980529",
+    "MAP2-chr2-209694772"
+  ],
+  "mode": "offline",
+  "prime_commit": "7b18d4e11042141e7102f7c69be2b0e03d138dab",
+  "stage_of_first_loss": {
+    "ASPM-chr1-197102716": {
+      "stage_of_first_loss": "reached scoring (rankable)",
+      "status": "ok"
+    },
+    "DYNC1H1-chr14-101980529": {
+      "stage_of_first_loss": "reached scoring (rankable)",
+      "status": "ok"
+    },
+    "MAP2-chr2-209694772": {
+      "stage_of_first_loss": "reached scoring (rankable)",
+      "status": "ok"
+    }
+  },
+  "universe": {
+    "eligible": 147,
+    "supported_missense_frameshift": 137,
+    "total": 200,
+    "unsupported": 10
+  }
+}
