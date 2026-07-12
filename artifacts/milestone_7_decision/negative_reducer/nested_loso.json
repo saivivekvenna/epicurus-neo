@@ -1,0 +1,831 @@
+{
+  "contract": "artifacts/milestone_7_decision/negative_reducer/CONTRACT.md",
+  "corrections": [
+    "PROTOCOL CORRECTION 1",
+    "PROTOCOL CORRECTION 2",
+    "PROTOCOL CORRECTION 3"
+  ],
+  "provenance": {
+    "git_commit": "445208880f62199530dc1e8fd2ba220ccb7ce2a6",
+    "sklearn": "1.9.0",
+    "scipy": "1.18.0",
+    "pythonhashseed": "0",
+    "data_file_sha256": {
+      "artifacts/milestone_7_decision/pool_size_sensitivity/base_gartner.csv": "94cde258748accdc0827d6971a8aefe2da9a98933d5b051fdc68cb31c883f21a",
+      "artifacts/milestone_7_decision/pool_size_sensitivity/base_multimer.csv": "8ba8e5d8c40a36776293f0c1e1d460ffdbf46893f862a15dea8767429bbabbd0",
+      "data/raw/gartner_nci/_cache_improve_prime.tsv": "3e22ab55880ca5285b324849ccb03314a45ddbec83e05fb03fa505ca0e73a2bb",
+      "data/raw/improve/data.zip": "adf02eb5054a8aa4b6eccd3b6e0ff1200889d41ae05655fd6e55c5c347f720d9"
+    },
+    "repro_frozen_sha256_hashseed1": "6570612678b92e8ae6b68a5e49d0647e9991ce08b2e564260d16b977659d656d",
+    "reproducible": true
+  },
+  "hgb_available": true,
+  "n_dev_rows": 29391,
+  "n_dev_patients": 122,
+  "outer_folds": {
+    "improve": {
+      "selected": {
+        "model": "NULL",
+        "C": null,
+        "m": 0,
+        "delta": 0.0,
+        "tau": null
+      },
+      "inner_candidates": [
+        {
+          "model": "NULL",
+          "C": null,
+          "m": 0,
+          "delta": 0.0,
+          "tau": null,
+          "tau_inf": false,
+          "neg_removed": 0,
+          "removed_total": 0,
+          "cp_lb": 1.0,
+          "powered": true
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 0,
+          "tau": 0.4883305511219723,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 538,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 538
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 5,
+          "tau": 0.4883305511219723,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 538,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 538
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 10,
+          "tau": 0.4883305511219723,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 538,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 538
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 0,
+          "tau": 0.47703690907293406,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 538,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 538
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 5,
+          "tau": 0.47703690907293406,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 538,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 538
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 10,
+          "tau": 0.47703690907293406,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 538,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 538
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 0,
+          "tau": 0.45556129987889527,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 536,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 536
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 5,
+          "tau": 0.45556129987889527,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 536,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 536
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 10,
+          "tau": 0.45556129987889527,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 536,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 536
+        }
+      ],
+      "inner_failures": [],
+      "hgb_diagnostic": [
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 0,
+          "tau": 0.27084880106106957,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 961,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 961
+        },
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 5,
+          "tau": 0.27084880106106957,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 961,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 961
+        },
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 10,
+          "tau": 0.27084880106106957,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 959,
+          "cp_lb": 0.9632,
+          "powered": true,
+          "removed_total": 959
+        }
+      ],
+      "outer_test": {
+        "n_pos": 467,
+        "n_neg": 17053,
+        "pos_removed": 0,
+        "neg_removed": 0,
+        "fit_failed": false,
+        "raw_retention": 1.0,
+        "cp_lb_retention": 0.9936,
+        "cp_powered": true,
+        "cp_claim": "retention CP-95%-LB=0.9936",
+        "neg_removal_frac": 0.0,
+        "macro_delta_hits20": 0.0,
+        "matched_random_delta": 0.0,
+        "beats_random": false,
+        "pooled_hits_gate": 82,
+        "pooled_hits_null": 82,
+        "mean_pos_rank_improvement": 0.0,
+        "paired_bootstrap": {
+          "mean_delta": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "p_gt_0": 0.0,
+          "n_patients": 70
+        },
+        "tau": null,
+        "removed_idx": []
+      }
+    },
+    "gartner": {
+      "selected": {
+        "model": "NULL",
+        "C": null,
+        "m": 0,
+        "delta": 0.0,
+        "tau": null
+      },
+      "inner_candidates": [
+        {
+          "model": "NULL",
+          "C": null,
+          "m": 0,
+          "delta": 0.0,
+          "tau": null,
+          "tau_inf": false,
+          "neg_removed": 0,
+          "removed_total": 0,
+          "cp_lb": 1.0,
+          "powered": true
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 0,
+          "tau": 0.49704527776862284,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1608,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1624
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 5,
+          "tau": 0.49704527776862284,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1608,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1624
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 10,
+          "tau": 0.49704527776862284,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1608,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1624
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 0,
+          "tau": 0.4941789816307304,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1612,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1628
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 5,
+          "tau": 0.4941789816307304,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1612,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1628
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 10,
+          "tau": 0.4941789816307304,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1612,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1628
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 0,
+          "tau": 0.4887071539536045,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1612,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1628
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 5,
+          "tau": 0.4887071539536045,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1612,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1628
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 10,
+          "tau": 0.4887071539536045,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1612,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 1628
+        }
+      ],
+      "inner_failures": [],
+      "hgb_diagnostic": [
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 0,
+          "tau": 0.4030742765748905,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 0,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 0
+        },
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 5,
+          "tau": 0.4030742765748905,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 0,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 0
+        },
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 10,
+          "tau": 0.4030742765748905,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 0,
+          "cp_lb": 0.9519,
+          "powered": true,
+          "removed_total": 0
+        }
+      ],
+      "outer_test": {
+        "n_pos": 46,
+        "n_neg": 3722,
+        "pos_removed": 0,
+        "neg_removed": 0,
+        "fit_failed": false,
+        "raw_retention": 1.0,
+        "cp_lb_retention": 0.937,
+        "cp_powered": false,
+        "cp_claim": "CP-underpowered: claim abstained (gate still applied)",
+        "neg_removal_frac": 0.0,
+        "macro_delta_hits20": 0.0,
+        "matched_random_delta": 0.0,
+        "beats_random": false,
+        "pooled_hits_gate": 18,
+        "pooled_hits_null": 18,
+        "mean_pos_rank_improvement": 0.0,
+        "paired_bootstrap": {
+          "mean_delta": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "p_gt_0": 0.0,
+          "n_patients": 26
+        },
+        "tau": null,
+        "removed_idx": []
+      }
+    },
+    "multimer": {
+      "selected": {
+        "model": "NULL",
+        "C": null,
+        "m": 0,
+        "delta": 0.0,
+        "tau": null
+      },
+      "inner_candidates": [
+        {
+          "model": "NULL",
+          "C": null,
+          "m": 0,
+          "delta": 0.0,
+          "tau": null,
+          "tau_inf": false,
+          "neg_removed": 0,
+          "removed_total": 0,
+          "cp_lb": 1.0,
+          "powered": true
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 0,
+          "tau": 0.4967991090809284,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1256,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1273
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 5,
+          "tau": 0.4967991090809284,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1256,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1273
+        },
+        {
+          "model": "nnlog",
+          "C": 0.5,
+          "m": 10,
+          "tau": 0.4967991090809284,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1256,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1273
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 0,
+          "tau": 0.49368090464386916,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1249,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1266
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 5,
+          "tau": 0.49368090464386916,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1249,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1266
+        },
+        {
+          "model": "nnlog",
+          "C": 1.0,
+          "m": 10,
+          "tau": 0.49368090464386916,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1249,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1266
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 0,
+          "tau": 0.4877265048897875,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1240,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1257
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 5,
+          "tau": 0.4877265048897875,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1240,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1257
+        },
+        {
+          "model": "nnlog",
+          "C": 2.0,
+          "m": 10,
+          "tau": 0.4877265048897875,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 1240,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 1257
+        }
+      ],
+      "inner_failures": [],
+      "hgb_diagnostic": [
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 0,
+          "tau": 0.40797367000912976,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 0,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 0
+        },
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 5,
+          "tau": 0.40797367000912976,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 0,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 0
+        },
+        {
+          "model": "hgb",
+          "C": null,
+          "m": 10,
+          "tau": 0.40797367000912976,
+          "tau_inf": false,
+          "delta": 0.0,
+          "neg_removed": 0,
+          "cp_lb": 0.9507,
+          "powered": true,
+          "removed_total": 0
+        }
+      ],
+      "outer_test": {
+        "n_pos": 34,
+        "n_neg": 8069,
+        "pos_removed": 0,
+        "neg_removed": 0,
+        "fit_failed": false,
+        "raw_retention": 1.0,
+        "cp_lb_retention": 0.9157,
+        "cp_powered": false,
+        "cp_claim": "CP-underpowered: claim abstained (gate still applied)",
+        "neg_removal_frac": 0.0,
+        "macro_delta_hits20": 0.0,
+        "matched_random_delta": 0.0,
+        "beats_random": false,
+        "pooled_hits_gate": 20,
+        "pooled_hits_null": 20,
+        "mean_pos_rank_improvement": 0.0,
+        "paired_bootstrap": {
+          "mean_delta": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "p_gt_0": 0.0,
+          "n_patients": 26
+        },
+        "tau": null,
+        "removed_idx": []
+      }
+    }
+  },
+  "deploy_full_dev_candidates": [
+    {
+      "model": "NULL",
+      "C": null,
+      "m": 0,
+      "delta": 0.0,
+      "tau": null,
+      "tau_inf": false,
+      "neg_removed": 0,
+      "removed_total": 0,
+      "cp_lb": 1.0,
+      "powered": true
+    },
+    {
+      "model": "nnlog",
+      "C": 0.5,
+      "m": 0,
+      "tau": 0.4963454033592578,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 1986,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2004
+    },
+    {
+      "model": "nnlog",
+      "C": 0.5,
+      "m": 5,
+      "tau": 0.4963454033592578,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 1986,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2004
+    },
+    {
+      "model": "nnlog",
+      "C": 0.5,
+      "m": 10,
+      "tau": 0.4963454033592578,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 1986,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2004
+    },
+    {
+      "model": "nnlog",
+      "C": 1.0,
+      "m": 0,
+      "tau": 0.49280632531376667,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 1990,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2008
+    },
+    {
+      "model": "nnlog",
+      "C": 1.0,
+      "m": 5,
+      "tau": 0.49280632531376667,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 1990,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2008
+    },
+    {
+      "model": "nnlog",
+      "C": 1.0,
+      "m": 10,
+      "tau": 0.49280632531376667,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 1990,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2008
+    },
+    {
+      "model": "nnlog",
+      "C": 2.0,
+      "m": 0,
+      "tau": 0.48608920237781733,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 2010,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2028
+    },
+    {
+      "model": "nnlog",
+      "C": 2.0,
+      "m": 5,
+      "tau": 0.48608920237781733,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 2010,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2028
+    },
+    {
+      "model": "nnlog",
+      "C": 2.0,
+      "m": 10,
+      "tau": 0.48608920237781733,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 2010,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 2028
+    }
+  ],
+  "deploy_full_dev_hgb_diagnostic": [
+    {
+      "model": "hgb",
+      "C": null,
+      "m": 0,
+      "tau": 0.4042618847723838,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 0,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 0
+    },
+    {
+      "model": "hgb",
+      "C": null,
+      "m": 5,
+      "tau": 0.4042618847723838,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 0,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 0
+    },
+    {
+      "model": "hgb",
+      "C": null,
+      "m": 10,
+      "tau": 0.4042618847723838,
+      "tau_inf": false,
+      "delta": 0.0,
+      "neg_removed": 0,
+      "cp_lb": 0.9516,
+      "powered": true,
+      "removed_total": 0
+    }
+  ],
+  "deploy_full_dev_failures": [],
+  "aggregate": {
+    "macro_delta_hits20": 0.0,
+    "matched_random_delta": 0.0,
+    "paired_bootstrap": {
+      "mean_delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "p_gt_0": 0.0,
+      "n_patients": 122
+    },
+    "worst_study_delta": 0.0,
+    "agg_pos": 547,
+    "agg_pos_removed": 0,
+    "agg_cp_lb_retention": 0.9945,
+    "improve_cp_lb_retention": 0.9936,
+    "improve_n_pos": 467,
+    "improve_pos_removed": 0
+  },
+  "eligibility": {
+    "every_study_noncatastrophic": true,
+    "aggregate_gain_beats_random": false,
+    "any_negative_removal": false,
+    "aggregate_cp_ge_0_95": true,
+    "improve_cp_ge_0_95": true,
+    "loso_eligible": false,
+    "deploy_recipe_valid": false,
+    "ELIGIBLE": false
+  },
+  "frozen": {
+    "name": "negative_reducer",
+    "version": "1.0.0",
+    "frozen": "NULL",
+    "reason": "nested LOSO evidence did not pass CONTRACT \u00a75 (see eligibility)",
+    "full_dev_selection": {
+      "model": "NULL",
+      "C": null,
+      "m": 0,
+      "delta": 0.0
+    },
+    "deploy_ok": false,
+    "stage2_must_not_refit": "N/A (NULL frozen; nothing to apply)",
+    "sha256": "6570612678b92e8ae6b68a5e49d0647e9991ce08b2e564260d16b977659d656d"
+  },
+  "verdict": "NULL FROZEN (honest negative)"
+}
