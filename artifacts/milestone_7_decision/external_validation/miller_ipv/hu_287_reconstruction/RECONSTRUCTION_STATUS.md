@@ -23,10 +23,10 @@ _LOCKED_TEST: labels never consulted for download/convert/HLA/expression/calling
 
 ## NOT_EVALUABLE stages (machine-actionable — see DEPENDENCY_MANIFEST.md)
 
-- **hla_typing_classI**: missing tool(s): need [OptiType OR arcasHLA OR hla-la] on PATH
-- **wes_alignment**: tools present (bwa+samtools) but missing reference/index: ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa', 'data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt']
-- **somatic_calling**: missing tool(s): need [gatk OR strelka] on PATH
-- **mutanome_enumeration**: missing tool(s): need [pvacseq OR pvactools] on PATH
+- **hla_typing_classI**: OptiType: missing tools ['OptiTypePipeline.py', 'razers3'], missing refs ['data/raw/refs/hla/hla_reference_dna.fasta']; arcasHLA: missing tools ['arcasHLA'], missing refs ['data/raw/refs/hla/IMGTHLA']; T1K: missing tools ['run-t1k'], missing refs ['data/raw/refs/hla/t1k_hlaidx']
+- **wes_alignment**: bwa-mem+samtools: missing refs ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt', 'data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.sa']
+- **somatic_calling**: Mutect2: missing refs ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.dict']; Strelka2: missing tools ['configureStrelkaSomaticWorkflow.py']
+- **mutanome_enumeration**: VEP+lossless: missing tools ['vep'], missing refs ['data/raw/refs/vep/homo_sapiens', 'data/raw/refs/gencode/gencode.v44.annotation.gtf']; pvacseq: missing tools ['pvacseq', 'vep'], missing refs ['data/raw/refs/vep/homo_sapiens']
 - **scoring_prime_epicurus**: local PRIME/MixMHCpred present but UPSTREAM-BLOCKED: needs the re-enumerated candidate universe + class-I HLA before any peptide can be scored
 
 ## North-star loop

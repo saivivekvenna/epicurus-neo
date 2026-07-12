@@ -18,7 +18,7 @@
       "purpose": "WES alignment + somatic calling",
       "dest": "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
       "acquire": "curl -L https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz | gunzip > <dest>; bwa index <dest>; samtools faidx <dest>",
-      "present": false
+      "present": true
     },
     {
       "name": "GENCODE_v44_transcripts",
@@ -45,95 +45,269 @@
   "reconstruction_stages": [
     {
       "stage": "sra_to_fastq",
-      "ref_paths": [],
-      "references": [],
       "produces": "paired FASTQ per run",
+      "methods": [
+        {
+          "method": "fasterq-dump",
+          "tools": [
+            "fasterq-dump"
+          ],
+          "refs": []
+        },
+        {
+          "method": "fastq-dump",
+          "tools": [
+            "fastq-dump"
+          ],
+          "refs": []
+        }
+      ],
+      "method_status": [
+        {
+          "method": "fasterq-dump",
+          "missing_tools": [],
+          "missing_refs": []
+        },
+        {
+          "method": "fastq-dump",
+          "missing_tools": [],
+          "missing_refs": []
+        }
+      ],
       "status": "RUNNABLE",
-      "resolved_tools": {
-        "fasterq-dump": "/opt/homebrew/bin/fasterq-dump"
-      }
+      "runnable_method": "fasterq-dump"
     },
     {
       "stage": "hla_typing_classI",
-      "ref_paths": [
-        "data/raw/refs/hla/hla_reference_dna.fasta"
+      "produces": "4-digit class-I HLA (A/B/C) from normal exome (needed for PRIME/EL ranking)",
+      "methods": [
+        {
+          "method": "OptiType",
+          "tools": [
+            "OptiTypePipeline.py",
+            "razers3"
+          ],
+          "refs": [
+            "data/raw/refs/hla/hla_reference_dna.fasta"
+          ]
+        },
+        {
+          "method": "arcasHLA",
+          "tools": [
+            "arcasHLA"
+          ],
+          "refs": [
+            "data/raw/refs/hla/IMGTHLA"
+          ]
+        },
+        {
+          "method": "T1K",
+          "tools": [
+            "run-t1k"
+          ],
+          "refs": [
+            "data/raw/refs/hla/t1k_hlaidx"
+          ]
+        }
       ],
-      "references": [
-        "IMGT/HLA DNA reference (hla_reference_dna.fasta)"
+      "method_status": [
+        {
+          "method": "OptiType",
+          "missing_tools": [
+            "OptiTypePipeline.py",
+            "razers3"
+          ],
+          "missing_refs": [
+            "data/raw/refs/hla/hla_reference_dna.fasta"
+          ]
+        },
+        {
+          "method": "arcasHLA",
+          "missing_tools": [
+            "arcasHLA"
+          ],
+          "missing_refs": [
+            "data/raw/refs/hla/IMGTHLA"
+          ]
+        },
+        {
+          "method": "T1K",
+          "missing_tools": [
+            "run-t1k"
+          ],
+          "missing_refs": [
+            "data/raw/refs/hla/t1k_hlaidx"
+          ]
+        }
       ],
-      "produces": "4-digit class-I HLA (A/B/C) from normal exome \u2014 REQUIRED for candidate-HLA pairing",
       "status": "NOT_EVALUABLE",
-      "reason": "missing tool(s): need [OptiType OR arcasHLA OR hla-la] on PATH",
+      "reason": "OptiType: missing tools ['OptiTypePipeline.py', 'razers3'], missing refs ['data/raw/refs/hla/hla_reference_dna.fasta']; arcasHLA: missing tools ['arcasHLA'], missing refs ['data/raw/refs/hla/IMGTHLA']; T1K: missing tools ['run-t1k'], missing refs ['data/raw/refs/hla/t1k_hlaidx']",
       "install_hint": "conda install -c bioconda optitype razers3   # or: conda install -c bioconda arcas-hla"
     },
     {
       "stage": "wes_alignment",
-      "ref_paths": [
-        "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-        "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt"
+      "produces": "coordinate-sorted, dup-marked tumor & normal BAM",
+      "methods": [
+        {
+          "method": "bwa-mem+samtools",
+          "tools": [
+            "bwa",
+            "samtools"
+          ],
+          "refs": [
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.amb",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.ann",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.pac",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.sa"
+          ]
+        }
       ],
-      "references": [
-        "GRCh38 primary assembly FASTA + .fai + BWA index"
+      "method_status": [
+        {
+          "method": "bwa-mem+samtools",
+          "missing_tools": [],
+          "missing_refs": [
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.sa"
+          ]
+        }
       ],
-      "produces": "coordinate-sorted tumor & normal BAM",
       "status": "NOT_EVALUABLE",
-      "reason": "tools present (bwa+samtools) but missing reference/index: ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa', 'data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt']",
-      "resolved_tools": {
-        "bwa": "/opt/homebrew/bin/bwa",
-        "samtools": "/opt/homebrew/bin/samtools"
-      }
+      "reason": "bwa-mem+samtools: missing refs ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt', 'data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.sa']"
     },
     {
       "stage": "somatic_calling",
-      "ref_paths": [
-        "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+      "produces": "PASS somatic SNV/indel VCF with tumor VAF + depth",
+      "methods": [
+        {
+          "method": "Mutect2",
+          "tools": [
+            "gatk"
+          ],
+          "refs": [
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.dict"
+          ],
+          "note": "matched tumor-vs-normal; gnomAD af-only germline resource optional (documented sensitivity deviation if absent)"
+        },
+        {
+          "method": "Strelka2",
+          "tools": [
+            "configureStrelkaSomaticWorkflow.py"
+          ],
+          "refs": [
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai"
+          ],
+          "note": "requires bgzipped+tabixed inputs"
+        }
       ],
-      "references": [
-        "GRCh38 FASTA",
-        "germline resource + PoN (Mutect2)"
+      "method_status": [
+        {
+          "method": "Mutect2",
+          "missing_tools": [],
+          "missing_refs": [
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.dict"
+          ],
+          "note": "matched tumor-vs-normal; gnomAD af-only germline resource optional (documented sensitivity deviation if absent)"
+        },
+        {
+          "method": "Strelka2",
+          "missing_tools": [
+            "configureStrelkaSomaticWorkflow.py"
+          ],
+          "missing_refs": [],
+          "note": "requires bgzipped+tabixed inputs"
+        }
       ],
-      "produces": "somatic SNV/indel VCF with tumor VAF + depth",
-      "caveat": "bcftools alone is NOT a valid somatic caller (no tumor-vs-normal model); requires Mutect2 (gatk4) or Strelka2",
       "status": "NOT_EVALUABLE",
-      "reason": "missing tool(s): need [gatk OR strelka] on PATH",
+      "reason": "Mutect2: missing refs ['data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.dict']; Strelka2: missing tools ['configureStrelkaSomaticWorkflow.py']",
       "install_hint": "conda install -c bioconda gatk4   # Mutect2 tumor-vs-normal; or bioconda strelka"
     },
     {
       "stage": "rna_quant",
-      "ref_paths": [
-        "data/raw/refs/gencode/salmon_index/info.json"
+      "produces": "per-gene TPM (+ mutant-allele RNA evidence via genome align)",
+      "methods": [
+        {
+          "method": "salmon",
+          "tools": [
+            "salmon"
+          ],
+          "refs": [
+            "data/raw/refs/gencode/salmon_index/info.json"
+          ]
+        }
       ],
-      "references": [
-        "GENCODE transcriptome FASTA + salmon/kallisto index"
+      "method_status": [
+        {
+          "method": "salmon",
+          "missing_tools": [],
+          "missing_refs": []
+        }
       ],
-      "produces": "per-gene TPM + mutant-allele RNA evidence",
       "status": "RUNNABLE",
-      "resolved_tools": {
-        "salmon": "/opt/homebrew/bin/salmon"
-      }
+      "runnable_method": "salmon"
     },
     {
       "stage": "mutanome_enumeration",
-      "ref_paths": [
-        "data/raw/refs/vep/homo_sapiens"
+      "produces": "full class-I 8-11mer lossless peptide universe (shared by the lossless arms; the pvac arm generates its own set from the same base variants)",
+      "methods": [
+        {
+          "method": "VEP+lossless",
+          "tools": [
+            "vep"
+          ],
+          "refs": [
+            "data/raw/refs/vep/homo_sapiens",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+            "data/raw/refs/gencode/gencode.v44.annotation.gtf"
+          ]
+        },
+        {
+          "method": "pvacseq",
+          "tools": [
+            "pvacseq",
+            "vep"
+          ],
+          "refs": [
+            "data/raw/refs/vep/homo_sapiens",
+            "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+          ]
+        }
       ],
-      "references": [
-        "GRCh38 + GENCODE annotation + Ensembl VEP cache"
+      "method_status": [
+        {
+          "method": "VEP+lossless",
+          "missing_tools": [
+            "vep"
+          ],
+          "missing_refs": [
+            "data/raw/refs/vep/homo_sapiens",
+            "data/raw/refs/gencode/gencode.v44.annotation.gtf"
+          ]
+        },
+        {
+          "method": "pvacseq",
+          "missing_tools": [
+            "pvacseq",
+            "vep"
+          ],
+          "missing_refs": [
+            "data/raw/refs/vep/homo_sapiens"
+          ]
+        }
       ],
-      "produces": "full class-I 8-11mer candidate universe (the SHARED denominator for both arms)",
       "status": "NOT_EVALUABLE",
-      "reason": "missing tool(s): need [pvacseq OR pvactools] on PATH",
+      "reason": "VEP+lossless: missing tools ['vep'], missing refs ['data/raw/refs/vep/homo_sapiens', 'data/raw/refs/gencode/gencode.v44.annotation.gtf']; pvacseq: missing tools ['pvacseq', 'vep'], missing refs ['data/raw/refs/vep/homo_sapiens']",
       "install_hint": "pip install pvactools && conda install -c bioconda ensembl-vep   # + VEP cache"
     },
     {
       "stage": "scoring_prime_epicurus",
-      "ref_paths": [],
-      "references": [
-        "genuine PRIME 2.1 + MixMHCpred 3.0 (gitignored local)",
-        "configs/frozen/epicurus_v0_1.json",
-        "configs/frozen/expression_policy_v1.json"
-      ],
-      "produces": "genuine PRIME AND frozen Epicurus ranks over the IDENTICAL candidate universe",
+      "produces": "genuine PRIME AND frozen Epicurus over the IDENTICAL universe",
       "resolved_tools": {
         "PRIME": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/tools/PRIME/PRIME",
         "MixMHCpred": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/tools/MixMHCpred/MixMHCpred"

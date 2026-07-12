@@ -120,25 +120,32 @@ def test_resumable_get_oversized_partial_restarts_clean(tmp_path):
 
 
 # ---- machine-actionable stage map + manifest -------------------------------------------------------
-def test_reconstruction_stages_gate_on_tools_AND_references():
-    present = {"fasterq-dump": "/x/fasterq-dump", "bwa": "/x/bwa", "samtools": "/x/samtools",
-               "bcftools": "/x/bcftools", "salmon": "/x/salmon"}
-    def ref(p):                                   # only the salmon index exists; GRCh38 absent
+def test_reconstruction_stages_method_specific_tools_and_reference_sentinels():
+    present = {"fasterq-dump": "/x/fd", "bwa": "/x/bwa", "samtools": "/x/st", "salmon": "/x/sal", "gatk": "/x/gatk"}
+    def ref(p):                                   # only the salmon index exists; GRCh38/BWA sentinels absent
         return "salmon_index" in p
-    by = {s["stage"]: s for s in md.reconstruction_stages(which=lambda t: present.get(t), ref_exists=ref)}
-    assert by["sra_to_fastq"]["status"] == "RUNNABLE"                       # needs no reference
+    by = {s["stage"]: s for s in md.reconstruction_stages(resolve=lambda t: present.get(t), ref_exists=ref)}
+    assert by["sra_to_fastq"]["status"] == "RUNNABLE" and by["sra_to_fastq"]["runnable_method"] == "fasterq-dump"
     assert by["rna_quant"]["status"] == "RUNNABLE"                          # salmon + index present
-    # tools present but reference ABSENT -> NOT_EVALUABLE with a DISTINCT missing-reference reason (Fix 2)
-    assert by["wes_alignment"]["status"] == "NOT_EVALUABLE"
-    assert "missing reference" in by["wes_alignment"]["reason"] and "tools present" in by["wes_alignment"]["reason"]
-    # missing TOOL -> distinct missing-tool reason
-    assert by["hla_typing_classI"]["status"] == "NOT_EVALUABLE" and "missing tool" in by["hla_typing_classI"]["reason"]
-    assert by["mutanome_enumeration"]["status"] == "NOT_EVALUABLE" and "missing tool" in by["mutanome_enumeration"]["reason"]
+    # bwa+samtools present but the full BWA sentinel set is absent -> NOT_EVALUABLE, method shows missing_refs
+    wes = by["wes_alignment"]
+    assert wes["status"] == "NOT_EVALUABLE"
+    m = wes["method_status"][0]
+    assert m["missing_tools"] == [] and m["missing_refs"]                   # distinct: refs missing, tools ok
+    # Mutect2: gatk present but FASTA/.fai/.dict absent -> missing_refs (method-specific)
+    mut = [x for x in by["somatic_calling"]["method_status"] if x["method"] == "Mutect2"][0]
+    assert mut["missing_tools"] == [] and any(".dict" in r for r in mut["missing_refs"])
+    # HLA: no OptiType/arcasHLA/T1K -> every method missing tools
+    assert by["hla_typing_classI"]["status"] == "NOT_EVALUABLE"
+    assert all(x["missing_tools"] for x in by["hla_typing_classI"]["method_status"])
+    # mutanome: no vep/pvacseq -> missing tools
+    assert by["mutanome_enumeration"]["status"] == "NOT_EVALUABLE"
+    assert all(x["missing_tools"] for x in by["mutanome_enumeration"]["method_status"])
 
 
 def test_scoring_stage_recognizes_local_prime_but_stays_upstream_blocked():
     # Fix 4: scoring must recognize the on-disk PRIME/MixMHCpred (not require PATH), yet stay NOT_EVALUABLE
-    by = {s["stage"]: s for s in md.reconstruction_stages(which=lambda t: None, ref_exists=lambda p: False)}
+    by = {s["stage"]: s for s in md.reconstruction_stages(resolve=lambda t: None, ref_exists=lambda p: False)}
     sc = by["scoring_prime_epicurus"]
     assert sc["status"] == "NOT_EVALUABLE"
     assert "PRIME" in sc["resolved_tools"]                                  # local path recognized

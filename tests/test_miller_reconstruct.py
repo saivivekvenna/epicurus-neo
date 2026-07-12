@@ -15,7 +15,7 @@ def test_dependency_manifest_gates_on_refs_and_carries_install_hints():
     by = {s["stage"]: s for s in man["reconstruction_stages"]}
     assert by["sra_to_fastq"]["status"] == "RUNNABLE"                       # needs no reference
     assert by["rna_quant"]["status"] == "NOT_EVALUABLE"                     # salmon present but index absent
-    assert "missing reference" in by["rna_quant"]["reason"]
+    assert by["rna_quant"]["method_status"][0]["missing_refs"]              # method-level missing reference
     # with the salmon index present, rna_quant becomes RUNNABLE
     man2 = mr.dependency_manifest(which=lambda t: present.get(t), exists=lambda p: "salmon_index" in p)
     by2 = {s["stage"]: s for s in man2["reconstruction_stages"]}

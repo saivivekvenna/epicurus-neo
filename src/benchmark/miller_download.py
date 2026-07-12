@@ -28,10 +28,26 @@ _ROLE = {"normal_exome": "normal_exome", "tumor_exome": "tumor_exome", "tumor_rn
 # local (gitignored) scoring binaries — recognized by PATH-independent existence, not shutil.which
 PRIME_BIN = _ROOT / "data/raw/tools/PRIME/PRIME"
 MIXMHC_BIN = _ROOT / "data/raw/tools/MixMHCpred/MixMHCpred"
+# tools we may install locally (not on PATH) — resolved by existence in addition to shutil.which
+LOCAL_TOOLS = {"gatk": _ROOT / "data/raw/tools/gatk-4.5.0.0/gatk"}
+
+# reference sentinel paths (repo-relative)
+_G = "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+_G_DICT = "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.dict"
+_BWA_SENTINELS = [_G, _G + ".fai", _G + ".amb", _G + ".ann", _G + ".bwt", _G + ".pac", _G + ".sa"]
 
 
 def _default_ref_exists(rel_path: str) -> bool:
     return (_ROOT / rel_path).exists()
+
+
+def resolve_tool(name: str, which=shutil.which) -> str | None:
+    """Resolve a tool by PATH first, then by a known local (gitignored) install path."""
+    hit = which(name)
+    if hit:
+        return hit
+    local = LOCAL_TOOLS.get(name)
+    return str(local) if local and local.exists() else None
 
 
 def odp_url(run: str) -> str:
@@ -114,72 +130,73 @@ def resumable_get(url: str, dest, *, expected_size: int | None = None, chunk: in
 
 
 # ---- machine-actionable reconstruction stage map -----------------------------------------------------
-def reconstruction_stages(which=shutil.which, ref_exists=_default_ref_exists) -> list[dict]:
-    """Every downstream reconstruction stage with its required tool(s) AND reference/index path(s), and its
-    CURRENT status: RUNNABLE only if the tools resolve AND every required reference/index is present on disk;
-    otherwise NOT_EVALUABLE with a DISTINCT reason (missing tool vs missing reference). The scoring stage
-    recognizes the local (gitignored) PRIME/MixMHCpred binaries by path (not PATH) but stays upstream-blocked
-    until the candidate universe + HLA exist. Machine-actionable, not a prose 'blocked'."""
+def reconstruction_stages(which=shutil.which, ref_exists=_default_ref_exists, resolve=None) -> list[dict]:
+    """Every downstream stage as one or more METHODS, each with its specific tool(s) AND reference/index
+    SENTINELS. A method is RUNNABLE only if all its tools resolve (PATH or local) AND every sentinel exists;
+    a stage is RUNNABLE if ANY method is, else NOT_EVALUABLE listing per-method missing tools/references
+    distinctly. Method-specific (Fixes): WES needs the full BWA sentinel set (.amb/.ann/.bwt/.pac/.sa + .fai);
+    Mutect2 needs FASTA+.fai+.dict (germline resource is an optional documented strategy) while Strelka2 has
+    its own set; mutanome needs GRCh38 + GENCODE GTF + VEP cache, not merely a cache dir; HLA is
+    tool-specific. Scoring recognizes local PRIME/MixMHCpred but stays upstream-blocked."""
     stages = [
-        {"stage": "sra_to_fastq", "tools_any": [["fasterq-dump"], ["fastq-dump"]], "ref_paths": [],
-         "references": [], "produces": "paired FASTQ per run"},
-        {"stage": "hla_typing_classI", "tools_any": [["OptiType"], ["arcasHLA"], ["hla-la"]],
-         "ref_paths": ["data/raw/refs/hla/hla_reference_dna.fasta"],
-         "references": ["IMGT/HLA DNA reference (hla_reference_dna.fasta)"],
-         "produces": "4-digit class-I HLA (A/B/C) from normal exome — REQUIRED for candidate-HLA pairing"},
-        {"stage": "wes_alignment", "tools_any": [["bwa", "samtools"], ["bwa-mem2", "samtools"]],
-         "ref_paths": ["data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-                       "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.bwt"],
-         "references": ["GRCh38 primary assembly FASTA + .fai + BWA index"],
-         "produces": "coordinate-sorted tumor & normal BAM"},
-        {"stage": "somatic_calling", "tools_any": [["gatk"], ["strelka"]],
-         "ref_paths": ["data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"],
-         "references": ["GRCh38 FASTA", "germline resource + PoN (Mutect2)"],
-         "produces": "somatic SNV/indel VCF with tumor VAF + depth",
-         "caveat": "bcftools alone is NOT a valid somatic caller (no tumor-vs-normal model); requires "
-                   "Mutect2 (gatk4) or Strelka2"},
-        {"stage": "rna_quant", "tools_any": [["salmon"], ["kallisto"]],
-         "ref_paths": ["data/raw/refs/gencode/salmon_index/info.json"],
-         "references": ["GENCODE transcriptome FASTA + salmon/kallisto index"],
-         "produces": "per-gene TPM + mutant-allele RNA evidence"},
-        {"stage": "mutanome_enumeration", "tools_any": [["pvacseq"], ["pvactools"]],
-         "ref_paths": ["data/raw/refs/vep/homo_sapiens"],
-         "references": ["GRCh38 + GENCODE annotation + Ensembl VEP cache"],
-         "produces": "full class-I 8-11mer candidate universe (the SHARED denominator for both arms)"},
-        {"stage": "scoring_prime_epicurus", "tools_any": [], "ref_paths": [],
-         "references": ["genuine PRIME 2.1 + MixMHCpred 3.0 (gitignored local)",
-                        "configs/frozen/epicurus_v0_1.json", "configs/frozen/expression_policy_v1.json"],
-         "produces": "genuine PRIME AND frozen Epicurus ranks over the IDENTICAL candidate universe"},
+        {"stage": "sra_to_fastq", "produces": "paired FASTQ per run",
+         "methods": [{"method": "fasterq-dump", "tools": ["fasterq-dump"], "refs": []},
+                     {"method": "fastq-dump", "tools": ["fastq-dump"], "refs": []}]},
+        {"stage": "hla_typing_classI",
+         "produces": "4-digit class-I HLA (A/B/C) from normal exome (needed for PRIME/EL ranking)",
+         "methods": [{"method": "OptiType", "tools": ["OptiTypePipeline.py", "razers3"],
+                      "refs": ["data/raw/refs/hla/hla_reference_dna.fasta"]},
+                     {"method": "arcasHLA", "tools": ["arcasHLA"], "refs": ["data/raw/refs/hla/IMGTHLA"]},
+                     {"method": "T1K", "tools": ["run-t1k"], "refs": ["data/raw/refs/hla/t1k_hlaidx"]}]},
+        {"stage": "wes_alignment", "produces": "coordinate-sorted, dup-marked tumor & normal BAM",
+         "methods": [{"method": "bwa-mem+samtools", "tools": ["bwa", "samtools"], "refs": _BWA_SENTINELS}]},
+        {"stage": "somatic_calling", "produces": "PASS somatic SNV/indel VCF with tumor VAF + depth",
+         "methods": [{"method": "Mutect2", "tools": ["gatk"], "refs": [_G, _G + ".fai", _G_DICT],
+                      "note": "matched tumor-vs-normal; gnomAD af-only germline resource optional "
+                              "(documented sensitivity deviation if absent)"},
+                     {"method": "Strelka2", "tools": ["configureStrelkaSomaticWorkflow.py"],
+                      "refs": [_G, _G + ".fai"], "note": "requires bgzipped+tabixed inputs"}]},
+        {"stage": "rna_quant", "produces": "per-gene TPM (+ mutant-allele RNA evidence via genome align)",
+         "methods": [{"method": "salmon", "tools": ["salmon"], "refs": ["data/raw/refs/gencode/salmon_index/info.json"]}]},
+        {"stage": "mutanome_enumeration",
+         "produces": "full class-I 8-11mer lossless peptide universe (shared by the lossless arms; the "
+                     "pvac arm generates its own set from the same base variants)",
+         "methods": [{"method": "VEP+lossless", "tools": ["vep"],
+                      "refs": ["data/raw/refs/vep/homo_sapiens", _G, "data/raw/refs/gencode/gencode.v44.annotation.gtf"]},
+                     {"method": "pvacseq", "tools": ["pvacseq", "vep"],
+                      "refs": ["data/raw/refs/vep/homo_sapiens", _G]}]},
     ]
+    if resolve is None:
+        def resolve(name):
+            return resolve_tool(name, which)
     for s in stages:
-        if s["stage"] == "scoring_prime_epicurus":
-            local = {"PRIME": str(PRIME_BIN) if PRIME_BIN.exists() else None,
-                     "MixMHCpred": str(MIXMHC_BIN) if MIXMHC_BIN.exists() else None}
-            s["resolved_tools"] = local
-            s["status"] = "NOT_EVALUABLE"
-            s["reason"] = ("local PRIME/MixMHCpred present but UPSTREAM-BLOCKED: needs the re-enumerated "
-                           "candidate universe + class-I HLA before any peptide can be scored"
-                           if (local["PRIME"] or local["MixMHCpred"])
-                           else "PRIME/MixMHCpred binaries not found on disk")
-            s.pop("tools_any", None)
-            continue
-        satisfied = None
-        for combo in s["tools_any"]:
-            if all(which(t) is not None for t in combo):
-                satisfied = combo
-                break
-        missing_refs = [p for p in s["ref_paths"] if not ref_exists(p)]
-        if satisfied is None:
-            need = " OR ".join("+".join(c) for c in s["tools_any"])
-            s["status"], s["reason"] = "NOT_EVALUABLE", f"missing tool(s): need [{need}] on PATH"
-        elif missing_refs:
-            s["status"] = "NOT_EVALUABLE"
-            s["reason"] = f"tools present ({'+'.join(satisfied)}) but missing reference/index: {missing_refs}"
-            s["resolved_tools"] = {t: which(t) for t in satisfied}
+        runnable_method, per_method = None, []
+        for m in s["methods"]:
+            missing_tools = [t for t in m["tools"] if resolve(t) is None]
+            missing_refs = [p for p in m["refs"] if not ref_exists(p)]
+            per_method.append({"method": m["method"], "missing_tools": missing_tools,
+                               "missing_refs": missing_refs, **({"note": m["note"]} if "note" in m else {})})
+            if not missing_tools and not missing_refs and runnable_method is None:
+                runnable_method = m["method"]
+        s["method_status"] = per_method
+        if runnable_method is not None:
+            s["status"], s["runnable_method"] = "RUNNABLE", runnable_method
         else:
-            s["status"] = "RUNNABLE"
-            s["resolved_tools"] = {t: which(t) for t in satisfied}
-        s.pop("tools_any", None)
+            s["status"] = "NOT_EVALUABLE"
+            s["reason"] = "; ".join(
+                f"{p['method']}: " + ", ".join(
+                    ([f"missing tools {p['missing_tools']}"] if p["missing_tools"] else [])
+                    + ([f"missing refs {p['missing_refs']}"] if p["missing_refs"] else []))
+                for p in per_method)
+    # scoring is special: recognize local PRIME/MixMHCpred by path, but stay upstream-blocked
+    local = {"PRIME": str(PRIME_BIN) if PRIME_BIN.exists() else None,
+             "MixMHCpred": str(MIXMHC_BIN) if MIXMHC_BIN.exists() else None}
+    stages.append({
+        "stage": "scoring_prime_epicurus", "produces": "genuine PRIME AND frozen Epicurus over the IDENTICAL universe",
+        "resolved_tools": local, "status": "NOT_EVALUABLE",
+        "reason": ("local PRIME/MixMHCpred present but UPSTREAM-BLOCKED: needs the re-enumerated candidate "
+                   "universe + class-I HLA before any peptide can be scored" if (local["PRIME"] or local["MixMHCpred"])
+                   else "PRIME/MixMHCpred binaries not found on disk")})
     return stages
 
 
