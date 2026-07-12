@@ -1,0 +1,65 @@
+manifest_version: event-b-cohort-source-1.0.0
+source_id: osteosarc_sid
+status: INGESTED_RECOGNITION_DIAGNOSTIC
+role: DEPLOYMENT_PATIENT_WITH_MEASURED_LABEL   # North-Star input + a measured T-cell recognition label
+
+cite: >-
+  Sid Sijbrandij osteosarcoma open-data project (osteosarc.com / Research to the People). One patient,
+  longitudinal (T0 2022-12 .. T3 2025-04), multi-omic. Publicly readable: b2://osteosarc-data (no DUA).
+provenance:
+  portal: https://osteosarc.com/data/
+  bucket: https://b2.osteosarc.com/  (manifest.txt = 262,036 files; md5sums.txt for curated deliverables)
+  access: public HTTPS, no account/key, no DUA -> derived results are committable
+  distinct_from: rttp_sr24 (a DIFFERENT patient; disjoint HLA; DUA-gated; NO recognition label)
+  gitignored_inputs: data/raw/osteosarc/   # large public files kept out of git for size, not secrecy
+
+why_this_case: >-
+  First deployment-grade patient with BOTH the full North-Star input (WES/WGS somatic + RNA-seq TPM + full
+  class-I HLA) AND a MEASURED T-cell recognition label. The label is the Hudson-Lab IFNg peptide-expansion
+  assay (PBMC stim with tumor-mutation peptides -> IFNg+/- sort -> MiXCR TCR-seq -> mutation-specific clonal
+  expansion). This is the answer key the recognition wall has always lacked on a deployable patient.
+
+measured_label:
+  assay: hudson_lab/peptide_expansion (IFNg-based TCR expansion; May & Aug 2025 PBMC + 4/6-matched healthy donor)
+  recognized_mutations: [ASPM p.G2179R (May+Aug), DYNC1H1 p.V314I (May+Aug), MAP2 p.*868fs (May)]
+  denominator_caveat: >-
+    Exact stimulation-pool composition (true tested set) not published; negatives approximated by the
+    curated candidate set. Request the pool design + additional patients/labels from Hudson Lab / RTTP.
+
+candidate_universe:
+  source: neoantigen_prediction/pvactools/2025.04.27.sg.curated.neoantigen.predictions (MHC_Class_I)
+  shape: 21 curated somatic mutations; 14,780 peptide x HLA candidates
+  hla: [HLA-A*01:01, HLA-B*08:01, HLA-B*27:05, HLA-C*01:02, HLA-C*07:01]
+  ensemble_in_table: [NetMHCpan, NetMHCpanEL, MHCflurry EL, BigMHC_EL, BigMHC_IM, DeepImmuno, MHCnuggets, ...]
+
+featurization:
+  prime: genuine GfellerLab PRIME 2.1 %rank (event_b.prime_adapter.score_prime); cached data/raw/osteosarc/_cache_prime.tsv
+  el: MHCflurry EL presentation percentile (from the pVACtools table)
+  expr: matched RSEM gene TPM (2025.01 tumor)
+  model: frozen Epicurus v0.1 (configs/frozen/epicurus_v0_1.json) via score_with_frozen — applied OUT-OF-SAMPLE, no fit
+
+result:   # DIAGNOSTIC only — n=3 positives (1 in-universe); NOT a tuned model, NOT an ACCEPT/REJECT verdict
+  recall_into_candidate_universe: 1/3   # DYNC1H1 in; ASPM (off-timepoint) + MAP2 (low-expr, 5.2 TPM) dropped upstream
+  ranking_of_recognized_DYNC1H1_among_21:
+    epicurus_v0_1: 1
+    presentation_bestMT_pctile: 1
+    netmhcpan_el: 1
+    genuine_prime: 2
+    mhcflurry_el: 2
+    bigmhc_im: 3
+    deepimmuno: 18
+  headline: >-
+    Ranking is saturated (presentation ranks the recognized DYNC1H1 #1; Epicurus matches it; the two
+    immunogenicity models BigMHC_IM/DeepImmuno do WORSE). The recoverable failure is RECALL: 2/3 recognized
+    neoantigens were filtered before ranking (expression threshold + single-timepoint callset).
+  runner: scripts/osteosarc_rank.py
+  artifact_dir: artifacts/milestone_7_decision/osteosarc_sid/   # COMMITTABLE (public data)
+
+improve_direction:   # principled, to be validated on independent cohorts; NOT fit to this n=3
+  - recall-first candidate policy (do not hard-drop low-expression candidates; MAP2 at 5.2 TPM was recognized)
+  - union the mutanome across timepoints/regions (avoid ASPM-type single-timepoint misses)
+  - high-recall + honest abstention over false-precision reranking (adding a learned recognition score hurt)
+
+ask_hudson_rttp_for:
+  - the tumor-peptide stimulation-pool composition (true denominator) for a clean within-patient benchmark
+  - additional patients with matched WES/RNA/HLA + the IFNg expansion (or ELISpot/tetramer) assay

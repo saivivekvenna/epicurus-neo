@@ -151,6 +151,25 @@ count at the BAG level, never the ~285k/1.09M child rows.
   presented is near-chance for the whole field. Sixth straight parity, now external. Underpowered (14 pts, wide
   CIs) → directional confirmation of the wall, not a new gate. Runner `scripts/checkmate153_dev.py`; artifact
   `artifacts/milestone_7_decision/checkmate153/`; manifest `configs/source_manifests/checkmate153.yml`.
+- **osteosarc.com / Sid Sijbrandij (2026-07-12) — first DEPLOYMENT-grade patient with a MEASURED recognition
+  label; recall (not ranking) is the wall.** PUBLIC open-data osteosarcoma case (osteosarc.com / Research to the
+  People; `b2://osteosarc-data`, no DUA), longitudinal T0–T3, full North-Star input. **Distinct patient from
+  RTTP `SR24-58221`** (disjoint HLA A\*01:01/B\*08:01/B\*27:05/C\*01:02/C\*07:01; the on-disk
+  `artifacts/osteosarc_audit/`+`osteosarc_product/` are that RTTP file MISLABELED as osteosarc → disregard).
+  **Measured label = Hudson-Lab IFNγ peptide-expansion assay** (PBMC stim → IFNγ+/− sort → MiXCR TCR-seq →
+  mutation-specific expansion): recognized = ASPM p.G2179R (May+Aug), DYNC1H1 p.V314I (May+Aug), MAP2 …868fs
+  (May). Ran genuine PRIME + frozen Epicurus v0.1 (OUT-OF-SAMPLE, no fit) vs the full pVACtools ensemble on the
+  21 curated candidates (14,780 pep×HLA). **Two results:** (1) **RECALL = 1/3** — only DYNC1H1 (TPM 357) reached
+  the shortlist; MAP2 (TPM 5.2) was expression-filtered, ASPM was off the single 2025.01 callset → 2/3
+  recognized neoantigens dropped *before* any ranking. (2) **Ranking is saturated** — presentation ranks
+  DYNC1H1 #1 of 21, Epicurus matches it, but the two *immunogenicity* models do WORSE (BigMHC_IM #3, DeepImmuno
+  #18). **Take:** the recoverable failure is the candidate FUNNEL (recall + single-timepoint), not the ranker;
+  adding a learned recognition score on top of presentation hurts. Principled (unvalidated, NOT fit to n=3)
+  levers: recall-first candidate policy, cross-timepoint mutanome union, high-recall + honest abstention.
+  n=3 positives (1 in-universe) → DIAGNOSTIC, not a gate. Runner `scripts/osteosarc_rank.py`; artifact
+  `artifacts/milestone_7_decision/osteosarc_sid/`; manifest `configs/source_manifests/osteosarc_sid.yml`.
+  **Highest-value follow-up: ask Hudson Lab/RTTP for the stimulation-pool composition (true denominator) +
+  more patients with the assay → turns n=3 descriptive into a real deployable-patient benchmark.**
 - **Indicated levers (model form now exhausted on these 3 cohorts):**
   1. ~~Assay/regime heads~~ — **DONE (v0.5); closes at a tie.** Do NOT iterate v0.6 model form against the
      current 3 cohorts expecting ACCEPT — v0.3/v0.4/v0.5 prove parity is data-bound, not a tuning miss.
