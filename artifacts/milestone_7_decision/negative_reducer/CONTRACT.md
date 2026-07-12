@@ -5,6 +5,38 @@ read anywhere in the design, dev, or freeze of this task. This document is the b
 and tests implement it exactly. Any deviation must be recorded as an explicit "PROTOCOL CORRECTION" section
 here, committed separately, before it takes effect._
 
+## PROTOCOL CORRECTION 3 (recorded and committed BEFORE any cohort-data run — deeper audit fixes)
+
+A second audit of the (still unrun) runner found safety/serialization gaps. Fixed before any data run:
+
+1. **End-to-end fail-closed.** `fit_nnlogistic` now returns a **convergence status**. A zero-coef model is a
+   constant keep-score 0.5, which — combined with an aggressive OOF τ>0.5 from *successful* inner fits — would
+   otherwise remove **every** removable candidate. Therefore: any failed inner-fold fit makes that (model,C)
+   candidate **ineligible** (skipped); any failed **full** refit (outer-test or full-DEV) forces **KEEP-ALL /
+   freeze NULL**. Removal only ever happens through a *converged* model.
+2. **Non-null freeze requires a valid deployable recipe.** LOSO eligibility passing is necessary but not
+   sufficient: the top-level freeze is non-null **only if** the all-DEV `inner_select` choice has
+   `model != NULL`, `delta > 0`, a **finite/applyable τ**, a **successful full-DEV fit**, and yields **≥1
+   actual removal** on DEV. Otherwise the top level freezes **NULL** with an explicit reason (never a NULL
+   payload mislabeled "NON-NULL GATE FROZEN").
+3. **Exact CP, not rounded.** IMPROVE (and aggregate) CP eligibility recomputes the Clopper–Pearson bound
+   from the raw integer `n_pos`/`pos_removed`; rounding is display-only. A case whose true bound is < 0.95 but
+   rounds to 0.9500 must FAIL.
+4. **Fully applyable frozen payload (§7).** The payload serializes the exact per-feature raw **p1/p99 OOD
+   envelope** + cover threshold + **sklearn/scipy versions** (not a prose policy string). A pure
+   `apply_payload(df, payload)` (no fitting) reproduces the training-path gate decisions; an equivalence test
+   asserts this on synthetic external data. The model-payload SHA-256 covers the envelope + versions.
+5. **Reproducibility fail-closed.** A **non-null** config is NOT written if the cross-`PYTHONHASHSEED` frozen
+   SHA mismatches or the repro subprocess fails: a `finalize_guard` downgrades to NULL (reason
+   `repro_mismatch`) **before any artifact write**. Tested.
+6. **Preflight data-manifest validation (main, before selection).** Assert exact studies
+   {improve, gartner, multimer}; per-study and total (patients, positives, negatives) = the §1 numbers
+   (122/547/28844; improve 70/467/17053, gartner 26/46/3722, multimer 26/34/8069); required columns present;
+   labels are exactly {POSITIVE, TESTED_NEGATIVE}; a unique 0..n-1 reset index; and every allowed data-file
+   hash non-MISSING. Any mismatch aborts before selection (prevents silently running a different corpus).
+7. Existing tests/ruff preserved; Correction 3 committed first, then a code-only checkpoint; stop again
+   before the data run. Sid/Miller untouched.
+
 ## PROTOCOL CORRECTION 2 (recorded and committed BEFORE the runner reads any cohort data — audit fixes)
 
 Audit of the (unrun) runner surfaced leakage/serialization issues; fixed here before any data read:
