@@ -172,11 +172,18 @@ def _hgvs_suffix(value: object) -> str:
     return text.split(":", 1)[1] if ":" in text else text
 
 
-def select_transcript(vep_json: list, *, expected_consequence: str) -> dict:  # noqa: D417
+def select_transcript(vep_json: list, *, expected_consequence: str,
+                      require_mane_refseq: bool = True) -> dict:  # noqa: D417
     """Select the MANE Select protein-coding transcript whose consequence matches; else canonical.
 
     Fails closed (``ValueError``) when neither a MANE Select nor a canonical protein-coding
     transcript with the expected consequence is present — never a best-effort isoform.
+
+    ``require_mane_refseq`` (default True = the frozen strict behavior) aborts if the chosen transcript
+    is canonical but carries no MANE Select RefSeq. Setting it False is a LABEL-BLIND relaxation used by
+    the complete-denominator benchmark: Ensembl's canonical protein-coding transcript is accepted when no
+    MANE Select exists (some genes have no MANE entry). This never consults recognition labels and still
+    refuses non-canonical best-effort isoforms.
     """
     if not vep_json:
         raise ValueError("empty VEP response")
@@ -199,12 +206,12 @@ def select_transcript(vep_json: list, *, expected_consequence: str) -> dict:  # 
             f"no MANE Select / canonical protein-coding transcript with consequence "
             f"'{expected_consequence}' in VEP response"
         )
-    if not chosen.get("mane_select"):
+    if require_mane_refseq and not chosen.get("mane_select"):
         raise ValueError("selected transcript is canonical but lacks a MANE Select RefSeq")
 
     return {
         "transcript_id": str(chosen["transcript_id"]),
-        "mane_refseq": str(chosen["mane_select"]),
+        "mane_refseq": str(chosen.get("mane_select") or ""),
         "protein_start": int(chosen["protein_start"]),
         "amino_acids": str(chosen["amino_acids"]),
         "hgvsc": _hgvs_suffix(chosen.get("hgvsc")),
@@ -275,6 +282,33 @@ def missense_windows(protein_seq: str, protein_pos_1based: int, wt_aa: str, mut_
         )
     mutated = protein_seq[:index] + mut_aa.upper() + protein_seq[index + 1 :]
     return enumerate_windows_covering(mutated, {protein_pos_1based})
+
+
+def inframe_windows(protein_seq: str, protein_start_1based: int, wt_seg: str, mut_seg: str) -> list[str]:
+    """All windows spanning an IN-FRAME deletion/insertion/delins junction. VEP ``amino_acids`` is
+    ``WT/MUT`` (``MUT`` == ``-`` or empty for a pure deletion). The reference segment is verified against
+    the fetched protein (fail-closed); the junction residues (first kept residue on each side) anchor the
+    windows so every emitted peptide contains novel context created by the edit. Downstream is wild-type
+    (in-frame), so only the junction neighbourhood is novel."""
+    protein_seq = protein_seq.upper()
+    wt_seg = "" if wt_seg.strip() in {"-", ""} else wt_seg.upper()
+    mut_seg = "" if mut_seg.strip() in {"-", ""} else mut_seg.upper()
+    start = protein_start_1based - 1
+    if not (0 <= start <= len(protein_seq)):
+        raise ValueError(f"protein start {protein_start_1based} out of range for length {len(protein_seq)}")
+    observed = protein_seq[start : start + len(wt_seg)]
+    if observed != wt_seg:
+        raise ValueError(
+            f"reference segment mismatch at protein position {protein_start_1based}: "
+            f"expected {wt_seg!r}, Ensembl protein has {observed!r} (aborting)"
+        )
+    mutated = protein_seq[:start] + mut_seg + protein_seq[start + len(wt_seg):]
+    # novel junction positions in the MUTATED protein: the inserted/delins residues, plus the residue
+    # immediately flanking the edit on each side (their adjacency is new).
+    lo = max(1, start)                       # 1-based position just before the edit (flank)
+    hi = start + max(len(mut_seg), 1)        # through the last inserted residue / first kept-after residue
+    positions = set(range(lo, min(hi, len(mutated)) + 1))
+    return enumerate_windows_covering(mutated, positions)
 
 
 def translate_to_stop(nt: str) -> str:
@@ -360,25 +394,30 @@ def generate_variant_candidates(
     hla_panel: list[str],
     *,
     expected: dict | None = None,
+    require_mane_refseq: bool = True,
 ) -> dict:
     """Generate ``(peptide, HLA)`` candidates for one variant (network via ``client``).
 
-    ``variant`` carries ``chrom, pos, ref, alt, gene, source_variant_type`` (``missense``/``snv`` or
-    ``frameshift``/``deletion``). Returns the candidate rows plus a provenance record (Ensembl URLs +
-    SHAs, transcript fields, window counts, short junction context).
+    ``variant`` carries ``chrom, pos, ref, alt, gene, source_variant_type`` — ``missense``/``snv``,
+    ``frameshift``/``deletion``, or ``inframe``/``inframe_deletion``/``inframe_insertion``. Returns the
+    candidate rows plus a provenance record (Ensembl URLs + SHAs, transcript fields, window counts).
 
     ``expected`` is OPTIONAL: when a frozen expected-transcript dict is supplied it is verified before any
     window is emitted (target-conditioned reconstruction). When ``expected is None`` the generator runs
     LABEL-BLIND — it trusts VEP's MANE/canonical transcript with the variant's own consequence, which is
     what an end-to-end benchmark over the complete variant universe requires (no per-target verification).
+    ``require_mane_refseq`` is threaded to ``select_transcript`` (see there for the label-blind relaxation).
     """
     kind = str(variant["source_variant_type"]).lower()
     is_frameshift = kind in {"frameshift", "deletion", "frameshift_variant"}
-    consequence = "frameshift_variant" if is_frameshift else "missense_variant"
+    is_inframe = kind in {"inframe", "inframe_deletion", "inframe_insertion"}
+    consequence = ("frameshift_variant" if is_frameshift
+                   else kind if is_inframe else "missense_variant")
 
     hgvs = genomic_hgvs(variant["chrom"], variant["pos"], variant["ref"], variant["alt"])
     vep = client.vep_hgvs(hgvs)
-    selected = select_transcript(vep["json"], expected_consequence=consequence)
+    selected = select_transcript(vep["json"], expected_consequence=consequence,
+                                 require_mane_refseq=require_mane_refseq)
     if expected is not None:
         verify_transcript(selected, expected)
 
@@ -412,6 +451,11 @@ def generate_variant_candidates(
         provenance["ensembl"]["cds"] = {"url": cds["url"], "sha256": cds["sha256"]}
         provenance["ensembl"]["protein"] = {"url": protein["url"], "sha256": protein["sha256"]}
         provenance["novel_junction_context"] = junction_context
+    elif is_inframe:
+        protein = client.sequence(selected["transcript_id"], "protein")
+        wt_seg, mut_seg = (selected["amino_acids"].split("/", 1) + [""])[:2]
+        windows = inframe_windows(protein["seq"], selected["protein_start"], wt_seg, mut_seg)
+        provenance["ensembl"]["protein"] = {"url": protein["url"], "sha256": protein["sha256"]}
     else:
         protein = client.sequence(selected["transcript_id"], "protein")
         wt_aa, mut_aa = selected["amino_acids"].split("/")

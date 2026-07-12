@@ -6,11 +6,11 @@
       ],
       "hits_at_k": 1,
       "k": 20,
-      "n_variants_ranked": 130,
+      "n_variants_ranked": 137,
       "positive_ranks": {
-        "ASPM-chr1-197102716": 39,
+        "ASPM-chr1-197102716": 44,
         "DYNC1H1-chr14-101980529": 1,
-        "MAP2-chr2-209694772": 66
+        "MAP2-chr2-209694772": 72
       },
       "positives_scoreable": [
         "ASPM-chr1-197102716",
@@ -26,9 +26,9 @@
       ],
       "hits_at_k": 2,
       "k": 20,
-      "n_variants_ranked": 130,
+      "n_variants_ranked": 137,
       "positive_ranks": {
-        "ASPM-chr1-197102716": 39,
+        "ASPM-chr1-197102716": 41,
         "DYNC1H1-chr14-101980529": 3,
         "MAP2-chr2-209694772": 10
       },
@@ -41,38 +41,37 @@
     },
     "presentation_only_mixmhcpred": {
       "hit_variant_ids": [
-        "ASPM-chr1-197102716",
         "DYNC1H1-chr14-101980529"
       ],
-      "hits_at_k": 2,
+      "hits_at_k": 1,
       "k": 20,
-      "n_variants_ranked": 130,
+      "n_variants_ranked": 137,
       "positive_ranks": {
-        "ASPM-chr1-197102716": 20,
+        "ASPM-chr1-197102716": 21,
         "DYNC1H1-chr14-101980529": 2,
-        "MAP2-chr2-209694772": 25
+        "MAP2-chr2-209694772": 26
       },
       "positives_scoreable": [
         "ASPM-chr1-197102716",
         "DYNC1H1-chr14-101980529",
         "MAP2-chr2-209694772"
       ],
-      "recall_at_k": 0.6667
+      "recall_at_k": 0.3333
     }
   },
-  "command": "python -m scripts.sid_benchmark_generate --offline",
+  "command": "python -m scripts.sid_benchmark_generate",
   "coverage_guard": {
-    "coverage": 0.8844,
+    "coverage": 0.9252,
     "guard": "COVERAGE_BELOW_THRESHOLD",
-    "message": "generation covers only 88.4% of the eligible universe (< 95%); end-to-end generation must be over the COMPLETE label-blind universe, not a subset.",
+    "message": "generation covers only 92.5% of the eligible universe (< 95%); end-to-end generation must be over the COMPLETE label-blind universe, not a subset.",
     "note": "generation covers missense+frameshift only; stop_gained/inframe unsupported => honest incomplete coverage, NOT leakage (positive-subset check passed)."
   },
   "experiment": "sid_benchmark_label_blind_generation",
   "generation": {
-    "n_peptide_hla_candidates": 59755,
-    "variants_failed": 7,
-    "variants_generated_ok": 130,
-    "variants_unsupported": 10
+    "n_peptide_hla_candidates": 62540,
+    "variants_failed": 2,
+    "variants_generated_ok": 137,
+    "variants_unsupported": 8
   },
   "hla_panel": [
     "HLA-A*01:01",
@@ -86,7 +85,7 @@
     "DYNC1H1-chr14-101980529",
     "MAP2-chr2-209694772"
   ],
-  "mode": "offline",
+  "mode": "online",
   "prime_commit": "7b18d4e11042141e7102f7c69be2b0e03d138dab",
   "stage_of_first_loss": {
     "ASPM-chr1-197102716": {
@@ -104,8 +103,8 @@
   },
   "universe": {
     "eligible": 147,
-    "supported_missense_frameshift": 137,
+    "supported_missense_frameshift": 139,
     "total": 200,
-    "unsupported": 10
+    "unsupported": 8
   }
 }

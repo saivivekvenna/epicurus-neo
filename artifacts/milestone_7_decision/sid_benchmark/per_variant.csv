@@ -48,8 +48,8 @@ F8-chrX-154930861,F8,missense,ok,77.0,77.0,385.0,ENST00000360256,ENSG00000185010
 FAM83B-chr6-54940265,FAM83B,missense,ok,77.0,77.0,385.0,ENST00000306858,ENSG00000168143,
 FAM83H-chr8-143728543,FAM83H,missense,FAILED,,,,,,ValueError: no MANE Select / canonical protein-coding transcript with consequence 'missense_variant' in VEP response
 FBXO33-chr14-39431722,FBXO33,missense,ok,77.0,77.0,385.0,ENST00000298097,ENSG00000165355,
-FCGBP-chr19-39876804,FCGBP,missense,FAILED,,,,,,ValueError: selected transcript is canonical but lacks a MANE Select RefSeq
-FCGBP-chr19-39879706,FCGBP,missense,FAILED,,,,,,ValueError: selected transcript is canonical but lacks a MANE Select RefSeq
+FCGBP-chr19-39876804,FCGBP,missense,ok,77.0,77.0,385.0,ENST00000616721,ENSG00000275395,
+FCGBP-chr19-39879706,FCGBP,missense,ok,77.0,77.0,385.0,ENST00000616721,ENSG00000275395,
 FGFR3-chr4-1805817,FGFR3,frameshift,ok,371.0,371.0,1855.0,ENST00000440486,ENSG00000068078,
 FJX1-chr11-35619371,FJX1,missense,ok,77.0,77.0,385.0,ENST00000317811,ENSG00000179431,
 FRMPD4-chrX-12717076,FRMPD4,missense,ok,77.0,77.0,385.0,ENST00000675598,ENSG00000169933,
@@ -57,6 +57,8 @@ FZD9-chr7-73434684,FZD9,missense,ok,77.0,77.0,385.0,ENST00000344575,ENSG00000188
 GABBR1-chr6-29630575,GABBR1,missense,ok,77.0,77.0,385.0,ENST00000377034,ENSG00000204681,
 GDF2-chr10-47325480,GDF2,missense,ok,77.0,77.0,385.0,ENST00000581492,ENSG00000263761,
 GLIS3-chr9-3856149,GLIS3,frameshift,ok,560.0,560.0,2800.0,ENST00000381971,ENSG00000107249,
+GTF3C5-chr9-133057893,GTF3C5,inframe_deletion,ok,84.0,84.0,420.0,ENST00000372097,ENSG00000148308,
+H1_2-chr6-26055824,H1-2,inframe_deletion,ok,81.0,81.0,405.0,ENST00000343677,ENSG00000187837,
 HIC2-chr22-21446352,HIC2,missense,ok,77.0,77.0,385.0,ENST00000407464,ENSG00000169635,
 IFT122-chr3-129502728,IFT122,missense,ok,77.0,77.0,385.0,ENST00000348417,ENSG00000163913,
 ITPR3-chr6-33688135,ITPR3,missense,ok,77.0,77.0,385.0,ENST00000605930,ENSG00000096433,
@@ -74,13 +76,12 @@ MAP2-chr2-209694768,MAP2,frameshift,ok,280.0,280.0,1400.0,ENST00000682079,ENSG00
 MAP2-chr2-209694772,MAP2,frameshift,ok,259.0,259.0,1295.0,ENST00000682079,ENSG00000078018,
 MARCOL-chr5-148242907,MARCOL,missense,ok,77.0,77.0,385.0,ENST00000638089,ENSG00000248109,
 MBD4-chr3-129437921,MBD4,missense,ok,77.0,77.0,385.0,ENST00000429544,ENSG00000129071,
-MT_ND5-chrM-12994,MT-ND5,missense,FAILED,,,,,,CacheMiss: offline Ensembl client has no cache for https://rest.ensembl.org/vep/human/hgvs/M:g.12994G>A?mane=1;canonical=1;hgvs=1
 MUC2-chr11-1095629,MUC2,missense,FAILED,,,,,,ValueError: no MANE Select / canonical protein-coding transcript with consequence 'missense_variant' in VEP response
 MYO15B-chr17-75589953,MYO15B,frameshift,ok,301.0,301.0,1505.0,ENST00000645453,ENSG00000266714,
 MYO9A-chr15-71994488,MYO9A,missense,ok,77.0,77.0,385.0,ENST00000356056,ENSG00000066933,
 NAV2-chr11-20080142,NAV2,missense,ok,77.0,77.0,385.0,ENST00000349880,ENSG00000166833,
-NBPF1-chr1-16563989,NBPF1,missense,FAILED,,,,,,ValueError: selected transcript is canonical but lacks a MANE Select RefSeq
-NBPF1-chr1-16564149,NBPF1,missense,FAILED,,,,,,ValueError: selected transcript is canonical but lacks a MANE Select RefSeq
+NBPF1-chr1-16563989,NBPF1,missense,ok,77.0,77.0,385.0,ENST00000430580,ENSG00000219481,
+NBPF1-chr1-16564149,NBPF1,missense,ok,77.0,77.0,385.0,ENST00000430580,ENSG00000219481,
 NDST4-chr4-114870902,NDST4,missense,ok,77.0,77.0,385.0,ENST00000264363,ENSG00000138653,
 NDUFA11-chr19-5896456,NDUFA11,missense,ok,77.0,77.0,385.0,ENST00000308961,ENSG00000174886,
 NLRP4-chr19-55861444,NLRP4,missense,ok,77.0,77.0,385.0,ENST00000301295,ENSG00000160505,
@@ -104,6 +105,7 @@ RABEP1-chr17-5350565,RABEP1,missense,ok,77.0,77.0,385.0,ENST00000537505,ENSG0000
 RCSD1-chr1-167685445,RCSD1,missense,ok,77.0,77.0,385.0,ENST00000367854,ENSG00000198771,
 RECK-chr9-36087719,RECK,missense,ok,77.0,77.0,385.0,ENST00000377966,ENSG00000122707,
 RNF157-chr17-76161924,RNF157,missense,ok,77.0,77.0,385.0,ENST00000269391,ENSG00000141576,
+RNF213-chr17-80327830,RNF213,inframe_deletion,ok,84.0,84.0,420.0,ENST00000582970,ENSG00000173821,
 ROBO2-chr3-77607853,ROBO2,missense,ok,77.0,77.0,385.0,ENST00000696593,ENSG00000185008,
 ROS1-chr6-117301021,ROS1,missense,ok,77.0,77.0,385.0,ENST00000368507,ENSG00000047936,
 RP1L1-chr8-10611724,RP1L1,missense,ok,77.0,77.0,385.0,ENST00000382483,ENSG00000183638,
@@ -136,13 +138,11 @@ ZNF436-chr1-23362762,ZNF436,missense,ok,77.0,77.0,385.0,ENST00000314011,ENSG0000
 ZNF674-chrX-46501045,ZNF674,missense,ok,77.0,77.0,385.0,ENST00000683375,ENSG00000251192,
 ZNF764-chr16-30557995,ZNF764,missense,ok,77.0,77.0,385.0,ENST00000395091,ENSG00000169951,
 ZNRF3-chr22-29049913,ZNRF3,missense,ok,77.0,77.0,385.0,ENST00000544604,ENSG00000183579,
-ADAM17-chr2-9521241,ADAM17,stop_gained,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-BTBD11-chr12-107642169,BTBD11,stop_gained,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-CNTRL-chr9-121115135,CNTRL,stop_gained,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-DOT1L-chr19-2214506,DOT1L,stop_gained,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-GABBR1-chr6-29630494,GABBR1,stop_gained,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-GTF3C5-chr9-133057893,GTF3C5,inframe_deletion,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-H1_2-chr6-26055824,H1_2,inframe_deletion,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-HSFX3-chrX-149548470,HSFX3,stop_gained,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-RNF213-chr17-80327830,RNF213,inframe_deletion,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
-SRGAP3-chr3-9104715,SRGAP3,stop_gained,UNSUPPORTED,,,,,,consequence not supported by current generator (missense/frameshift only)
+ADAM17-chr2-9521241,ADAM17,stop_gained,UNSUPPORTED,,,,,,"nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type up to the stop, so no novel class-I peptide exists (not a generator gap)."
+BTBD11-chr12-107642169,BTBD11,stop_gained,UNSUPPORTED,,,,,,"nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type up to the stop, so no novel class-I peptide exists (not a generator gap)."
+CNTRL-chr9-121115135,CNTRL,stop_gained,UNSUPPORTED,,,,,,"nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type up to the stop, so no novel class-I peptide exists (not a generator gap)."
+DOT1L-chr19-2214506,DOT1L,stop_gained,UNSUPPORTED,,,,,,"nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type up to the stop, so no novel class-I peptide exists (not a generator gap)."
+GABBR1-chr6-29630494,GABBR1,stop_gained,UNSUPPORTED,,,,,,"nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type up to the stop, so no novel class-I peptide exists (not a generator gap)."
+HSFX3-chrX-149548470,HSFX3,stop_gained,UNSUPPORTED,,,,,,"nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type up to the stop, so no novel class-I peptide exists (not a generator gap)."
+MT_ND5-chrM-12994,MT_ND5,missense_variant,UNSUPPORTED,,,,,,mitochondrial (chrM): non-standard genetic code + VEP hgvs boundary; not representable by the standard-code generator.
+SRGAP3-chr3-9104715,SRGAP3,stop_gained,UNSUPPORTED,,,,,,"nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type up to the stop, so no novel class-I peptide exists (not a generator gap)."

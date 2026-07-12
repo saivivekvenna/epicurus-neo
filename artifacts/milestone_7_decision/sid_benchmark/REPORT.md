@@ -1,15 +1,15 @@
 # Sid end-to-end benchmark — label-blind generation
 
-`python -m scripts.sid_benchmark_generate --offline` · mode offline · PRIME `7b18d4e110`
+`python -m scripts.sid_benchmark_generate` · mode online · PRIME `7b18d4e110`
 
 _Post-hoc n=1 patient / 3 recognized positives — descriptive only. Generation is over the complete label-blind eligible INPUT universe; output coverage is guard-measured and incomplete. The 3 exact labels are joined only after generation+scoring are frozen._
 
 
-**Universe:** 200 public → 147 eligible → 137 generator-supported (missense/frameshift), 10 unsupported.
+**Universe:** 200 public → 147 eligible → 139 generator-supported (missense/frameshift), 8 unsupported.
 
-**Generation:** 130 ok, 7 failed, 10 unsupported → 59755 peptide×HLA candidates.
+**Generation:** 137 ok, 2 failed, 8 unsupported → 62540 peptide×HLA candidates.
 
-**Coverage guard:** COVERAGE_BELOW_THRESHOLD (coverage 0.8844).
+**Coverage guard:** COVERAGE_BELOW_THRESHOLD (coverage 0.9252).
 
 
 ## Verdict
@@ -22,9 +22,9 @@ _Post-hoc n=1 patient / 3 recognized positives — descriptive only. Generation 
 
 | arm | hits@20 / 3 | recognized ranks (variant → rank) |
 |---|--:|---|
-| presentation_only_mixmhcpred | 2/3 | {'MAP2-chr2-209694772': 25, 'ASPM-chr1-197102716': 20, 'DYNC1H1-chr14-101980529': 2} |
-| genuine_prime | 2/3 | {'MAP2-chr2-209694772': 10, 'ASPM-chr1-197102716': 39, 'DYNC1H1-chr14-101980529': 3} |
-| frozen_epicurus_v0_1 | 1/3 | {'MAP2-chr2-209694772': 66, 'ASPM-chr1-197102716': 39, 'DYNC1H1-chr14-101980529': 1} |
+| presentation_only_mixmhcpred | 1/3 | {'MAP2-chr2-209694772': 26, 'ASPM-chr1-197102716': 21, 'DYNC1H1-chr14-101980529': 2} |
+| genuine_prime | 2/3 | {'MAP2-chr2-209694772': 10, 'ASPM-chr1-197102716': 41, 'DYNC1H1-chr14-101980529': 3} |
+| frozen_epicurus_v0_1 | 1/3 | {'MAP2-chr2-209694772': 72, 'ASPM-chr1-197102716': 44, 'DYNC1H1-chr14-101980529': 1} |
 
 ## Stage of first loss (per recognized positive)
 

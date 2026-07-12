@@ -41,7 +41,13 @@ PVAC_PATH = RAW / "pvactools_all_epitopes.tsv"
 RSEM_PATH = RAW / "rsem.2025.01.genes.results"
 ART = Path("artifacts/milestone_7_decision/sid_benchmark")
 K = 20
-SUPPORTED = {"missense_variant": "missense", "frameshift_variant": "frameshift"}
+SUPPORTED = {"missense_variant": "missense", "frameshift_variant": "frameshift",
+             "inframe_deletion": "inframe_deletion", "inframe_insertion": "inframe_insertion"}
+# Consequences that are genuinely NOT class-I-neoepitope-representable, with the biological cause.
+UNREPRESENTABLE = {
+    "stop_gained": "nonsense SNV: the mutant residue is a stop codon; the truncated protein is wild-type "
+                   "up to the stop, so no novel class-I peptide exists (not a generator gap).",
+}
 
 
 def _expression_by_ensg() -> dict[str, float]:
@@ -52,17 +58,23 @@ def _expression_by_ensg() -> dict[str, float]:
 
 
 def _variant_rows(u: pd.DataFrame) -> tuple[list[dict], list[dict]]:
-    """Eligible variants split into generator-supported (missense/frameshift) and unsupported (recorded)."""
+    """Eligible variants split into generator-supported and structurally-unrepresentable (documented)."""
     elig = u[u["class_i_eligible"]]
     supported, unsupported = [], []
     for _, r in elig.iterrows():
-        if r["consequence"] in SUPPORTED:
+        vid = r["variant_id"]
+        if str(r["chrom"]).lower() in {"chrm", "chrmt", "m", "mt"}:
+            unsupported.append({"variant_id": vid, "consequence": r["consequence"],
+                                "reason": "mitochondrial (chrM): non-standard genetic code + VEP hgvs "
+                                          "boundary; not representable by the standard-code generator."})
+        elif r["consequence"] in SUPPORTED:
             supported.append({"chrom": r["chrom"], "pos": int(r["pos"]), "ref": r["ref"], "alt": r["alt"],
                               "gene": r["gene"], "source_variant_type": SUPPORTED[r["consequence"]],
-                              "variant_id": r["variant_id"]})
+                              "variant_id": vid})
         else:
-            unsupported.append({"variant_id": r["variant_id"], "consequence": r["consequence"],
-                                "reason": "consequence not supported by current generator (missense/frameshift only)"})
+            unsupported.append({"variant_id": vid, "consequence": r["consequence"],
+                                "reason": UNREPRESENTABLE.get(r["consequence"],
+                                          f"consequence '{r['consequence']}' not supported by generator")})
     return supported, unsupported
 
 
@@ -83,7 +95,8 @@ def main() -> int:
     for v in supported:
         rec = {"variant_id": v["variant_id"], "gene": v["gene"], "consequence_kind": v["source_variant_type"]}
         try:
-            out = generate_variant_candidates(v, client, hla_panel, expected=None)  # LABEL-BLIND
+            out = generate_variant_candidates(v, client, hla_panel, expected=None,  # LABEL-BLIND
+                                              require_mane_refseq=False)  # accept canonical w/o MANE RefSeq
             cand = out["candidates"]
             rec.update(status="ok", n_windows=out["provenance"]["n_windows"],
                        n_unique_peptides=out["provenance"]["n_unique_peptides"],
@@ -108,8 +121,10 @@ def main() -> int:
     except Exception as e:  # noqa: BLE001
         cov = len(generated_ids & elig_ids) / len(elig_ids) if elig_ids else 0.0
         guard = {"guard": "COVERAGE_BELOW_THRESHOLD", "message": str(e), "coverage": round(cov, 4),
-                 "note": "generation covers missense+frameshift only; stop_gained/inframe unsupported "
-                         "=> honest incomplete coverage, NOT leakage (positive-subset check passed)."}
+                 "note": "missense/frameshift/inframe supported (canonical-without-MANE accepted). Remaining "
+                         "uncovered are DOCUMENTED as structurally unrepresentable (stop_gained = nonsense/"
+                         "no-novel-peptide; mitochondrial; genes with no canonical protein-coding missense "
+                         "transcript) => honest incomplete coverage, NOT leakage (positive-subset check passed)."}
 
     # ---- score every generated (peptide, HLA) with genuine MixMHCpred + PRIME ----
     if len(cand):
