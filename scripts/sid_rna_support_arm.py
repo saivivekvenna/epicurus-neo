@@ -112,15 +112,19 @@ def main() -> int:
 
 def _verdict(arms) -> str:
     return (
-        "COMPLETE DENOMINATOR (137/147 = 92.5% generated; 10 documented-unrepresentable: 7 stop_gained = "
-        "nonsense/no-novel-peptide, 1 mitochondrial, 2 with no canonical protein-coding missense transcript). "
+        "COMPLETE DENOMINATOR: 137 generated + 10 documented-unrepresentable = all 147 eligible variants "
+        "accounted for (NOT 147 literally generated). The 10 non-generatable: 7 stop_gained = nonsense/"
+        "no-novel-peptide, 1 mitochondrial, 2 with no canonical protein-coding missense transcript. "
         "EXPLORATORY, NOT a superiority claim. The RNA gate is NON-TUNED (hardest biological boundary: RNA "
         "row exists AND mutant alt_reads==0 AND expression_tpm==0; absence never vetoes; 0 positives removed) "
         "and improves every positive's rank (PRIME ASPM #41→#31, MAP2 #10→#8; MixMHCpred ASPM #21→#17, MAP2 "
-        "#26→#21). On the COMPLETE denominator NO arm reaches GUARANTEED 3/3: genuine PRIME = 2/3 (clean, no "
-        "boundary tie; ASPM #31 out); MixMHCpred+gate = 2/3 guaranteed, with MAP2 in a 3-way exact-score tie "
-        "at ranks [20,22] so 3/3 is only POSSIBLE under a favorable lexical tiebreak, never guaranteed; frozen "
-        "Epicurus = 1/3. Epicurus TIES genuine PRIME at 2/3. The earlier nominal 3/3 was an artifact of the "
+        "#26→#21). NO arm reaches GUARANTEED 3/3. Per arm (guaranteed hits@20): genuine PRIME (the primary "
+        "baseline) = 2/3 (clean, no boundary tie; ASPM #31 out); the CURRENT/FROZEN Epicurus v0.1 pipeline = "
+        "1/3 — it LOSES to genuine PRIME here; the EXPLORATORY presentation-only 'MixMHCpred + absence-safe "
+        "RNA gate' arm = 2/3 guaranteed (MAP2 in a 3-way exact-score tie at ranks [20,22] => 3/3 only POSSIBLE "
+        "under a favorable lexical tiebreak, never guaranteed). ⚠ The MixMHCpred+RNA-gate arm is NOT the "
+        "Epicurus pipeline and must not be called such: it is a presentation-only exploratory arm that TIES "
+        "genuine PRIME at 2/3, whereas frozen Epicurus is 1/3. The earlier nominal 3/3 was an artifact of the "
         "incomplete (88.4%) denominator plus a boundary tie. DYNC1H1 and ASPM carry mutant RNA reads; MAP2 has "
         "nonzero gene TPM but ZERO observed mutant-allele RNA reads (so a hard mutant-RNA veto would wrongly "
         "kill a real positive — falsified). Real, principled RNA lever; not a win.")
