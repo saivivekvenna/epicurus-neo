@@ -4,6 +4,14 @@ _Status: pre-registered design. Fitting/selection happens only on DEV under leav
 one candidate is frozen before the LOCKED external test. Companion: `FEASIBILITY.md` (empirical
 go-signal), `FALSIFICATION_LEDGER.md` (failed variants)._
 
+> **Post-review scoping correction.** This spec builds a v1 gate whose veto axes are {EL, PRIME}. Those
+> are the dominant inputs to the downstream rankers, so v1 cannot change a top-20 they produce — a
+> **structural tautology** (`CIRCULARITY_AUDIT.md`). v1's null downstream result is therefore scoped to
+> **same-feature presentation gating**; it does NOT falsify the general orthogonal-feature gate. The
+> orthogonal challenger — which targets the high-EL/high-PRIME decoy stratum using features NOT in the
+> downstream rank — is specified in `V2_CONTRACT.md` and pre-registered in `V2_PREREGISTRATION.md`, and is
+> **data-blocked** on WES/RNA reconstruction (Miller IPV `PRJNA980652`, Gartner).
+
 ## 0. Problem framing (what this is, and is NOT)
 
 Build a **label-blind upstream gate** that removes a large fraction of tested-negative neoantigen
