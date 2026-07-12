@@ -1,0 +1,102 @@
+[
+  {
+    "family": "expression",
+    "best_stratum_auroc": 0.8187,
+    "abs_signal": 0.3187,
+    "best_cohort": "gartner",
+    "max_coverage": 1.0,
+    "availability": "available_now (Gartner deciles); Miller needs RNA-seq; Sid sparse",
+    "leakage_risk": "medium (ascertainment/PU)",
+    "next_experiment": "conditional expr AUROC on Miller after RNA quant; guard vs PU per m7-ascertainment-correction"
+  },
+  {
+    "family": "predictor_disagreement",
+    "best_stratum_auroc": 0.7039,
+    "abs_signal": 0.2039,
+    "best_cohort": "gartner",
+    "max_coverage": 1.0,
+    "availability": "available_now (Gartner 5, Zhao 9); absent multimer/IMPROVE",
+    "leakage_risk": "low",
+    "next_experiment": "test std-of-ranks on stratum with a pre-registered direction"
+  },
+  {
+    "family": "vaf_readsupport",
+    "best_stratum_auroc": 0.5999,
+    "abs_signal": 0.0999,
+    "best_cohort": "gartner",
+    "max_coverage": 1.0,
+    "availability": "available_now (Gartner vaf_decile); Miller/Sid need WES",
+    "leakage_risk": "medium",
+    "next_experiment": "join VAF/read-depth on Miller after somatic calling"
+  },
+  {
+    "family": "physicochemical",
+    "best_stratum_auroc": 0.56,
+    "abs_signal": 0.06,
+    "best_cohort": "zhao",
+    "max_coverage": 1.0,
+    "availability": "available_now (Zhao); trivially computable everywhere",
+    "leakage_risk": "low",
+    "next_experiment": "recompute gravy/charge for all cohorts (cheap)"
+  },
+  {
+    "family": "stability_processing",
+    "best_stratum_auroc": 0.5369,
+    "abs_signal": 0.0369,
+    "best_cohort": "zhao",
+    "max_coverage": 1.0,
+    "availability": "available_now (Zhao NetMHCstab/NetCTLpan); add to Gartner/Miller",
+    "leakage_risk": "low",
+    "next_experiment": "add NetMHCstab/NetCTLpan pass to Gartner+Miller universe"
+  },
+  {
+    "family": "agretopicity",
+    "best_stratum_auroc": 0.5106,
+    "abs_signal": 0.0106,
+    "best_cohort": "zhao",
+    "max_coverage": 1.0,
+    "availability": "available_now (Zhao mut_kd_delta); Gartner/Miller need 1 WT predictor pass",
+    "leakage_risk": "low",
+    "next_experiment": "score WT vs mutant EL for Gartner+Miller; test mutant/WT ratio on stratum"
+  },
+  {
+    "family": "mutation_annotation",
+    "best_stratum_auroc": 0.4953,
+    "abs_signal": 0.0047,
+    "best_cohort": "zhao",
+    "max_coverage": 1.0,
+    "availability": "available_now (Gartner CGC/Cosmic/dbSNP)",
+    "leakage_risk": "medium (annotation-source leakage)",
+    "next_experiment": "map driver/germline flags on Miller from public annotation"
+  },
+  {
+    "family": "repeated_antigen",
+    "best_stratum_auroc": null,
+    "abs_signal": null,
+    "best_cohort": null,
+    "max_coverage": 0.0,
+    "availability": "available_now (CEDAR n_subjects; cross-cohort recurrence)",
+    "leakage_risk": "HIGH (studied-because-immunogenic)",
+    "next_experiment": "restrict to prospective recurrence only; never use assay-count of the same cohort"
+  },
+  {
+    "family": "assay_context",
+    "best_stratum_auroc": null,
+    "abs_signal": null,
+    "best_cohort": null,
+    "max_coverage": 0.0,
+    "availability": "available_now but STUDY-CONFOUNDED",
+    "leakage_risk": "audit-only (never deployable)",
+    "next_experiment": "use as stratification/confound check, not a feature"
+  },
+  {
+    "family": "llm_artifact_plausibility",
+    "best_stratum_auroc": null,
+    "abs_signal": null,
+    "best_cohort": null,
+    "max_coverage": 0.0,
+    "availability": "computable_now (label-blind, annotation-only)",
+    "leakage_risk": "low (no labels sent)",
+    "next_experiment": "score full universe; test whether artifact_risk_score down-ranks TESTED_NEGATIVE decoys on the stratum"
+  }
+]

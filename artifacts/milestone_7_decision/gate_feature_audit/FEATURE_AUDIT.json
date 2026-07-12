@@ -1,0 +1,906 @@
+{
+  "top_k": 20,
+  "families": [
+    "agretopicity",
+    "expression",
+    "vaf_readsupport",
+    "predictor_disagreement",
+    "stability_processing",
+    "physicochemical",
+    "mutation_annotation",
+    "repeated_antigen",
+    "assay_context",
+    "llm_artifact_plausibility"
+  ],
+  "cohorts": [
+    {
+      "cohort": "gartner",
+      "n_rows": 8777,
+      "n_patients": 26,
+      "anchor": {
+        "column": "prime",
+        "higher_better": false,
+        "note": "genuine PRIME 2.1"
+      },
+      "label_counts": {
+        "UNTESTED": 5009,
+        "TESTED_NEGATIVE": 3722,
+        "POSITIVE": 46
+      },
+      "coverage": {
+        "expr_decile": 1.0,
+        "seen_in_rna": 1.0,
+        "vaf_decile": 1.0,
+        "pred_rank_std": 1.0,
+        "is_cosmic": 1.0,
+        "is_dbsnp": 1.0
+      },
+      "orthogonal_features": [
+        {
+          "feature": "expr_decile",
+          "family": "expression",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.817,
+          "marginal_n": {
+            "pos": 46,
+            "neg": 3718
+          },
+          "stratum_auroc": 0.8187,
+          "stratum_n": {
+            "pos": 17,
+            "neg": 418
+          },
+          "abs_stratum_signal": 0.3187
+        },
+        {
+          "feature": "seen_in_rna",
+          "family": "expression",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.751,
+          "marginal_n": {
+            "pos": 46,
+            "neg": 3718
+          },
+          "stratum_auroc": 0.772,
+          "stratum_n": {
+            "pos": 17,
+            "neg": 418
+          },
+          "abs_stratum_signal": 0.272
+        },
+        {
+          "feature": "vaf_decile",
+          "family": "vaf_readsupport",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.6029,
+          "marginal_n": {
+            "pos": 46,
+            "neg": 3718
+          },
+          "stratum_auroc": 0.5999,
+          "stratum_n": {
+            "pos": 17,
+            "neg": 418
+          },
+          "abs_stratum_signal": 0.0999
+        },
+        {
+          "feature": "pred_rank_std",
+          "family": "predictor_disagreement",
+          "hypothesised_higher_better": false,
+          "coverage": 1.0,
+          "marginal_auroc": 0.7196,
+          "marginal_n": {
+            "pos": 46,
+            "neg": 3718
+          },
+          "stratum_auroc": 0.7039,
+          "stratum_n": {
+            "pos": 17,
+            "neg": 418
+          },
+          "abs_stratum_signal": 0.2039
+        },
+        {
+          "feature": "is_cosmic",
+          "family": "mutation_annotation",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5,
+          "marginal_n": {
+            "pos": 46,
+            "neg": 3718
+          },
+          "stratum_auroc": 0.5,
+          "stratum_n": {
+            "pos": 17,
+            "neg": 418
+          },
+          "abs_stratum_signal": 0.0
+        },
+        {
+          "feature": "is_dbsnp",
+          "family": "mutation_annotation",
+          "hypothesised_higher_better": false,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5,
+          "marginal_n": {
+            "pos": 46,
+            "neg": 3718
+          },
+          "stratum_auroc": 0.5,
+          "stratum_n": {
+            "pos": 17,
+            "neg": 418
+          },
+          "abs_stratum_signal": 0.0
+        }
+      ],
+      "presentation_baseline": {
+        "feature": "prime",
+        "on_stratum": {
+          "auroc": 0.5011,
+          "n": 435,
+          "n_pos": 17,
+          "n_neg": 418,
+          "coverage": 1.0
+        },
+        "marginal": {
+          "auroc": 0.7289,
+          "n": 3764,
+          "n_pos": 46,
+          "n_neg": 3718,
+          "coverage": 1.0
+        }
+      },
+      "cross_fit": {
+        "stratum_orthogonal_only": {
+          "oof_auroc": 0.8551,
+          "n": 435,
+          "n_pos": 17,
+          "features": [
+            "expr_decile",
+            "seen_in_rna",
+            "vaf_decile",
+            "pred_rank_std",
+            "is_cosmic",
+            "is_dbsnp"
+          ]
+        },
+        "stratum_presentation_only": {
+          "oof_auroc": 0.344,
+          "n": 435,
+          "n_pos": 17,
+          "features": [
+            "prime"
+          ]
+        },
+        "stratum_combined": {
+          "oof_auroc": 0.8377,
+          "n": 435,
+          "n_pos": 17,
+          "features": [
+            "expr_decile",
+            "seen_in_rna",
+            "vaf_decile",
+            "pred_rank_std",
+            "is_cosmic",
+            "is_dbsnp",
+            "prime"
+          ]
+        },
+        "full_orthogonal_only": {
+          "oof_auroc": 0.8451,
+          "n": 3764,
+          "n_pos": 46,
+          "features": [
+            "expr_decile",
+            "seen_in_rna",
+            "vaf_decile",
+            "pred_rank_std",
+            "is_cosmic",
+            "is_dbsnp"
+          ]
+        }
+      },
+      "confound_audit": {
+        "best_orthogonal_feature": "expr_decile",
+        "marginal_auroc": 0.817,
+        "patient_generalising_oof_auroc": 0.8069,
+        "identity_parasitic_gap": 0.0101,
+        "tissue_label_only_oof_auroc": 0.4924,
+        "tissue_note": "AUDIT ONLY \u2014 tumour/study identity is never a deployable feature"
+      }
+    },
+    {
+      "cohort": "zhao",
+      "n_rows": 2315,
+      "n_patients": 352,
+      "anchor": {
+        "column": "mixmhcpred3_score",
+        "higher_better": true,
+        "note": "mixMHCpred 3.0 (not genuine PRIME)"
+      },
+      "label_counts": {
+        "TESTED_NEGATIVE": 2002,
+        "POSITIVE": 313
+      },
+      "coverage": {
+        "mut_kd_delta": 1.0,
+        "mut_charge_delta": 1.0,
+        "mut_is_anchor": 1.0,
+        "mut_position_frac": 1.0,
+        "gravy": 1.0,
+        "net_charge": 1.0,
+        "aromatic_frac": 1.0,
+        "pred_NetMHCstab": 1.0,
+        "pred_NetCTLpan Cleavage": 1.0,
+        "pred_NetCTLpan TAP": 1.0,
+        "pred_MHCflurryProc": 1.0,
+        "pred_z_std": 1.0
+      },
+      "orthogonal_features": [
+        {
+          "feature": "mut_kd_delta",
+          "family": "agretopicity",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5106,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.5106,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0106
+        },
+        {
+          "feature": "mut_charge_delta",
+          "family": "physicochemical",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5078,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.5078,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0078
+        },
+        {
+          "feature": "mut_is_anchor",
+          "family": "mutation_annotation",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.4987,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.4987,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0013
+        },
+        {
+          "feature": "mut_position_frac",
+          "family": "mutation_annotation",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.4953,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.4953,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0047
+        },
+        {
+          "feature": "gravy",
+          "family": "physicochemical",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.56,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.56,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.06
+        },
+        {
+          "feature": "net_charge",
+          "family": "physicochemical",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.469,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.469,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.031
+        },
+        {
+          "feature": "aromatic_frac",
+          "family": "physicochemical",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5506,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.5506,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0506
+        },
+        {
+          "feature": "pred_NetMHCstab",
+          "family": "stability_processing",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5369,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.5369,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0369
+        },
+        {
+          "feature": "pred_NetCTLpan Cleavage",
+          "family": "stability_processing",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5224,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.5224,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0224
+        },
+        {
+          "feature": "pred_NetCTLpan TAP",
+          "family": "stability_processing",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.512,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.512,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.012
+        },
+        {
+          "feature": "pred_MHCflurryProc",
+          "family": "stability_processing",
+          "hypothesised_higher_better": true,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5159,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.5159,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0159
+        },
+        {
+          "feature": "pred_z_std",
+          "family": "predictor_disagreement",
+          "hypothesised_higher_better": false,
+          "coverage": 1.0,
+          "marginal_auroc": 0.5134,
+          "marginal_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "stratum_auroc": 0.5134,
+          "stratum_n": {
+            "pos": 313,
+            "neg": 2002
+          },
+          "abs_stratum_signal": 0.0134
+        }
+      ],
+      "presentation_baseline": {
+        "feature": "mixmhcpred3_score",
+        "on_stratum": {
+          "auroc": 0.5447,
+          "n": 2315,
+          "n_pos": 313,
+          "n_neg": 2002,
+          "coverage": 1.0
+        },
+        "marginal": {
+          "auroc": 0.5447,
+          "n": 2315,
+          "n_pos": 313,
+          "n_neg": 2002,
+          "coverage": 1.0
+        }
+      },
+      "cross_fit": {
+        "stratum_orthogonal_only": {
+          "oof_auroc": 0.5402,
+          "n": 2315,
+          "n_pos": 313,
+          "features": [
+            "mut_kd_delta",
+            "mut_charge_delta",
+            "mut_is_anchor",
+            "mut_position_frac",
+            "gravy",
+            "net_charge",
+            "aromatic_frac",
+            "pred_NetMHCstab",
+            "pred_NetCTLpan Cleavage",
+            "pred_NetCTLpan TAP",
+            "pred_MHCflurryProc",
+            "pred_z_std"
+          ]
+        },
+        "stratum_presentation_only": {
+          "oof_auroc": 0.5363,
+          "n": 2315,
+          "n_pos": 313,
+          "features": [
+            "mixmhcpred3_score"
+          ]
+        },
+        "stratum_combined": {
+          "oof_auroc": 0.5503,
+          "n": 2315,
+          "n_pos": 313,
+          "features": [
+            "mut_kd_delta",
+            "mut_charge_delta",
+            "mut_is_anchor",
+            "mut_position_frac",
+            "gravy",
+            "net_charge",
+            "aromatic_frac",
+            "pred_NetMHCstab",
+            "pred_NetCTLpan Cleavage",
+            "pred_NetCTLpan TAP",
+            "pred_MHCflurryProc",
+            "pred_z_std",
+            "mixmhcpred3_score"
+          ]
+        },
+        "full_orthogonal_only": {
+          "oof_auroc": 0.5402,
+          "n": 2315,
+          "n_pos": 313,
+          "features": [
+            "mut_kd_delta",
+            "mut_charge_delta",
+            "mut_is_anchor",
+            "mut_position_frac",
+            "gravy",
+            "net_charge",
+            "aromatic_frac",
+            "pred_NetMHCstab",
+            "pred_NetCTLpan Cleavage",
+            "pred_NetCTLpan TAP",
+            "pred_MHCflurryProc",
+            "pred_z_std"
+          ]
+        }
+      },
+      "confound_audit": {
+        "best_orthogonal_feature": "gravy",
+        "marginal_auroc": 0.56,
+        "patient_generalising_oof_auroc": 0.549,
+        "identity_parasitic_gap": 0.011
+      }
+    },
+    {
+      "cohort": "multimer",
+      "n_rows": 8103,
+      "n_patients": 26,
+      "anchor": {
+        "column": "prime",
+        "higher_better": false,
+        "note": "genuine PRIME 2.1 (rank-like: lower=better)"
+      },
+      "label_counts": {
+        "TESTED_NEGATIVE": 8069,
+        "POSITIVE": 34
+      },
+      "coverage": {},
+      "orthogonal_features": [],
+      "presentation_baseline": {
+        "feature": "prime",
+        "on_stratum": {
+          "auroc": 0.6319,
+          "n": 515,
+          "n_pos": 21,
+          "n_neg": 494,
+          "coverage": 1.0
+        },
+        "marginal": {
+          "auroc": 0.8457,
+          "n": 8103,
+          "n_pos": 34,
+          "n_neg": 8069,
+          "coverage": 1.0
+        }
+      },
+      "cross_fit": {
+        "stratum_orthogonal_only": {
+          "oof_auroc": null,
+          "n": 515,
+          "features": [],
+          "reason": "no features present"
+        },
+        "stratum_presentation_only": {
+          "oof_auroc": 0.5379,
+          "n": 515,
+          "n_pos": 21,
+          "features": [
+            "prime"
+          ]
+        },
+        "stratum_combined": {
+          "oof_auroc": 0.5379,
+          "n": 515,
+          "n_pos": 21,
+          "features": [
+            "prime"
+          ]
+        },
+        "full_orthogonal_only": {
+          "oof_auroc": null,
+          "n": 8103,
+          "features": [],
+          "reason": "no features present"
+        }
+      },
+      "confound_audit": {}
+    },
+    {
+      "cohort": "improve",
+      "n_rows": 17520,
+      "n_patients": 70,
+      "anchor": {
+        "column": "prime",
+        "higher_better": false,
+        "note": "genuine PRIME 2.1 (rank-like: lower=better)"
+      },
+      "label_counts": {
+        "TESTED_NEGATIVE": 17053,
+        "POSITIVE": 467
+      },
+      "coverage": {},
+      "orthogonal_features": [],
+      "presentation_baseline": {
+        "feature": "prime",
+        "on_stratum": {
+          "auroc": 0.5139,
+          "n": 1400,
+          "n_pos": 83,
+          "n_neg": 1317,
+          "coverage": 1.0
+        },
+        "marginal": {
+          "auroc": 0.5916,
+          "n": 17520,
+          "n_pos": 467,
+          "n_neg": 17053,
+          "coverage": 1.0
+        }
+      },
+      "cross_fit": {
+        "stratum_orthogonal_only": {
+          "oof_auroc": null,
+          "n": 1400,
+          "features": [],
+          "reason": "no features present"
+        },
+        "stratum_presentation_only": {
+          "oof_auroc": 0.4531,
+          "n": 1400,
+          "n_pos": 83,
+          "features": [
+            "prime"
+          ]
+        },
+        "stratum_combined": {
+          "oof_auroc": 0.4531,
+          "n": 1400,
+          "n_pos": 83,
+          "features": [
+            "prime"
+          ]
+        },
+        "full_orthogonal_only": {
+          "oof_auroc": null,
+          "n": 17520,
+          "features": [],
+          "reason": "no features present"
+        }
+      },
+      "confound_audit": {}
+    },
+    {
+      "cohort": "osteosarc",
+      "n_rows": 7565,
+      "n_patients": 1,
+      "anchor": {
+        "column": "genuine_prime",
+        "higher_better": true,
+        "note": "genuine PRIME 2.1"
+      },
+      "label_counts": null,
+      "coverage": {
+        "expression_tpm": 0.2452,
+        "tumor_vaf": 0.2452,
+        "n_callers": 0.2452,
+        "n_timepoints": 0.2452
+      },
+      "orthogonal_features": [],
+      "presentation_baseline": null,
+      "cross_fit": null,
+      "confound_audit": null,
+      "note": "no anchor and/or no measured POSITIVE/TESTED_NEGATIVE labels -> conditional signal not computable now"
+    }
+  ],
+  "cedar": {
+    "cohort": "cedar",
+    "n_rows": 32465,
+    "label_counts": {
+      "TESTED_NEGATIVE": 24974,
+      "POSITIVE": 7491
+    },
+    "anchor": null,
+    "note": "recognition-prior asset: NO within-patient presentation anchor -> no gate stratum; repeated-antigen signal is reported but is HEAVILY leakage-prone (studied because immunogenic).",
+    "repeated_antigen": {
+      "n_assays_for_peptide": {
+        "auroc": 0.7522,
+        "n": 32465,
+        "n_pos": 7491,
+        "n_neg": 24974,
+        "coverage": 1.0
+      },
+      "subject_pos_frac": {
+        "leakage": "CIRCULAR \u2014 subject_pos_frac is a direct function of the label; reported for completeness only",
+        "auroc": 0.9991,
+        "n": 32465,
+        "n_pos": 1492,
+        "n_neg": 9703,
+        "coverage": 0.3448
+      }
+    }
+  },
+  "miller": {
+    "cohort": "miller",
+    "n_rows": 754,
+    "n_patients": 13,
+    "label_counts": {
+      "TESTED_NEGATIVE": 574,
+      "POSITIVE": 180
+    },
+    "anchor": null,
+    "note": "LOCKED_TEST; labels ingested but NO presentation anchor and NO expression/VAF yet (requires the public WES/RNA download + HLA typing + RNA quant). No gate stratum computable now.",
+    "available_now": {
+      "agretopicity": {
+        "raw": "ref_peptide present (coverage 0.995)",
+        "status": "computable after ONE predictor pass scoring ref vs mutant"
+      },
+      "mutation_annotation": {
+        "gene/transcript/HGVS present": true
+      }
+    },
+    "requires_miller_wes_rna": [
+      "expression",
+      "vaf_readsupport",
+      "predictor_disagreement",
+      "stability_processing",
+      "presentation_anchor"
+    ]
+  },
+  "unlock_matrix": [
+    {
+      "family": "expression",
+      "best_stratum_auroc": 0.8187,
+      "abs_signal": 0.3187,
+      "best_cohort": "gartner",
+      "max_coverage": 1.0,
+      "availability": "available_now (Gartner deciles); Miller needs RNA-seq; Sid sparse",
+      "leakage_risk": "medium (ascertainment/PU)",
+      "next_experiment": "conditional expr AUROC on Miller after RNA quant; guard vs PU per m7-ascertainment-correction"
+    },
+    {
+      "family": "predictor_disagreement",
+      "best_stratum_auroc": 0.7039,
+      "abs_signal": 0.2039,
+      "best_cohort": "gartner",
+      "max_coverage": 1.0,
+      "availability": "available_now (Gartner 5, Zhao 9); absent multimer/IMPROVE",
+      "leakage_risk": "low",
+      "next_experiment": "test std-of-ranks on stratum with a pre-registered direction"
+    },
+    {
+      "family": "vaf_readsupport",
+      "best_stratum_auroc": 0.5999,
+      "abs_signal": 0.0999,
+      "best_cohort": "gartner",
+      "max_coverage": 1.0,
+      "availability": "available_now (Gartner vaf_decile); Miller/Sid need WES",
+      "leakage_risk": "medium",
+      "next_experiment": "join VAF/read-depth on Miller after somatic calling"
+    },
+    {
+      "family": "physicochemical",
+      "best_stratum_auroc": 0.56,
+      "abs_signal": 0.06,
+      "best_cohort": "zhao",
+      "max_coverage": 1.0,
+      "availability": "available_now (Zhao); trivially computable everywhere",
+      "leakage_risk": "low",
+      "next_experiment": "recompute gravy/charge for all cohorts (cheap)"
+    },
+    {
+      "family": "stability_processing",
+      "best_stratum_auroc": 0.5369,
+      "abs_signal": 0.0369,
+      "best_cohort": "zhao",
+      "max_coverage": 1.0,
+      "availability": "available_now (Zhao NetMHCstab/NetCTLpan); add to Gartner/Miller",
+      "leakage_risk": "low",
+      "next_experiment": "add NetMHCstab/NetCTLpan pass to Gartner+Miller universe"
+    },
+    {
+      "family": "agretopicity",
+      "best_stratum_auroc": 0.5106,
+      "abs_signal": 0.0106,
+      "best_cohort": "zhao",
+      "max_coverage": 1.0,
+      "availability": "available_now (Zhao mut_kd_delta); Gartner/Miller need 1 WT predictor pass",
+      "leakage_risk": "low",
+      "next_experiment": "score WT vs mutant EL for Gartner+Miller; test mutant/WT ratio on stratum"
+    },
+    {
+      "family": "mutation_annotation",
+      "best_stratum_auroc": 0.4953,
+      "abs_signal": 0.0047,
+      "best_cohort": "zhao",
+      "max_coverage": 1.0,
+      "availability": "available_now (Gartner CGC/Cosmic/dbSNP)",
+      "leakage_risk": "medium (annotation-source leakage)",
+      "next_experiment": "map driver/germline flags on Miller from public annotation"
+    },
+    {
+      "family": "repeated_antigen",
+      "best_stratum_auroc": null,
+      "abs_signal": null,
+      "best_cohort": null,
+      "max_coverage": 0.0,
+      "availability": "available_now (CEDAR n_subjects; cross-cohort recurrence)",
+      "leakage_risk": "HIGH (studied-because-immunogenic)",
+      "next_experiment": "restrict to prospective recurrence only; never use assay-count of the same cohort"
+    },
+    {
+      "family": "assay_context",
+      "best_stratum_auroc": null,
+      "abs_signal": null,
+      "best_cohort": null,
+      "max_coverage": 0.0,
+      "availability": "available_now but STUDY-CONFOUNDED",
+      "leakage_risk": "audit-only (never deployable)",
+      "next_experiment": "use as stratification/confound check, not a feature"
+    },
+    {
+      "family": "llm_artifact_plausibility",
+      "best_stratum_auroc": null,
+      "abs_signal": null,
+      "best_cohort": null,
+      "max_coverage": 0.0,
+      "availability": "computable_now (label-blind, annotation-only)",
+      "leakage_risk": "low (no labels sent)",
+      "next_experiment": "score full universe; test whether artifact_risk_score down-ranks TESTED_NEGATIVE decoys on the stratum"
+    }
+  ],
+  "llm_feasibility": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "coding_plausible": {
+          "type": "boolean",
+          "description": "Is the annotated transcript a plausibly protein-coding ORF that could yield this peptide?"
+        },
+        "frame_consistent": {
+          "type": "boolean",
+          "description": "Are the cDNA and protein HGVS mutually frame-consistent for the stated variant type?"
+        },
+        "peptide_maps_to_mutation": {
+          "type": "boolean",
+          "description": "Does the mutant peptide plausibly contain the annotated amino-acid change vs the WT peptide?"
+        },
+        "nmd_risk": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "description": "Nonsense-mediated-decay risk for the annotated transcript/variant."
+        },
+        "artifact_risk_score": {
+          "type": "number",
+          "description": "0=clean well-supported neoepitope annotation, 1=likely annotation artifact (pseudogene/retained intron/frame error)."
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "coding_plausible",
+        "frame_consistent",
+        "peptide_maps_to_mutation",
+        "nmd_risk",
+        "artifact_risk_score"
+      ]
+    },
+    "system_prompt": "You are a molecular-biology annotation checker. Given ONLY generic variant/transcript/peptide annotations (no patient, no study, no experimental result), judge whether the mutation->peptide annotation is biologically PLAUSIBLE and free of obvious construction artifacts. Do NOT guess immunogenicity, binding, or T-cell recognition. Return only the requested structured fields.",
+    "n_sample": 3,
+    "blind_fields": [
+      "gene_symbol",
+      "hgvs_c",
+      "hgvs_p",
+      "mutant_peptide",
+      "transcript_id",
+      "variant_type",
+      "wt_peptide"
+    ],
+    "contains_labels": false,
+    "contains_patient_or_study_id": false,
+    "status": "RAN (blind feasibility sample; annotation-only, no labels/identifiers)"
+  }
+}
