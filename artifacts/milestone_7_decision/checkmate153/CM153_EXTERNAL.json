@@ -1,0 +1,157 @@
+{
+  "cohort": "CheckMate 153 (Alban et al., Nat Med 2024) \u2014 combinatorial-tetramer NSCLC neoantigen screen",
+  "design": "Frozen Epicurus v0.1 (multimer-trained residual) + genuine PRIME 2.1 applied ONCE to an untouched external cohort. el=MHCflurry presentation percentile (NetMHCpan-EL not installed). expr=study RNA-seq gene counts (MOESM3). The paper's own model score is discarded.",
+  "evaluation_all_negatives": {
+    "label_counts": {
+      "POSITIVE": 162,
+      "TESTED_NEGATIVE": 1035
+    },
+    "n_candidates": 1197,
+    "n_patients": 14,
+    "per_arm_metrics": {
+      "cmp_mixmhcpred": {
+        "mean_hits@20": 5.3571,
+        "recall_frac": 0.463,
+        "recall_top20": "75/162",
+        "tested_ap": 0.3433223028847785,
+        "tested_auroc": 0.7345679012345678
+      },
+      "epicurus_residual": {
+        "mean_hits@20": 5.0714,
+        "recall_frac": 0.4383,
+        "recall_top20": "71/162",
+        "tested_ap": 0.2780892764003042,
+        "tested_auroc": 0.7093218822687422
+      },
+      "genuine_prime": {
+        "mean_hits@20": 5.0,
+        "recall_frac": 0.4321,
+        "recall_top20": "70/162",
+        "tested_ap": 0.2742794130118358,
+        "tested_auroc": 0.713699528836405
+      },
+      "netmhcpan_el": {
+        "mean_hits@20": 4.7857,
+        "recall_frac": 0.4136,
+        "recall_top20": "67/162",
+        "tested_ap": 0.2921879087439706,
+        "tested_auroc": 0.7195652173913043
+      }
+    },
+    "residual_vs_comparators_top20_paired_bootstrap": {
+      "cmp_mixmhcpred": {
+        "delta_ci": [
+          -1.0,
+          0.35714285714285715
+        ],
+        "p_residual_better": 0.18245,
+        "residual_minus_arm_hits@20": -0.2857142857142857,
+        "verdict": "REJECT"
+      },
+      "genuine_prime": {
+        "delta_ci": [
+          -0.35714285714285715,
+          0.5714285714285714
+        ],
+        "p_residual_better": 0.5512,
+        "residual_minus_arm_hits@20": 0.07142857142857142,
+        "verdict": "CONSISTENT_WITH_NO_EFFECT"
+      },
+      "netmhcpan_el": {
+        "delta_ci": [
+          -0.5714285714285714,
+          1.0714285714285714
+        ],
+        "p_residual_better": 0.73415,
+        "residual_minus_arm_hits@20": 0.2857142857142857,
+        "verdict": "CONSISTENT_WITH_NO_EFFECT"
+      }
+    }
+  },
+  "evaluation_binders_only": {
+    "label_counts": {
+      "POSITIVE": 162,
+      "TESTED_NEGATIVE": 249
+    },
+    "n_candidates": 411,
+    "n_patients": 14,
+    "note": "Recognition-only sensitivity: negatives restricted to tetramer-tested predicted BINDERS (TETRAMER-), dropping predicted-non-binder easy negatives. The hard recognition test.",
+    "per_arm_metrics": {
+      "cmp_mixmhcpred": {
+        "mean_hits@20": 7.4286,
+        "recall_frac": 0.642,
+        "recall_top20": "104/162",
+        "tested_ap": 0.48935862767882365,
+        "tested_auroc": 0.5942907432197928
+      },
+      "epicurus_residual": {
+        "mean_hits@20": 7.2857,
+        "recall_frac": 0.6296,
+        "recall_top20": "102/162",
+        "tested_ap": 0.45256030951736037,
+        "tested_auroc": 0.5856760374832664
+      },
+      "genuine_prime": {
+        "mean_hits@20": 7.2143,
+        "recall_frac": 0.6235,
+        "recall_top20": "101/162",
+        "tested_ap": 0.47036365004143776,
+        "tested_auroc": 0.5967326094501463
+      },
+      "netmhcpan_el": {
+        "mean_hits@20": 6.7143,
+        "recall_frac": 0.5802,
+        "recall_top20": "94/162",
+        "tested_ap": 0.4355243115906518,
+        "tested_auroc": 0.5323516287371709
+      }
+    },
+    "residual_vs_comparators_top20_paired_bootstrap": {
+      "cmp_mixmhcpred": {
+        "delta_ci": [
+          -0.9285714285714286,
+          0.5714285714285714
+        ],
+        "p_residual_better": 0.32525,
+        "residual_minus_arm_hits@20": -0.14285714285714285,
+        "verdict": "REJECT"
+      },
+      "genuine_prime": {
+        "delta_ci": [
+          -0.21428571428571427,
+          0.42857142857142855
+        ],
+        "p_residual_better": 0.5418,
+        "residual_minus_arm_hits@20": 0.07142857142857142,
+        "verdict": "CONSISTENT_WITH_NO_EFFECT"
+      },
+      "netmhcpan_el": {
+        "delta_ci": [
+          -0.07142857142857142,
+          1.3571428571428572
+        ],
+        "p_residual_better": 0.9446,
+        "residual_minus_arm_hits@20": 0.5714285714285714,
+        "verdict": "CONSISTENT_WITH_NO_EFFECT"
+      }
+    },
+    "screen_class_counts": {
+      "NonBinder": 786,
+      "TETRAMER+": 162,
+      "TETRAMER-": 249
+    }
+  },
+  "expr_available": 228,
+  "label_counts": {
+    "POSITIVE": 162,
+    "TESTED_NEGATIVE": 1035
+  },
+  "leakage_audit": {
+    "note": "CheckMate 153 tetramer labels post-date PRIME 2.0 training (2023). Frozen v0.1 was trained on the CD8 multimer cohort only; CheckMate was never used to fit it.",
+    "prime_training_near_or_exact": 14
+  },
+  "n_candidates": 1197,
+  "n_patients": 14,
+  "prime_scored": "1197/1197",
+  "status": "executed"
+}
