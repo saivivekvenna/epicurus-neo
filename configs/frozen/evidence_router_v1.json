@@ -1,0 +1,70 @@
+{
+  "policy_id": "epicurus-evidence-router-1.0.0",
+  "status": "FROZEN_PREREGISTERED",
+  "preregistration": "docs/superpowers/specs/2026-07-12-evidence-router-and-route-aware-selection-preregistration.md",
+  "description": "Additive inference-time candidate evidence router + constrained route-aware top-20 selection. Preserves the legacy deterministic gate; keeps expression-N/TPM-zero/no-mutant-RNA/atypical-class candidates eligible but flagged. Frozen before any result is computed and before the locked Sid audit is read.",
+  "amino_acids": "ACDEFGHIKLMNPQRSTVWY",
+  "class_i_len": {"min": 8, "max": 14},
+  "missense_variant_types": ["SNV", "SNP", "MISSENSE"],
+  "not_expressed_tokens": ["N", "NO", "FALSE", "0", "NOT_EXPRESSED"],
+  "lost_allele_tokens": ["Y", "YES", "TRUE", "1", "LOST"],
+  "impossible_rule_order": [
+    "MALFORMED_AA",
+    "BAD_CLASS_I_LENGTH",
+    "MUT_NOT_IN_PEPTIDE",
+    "DUP_CANDIDATE",
+    "HLA_LOH_LOST_ALLELE"
+  ],
+  "impossible_rules_removed_vs_legacy_gate": ["GENE_NOT_EXPRESSED", "MALFORMED_AA_empty_peptide_arm"],
+  "never_remove_solely_for": [
+    "expression_tpm_zero",
+    "expression_call_not_expressed",
+    "rna_mutant_reads_zero",
+    "missing_rna",
+    "frameshift_indel_splice_inframe",
+    "single_caller"
+  ],
+  "flags": [
+    "flag_atypical_variant_class",
+    "flag_weak_or_absent_rna",
+    "flag_missing_rna",
+    "flag_single_caller",
+    "flag_multi_source_support",
+    "flag_has_presentation",
+    "flag_conflicting_evidence",
+    "flag_needs_peptide_generation"
+  ],
+  "route_precedence": ["IMPOSSIBLE", "RESCUE", "LONGITUDINAL", "UNCERTAIN", "CORE"],
+  "route_definitions": {
+    "RESCUE": "(flag_atypical_variant_class OR flag_weak_or_absent_rna) AND (flag_has_presentation OR flag_multi_source_support)",
+    "LONGITUDINAL": "flag_multi_source_support AND not RESCUE",
+    "UNCERTAIN": "flag_missing_rna OR flag_conflicting_evidence OR flag_needs_peptide_generation OR (NOT flag_has_presentation)",
+    "CORE": "default: conventional supported (missense, presented, RNA-supported, no conflict)"
+  },
+  "rankable_requires": ["mutant_peptide_nonempty", "hla_allele_nonempty"],
+  "needs_peptide_generation_status": "NEEDS_PEPTIDE_GENERATION",
+  "union_identity_priority": ["chrom_pos_ref_alt", "protein_change_or_mutation_id"],
+  "union_never_gene_only": true,
+  "selection": {
+    "k": 20,
+    "reserve_per_route": 1,
+    "max_reserve": 3,
+    "reserve_routes": ["RESCUE", "LONGITUDINAL", "UNCERTAIN"],
+    "max_per_mutation": 2,
+    "max_per_gene": 4,
+    "max_per_hla": null,
+    "incumbent_score_default_column": "epicurus_lower_evidence_score",
+    "incumbent_score_preferred": "genuine_PRIME_where_available",
+    "tie_break": "md5(mutant_peptide|hla_allele)",
+    "immunogenicity_claim_without_set_labels": false
+  },
+  "funnel_stages": ["generated", "valid", "rankable", "selected"],
+  "dataset_allocation": {
+    "osteosarc_sid": "reachability_and_ledger_diagnostic_only_locked_no_tuning",
+    "cd8_multimer": "conditional_reranker_no_regression_tested_negatives",
+    "gartner_nci": "conditional_reranker_no_regression_tested_only",
+    "improve": "conditional_reranker_no_regression_prescreened_denominator",
+    "checkmate153": "conditional_reranker_no_regression_small_external",
+    "rttp": "label_free_deployment_only"
+  }
+}
