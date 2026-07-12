@@ -1,0 +1,273 @@
+{
+  "evaluation_only": {
+    "baseline_frozen_epicurus_v0_1": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_20": 1,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 1,
+        "MAP2-chr2-209694772": 66
+      },
+      "recall_at_20": 0.3333,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "baseline_genuine_prime": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 3,
+        "MAP2-chr2-209694772": 10
+      },
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "deterministic_dynamic_router_frozen_epicurus": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_20": 1,
+      "positive_ranks": {},
+      "recall_at_20": 0.3333,
+      "selected_routes": 20,
+      "unique_selected_mutations": 13
+    },
+    "deterministic_dynamic_router_prime": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {},
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 17
+    },
+    "deterministic_dynamic_then_frozen_epicurus": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_20": 1,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 1,
+        "MAP2-chr2-209694772": 66
+      },
+      "recall_at_20": 0.3333,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "deterministic_dynamic_then_prime": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 3,
+        "MAP2-chr2-209694772": 10
+      },
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "deterministic_then_prime": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 3,
+        "MAP2-chr2-209694772": 10
+      },
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "dynamic_then_prime": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 3,
+        "MAP2-chr2-209694772": 10
+      },
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "full_current_epicurus_stack": {
+      "hit_variant_ids": [
+        "ASPM-chr1-197102716",
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {},
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 10
+    },
+    "full_stack_mutation_level_fair": {
+      "hit_variant_ids": [
+        "ASPM-chr1-197102716",
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 4,
+        "DYNC1H1-chr14-101980529": 1,
+        "MAP2-chr2-209694772": 34
+      },
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "mutation_level_dynamic_sensitivity_then_prime": {
+      "hit_variant_ids": [
+        "DYNC1H1-chr14-101980529",
+        "MAP2-chr2-209694772"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {
+        "ASPM-chr1-197102716": 39,
+        "DYNC1H1-chr14-101980529": 3,
+        "MAP2-chr2-209694772": 10
+      },
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 20
+    },
+    "product_v1_as_shipped": {
+      "hit_variant_ids": [
+        "ASPM-chr1-197102716",
+        "DYNC1H1-chr14-101980529"
+      ],
+      "hits_at_20": 2,
+      "positive_ranks": {},
+      "recall_at_20": 0.6667,
+      "selected_routes": 20,
+      "unique_selected_mutations": 10
+    }
+  },
+  "experiment": "sid_full_filter_stack_label_blind",
+  "feature_availability": {
+    "hla_loh": "NOT_ASSESSED_FOR_SID",
+    "mixmhcpred_and_genuine_prime": "COMPLETE_ON_GENERATED",
+    "multi_caller_timepoint_support": "COMPLETE_ON_GENERATED",
+    "patient_hla": "COMPLETE_MATCHED_SID_A01_B08_B27_C01_C07",
+    "peptide_sequence": "COMPLETE_ON_GENERATED",
+    "rna_vaf_and_mutant_reads": "NOT_ASSESSED_AT_THIS_BOUNDARY",
+    "tumor_dna_vaf": "COMPLETE_ON_GENERATED_LONGITUDINAL_WES_WGS",
+    "tumor_gene_tpm": "COMPLETE_ON_GENERATED_MATCHED_T2_RSEM"
+  },
+  "filter_effects_before_label_join": {
+    "deterministic": {
+      "evidence_status": "PARTIAL: sequence/duplicate rules runnable; Sid HLA-LOH unavailable",
+      "input_count": 59755,
+      "mutations_removed": 0,
+      "reason_counts": {},
+      "removed_count": 0,
+      "removed_fraction": 0.0,
+      "survivor_count": 59755
+    },
+    "deterministic_plus_dynamic": {
+      "candidate_rows_removed_after_deterministic": 1561,
+      "mutations_removed": 0
+    },
+    "dynamic_v1": {
+      "candidate_row_removal_fraction": 0.0261,
+      "candidate_rows_removed": 1561,
+      "config": {
+        "boundary_margin": 0.0,
+        "calibrated_on": [
+          "gartner",
+          "improve",
+          "multimer"
+        ],
+        "cov_floor": 0.5,
+        "disagreement_rescue": null,
+        "el_floor_frac": 0.05,
+        "per_patient_cap": 0.9,
+        "pool_floor": 8,
+        "rescue_axes": [
+          "expr"
+        ],
+        "retention_target": 0.95,
+        "t": 0.25,
+        "version": "dynamic_gate_v1",
+        "veto_axes": [
+          "el",
+          "prime"
+        ]
+      },
+      "mutations_removed": 0,
+      "reason_counts": {
+        "VETO_LOW_ALL_AXES": 1561
+      }
+    },
+    "mutation_level_dynamic_sensitivity": {
+      "mutations_input": 130,
+      "mutations_removed": 6,
+      "status": "POST_HOC_UNIT_CORRECTION_WITH_FROZEN_THRESHOLD_NOT_A_VALIDATED_POLICY"
+    },
+    "product_v1_expression_evidence_policy": {
+      "candidate_rows_excluded": 6915,
+      "exclusion_reasons": {
+        "NO_RNA_EXPRESSION": 6915
+      },
+      "mutations_remaining": 111
+    },
+    "route_distributions": {
+      "frozen_epicurus": {
+        "CORE": 765,
+        "LONGITUDINAL": 37290,
+        "RESCUE": 20139
+      },
+      "full_stack": {
+        "CORE": 765,
+        "LONGITUDINAL": 36982,
+        "RESCUE": 13675
+      },
+      "prime": {
+        "CORE": 765,
+        "LONGITUDINAL": 37290,
+        "RESCUE": 20139
+      }
+    }
+  },
+  "input": {
+    "candidate_rows": 59755,
+    "eligible_upstream_mutations": 147,
+    "generated_mutations": 130,
+    "generator_coverage": 0.8844
+  },
+  "label_barrier": {
+    "frozen_path": "artifacts/milestone_7_decision/sid_full_pipeline/frozen_selections.json",
+    "positive_ids_joined_after_freeze": [
+      "ASPM-chr1-197102716",
+      "DYNC1H1-chr14-101980529",
+      "MAP2-chr2-209694772"
+    ],
+    "selections_frozen_before_label_import": true
+  },
+  "status": "POST_HOC_N1_3_DIAGNOSTIC_GENERATOR_COVERAGE_88.4_PERCENT",
+  "verdict": {
+    "filters_improve_prime": false,
+    "full_stack_beats_prime": false,
+    "full_stack_hits_at_20": 2,
+    "genuine_prime_hits_at_20": 2
+  }
+}
