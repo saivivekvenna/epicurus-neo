@@ -138,3 +138,25 @@ def test_no_regression_verdict_passes_when_equal():
     v = no_regression_verdict(np.zeros(5))
     assert v["regresses"] is False
     assert v["mean_delta"] == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Frozen-decision guard (locks the label-blind policy decision against silent drift)
+# ---------------------------------------------------------------------------
+def test_frozen_expression_policy_config_locks_confidence_only():
+    import json
+    from pathlib import Path
+
+    cfg_path = Path(__file__).resolve().parents[1] / "configs" / "frozen" / "expression_policy_v1.json"
+    if not cfg_path.exists():
+        import pytest
+        pytest.skip("frozen config not generated yet (run scripts.expression_policy_analysis)")
+    cfg = json.loads(cfg_path.read_text())
+    assert cfg["decision"]["chosen"] == "confidence_only"
+    assert "PRIME" in cfg["protected_incumbent"]
+    assert cfg["constants"]["tuned_to_sid"] is False
+    assert cfg["constants"]["tuned_to_any_eval_cohort"] is False
+    # the rank-penalty form MUST be recorded as regressing at least one development cohort
+    regresses = {c: ev["policy_regresses"]["expr_rank_penalty"]
+                 for c, ev in cfg["development_evidence"].items()}
+    assert any(regresses.values()), "expr_rank_penalty should regress >=1 dev cohort in the frozen record"
