@@ -5,6 +5,40 @@ read anywhere in the design, dev, or freeze of this task. This document is the b
 and tests implement it exactly. Any deviation must be recorded as an explicit "PROTOCOL CORRECTION" section
 here, committed separately, before it takes effect._
 
+## PROTOCOL CORRECTION 1 (recorded and committed BEFORE any code/experiment — supersedes §3.4, §3.3, §4, §5)
+
+**Fatal flaw fixed.** Protecting the *full* original PRIME top-20 as an unremovable safety lane forces the
+final PRIME top-20 to equal the original PRIME top-20, so **patient-macro Δhits@20 is mathematically pinned
+to 0** and a 3/3 improvement is impossible. The safety lane is therefore **removed** and replaced by:
+
+1. **Bounded protected-core grid `m ∈ {0, 5, 10}`.** The top-`m` genuine-PRIME candidates per patient are
+   unremovable; everything ranked below the core competes for removal. `m` is a hyperparameter **selected
+   inside nested CV**, with a **conservative tie-break preferring the LARGER `m`** at equal inner objective.
+   **Exact-PRIME-score ties at the `m` boundary are all protected** (the core may thus be larger than `m`).
+   With `m < 20`, removing a negative ranked between the core and rank 20 can promote a below-20 positive
+   into the top-20, so **Δhits@20 is now live** and a genuine gain is achievable.
+2. **CP-95% retention is the real safety mechanism** (not the core). The core only bounds how much of the
+   PRIME head is exempt from pruning; positive protection comes from the retention-guaranteed threshold.
+3. **Matched-random control uses the SAME `m`/protected-core and the SAME removal count** as the gate, and
+   the **full pool always competes** for the 20 slots.
+
+**Monotonicity honesty (supersedes §4).** The earlier claim that ordinary L2 logistic is "monotone by
+construction" because inputs are oriented is **false** — orientation does not constrain coefficient signs.
+Corrected: the primary model is a **nonnegative-coefficient-constrained logistic** (coefficients bounded
+`≥ 0` via L-BFGS-B on the balanced, L2-penalized weighted log-loss; intercept free), which *does* make the
+keep-score monotone nondecreasing in each recognition-favoring percentile — implemented with a fixed method
+and unit tests asserting `coef ≥ 0` and equivalence of the linear→sigmoid apply path. The monotonic shallow
+HGB (if available) keeps its `monotonic_cst = +1` constraints. If the nonnegative logistic proves not
+robustly implementable it falls back to **unconstrained** logistic, **disclosed as non-monotone** (never
+described as monotone). No "monotone by construction" claim is made for any unconstrained fit.
+
+**Small-study abstention (supersedes §3.3 wording).** Two distinct abstentions: (a) **CP-claim abstention** —
+on underpowered strata (Gartner n=46, multimer n=34, where CP-95%-LB≥0.95 is impossible even at 100%
+retention) the gate **still applies and still removes**; we only **abstain from the CP-backed retention
+*claim*** there and report raw retention + require zero catastrophic hits@20 loss. (b) **OOD inference
+abstention** — a genuinely out-of-support patient/feature causes **no removal** (KEEP). These are not the
+same: small n ⇒ abstain from the *claim*, not from *removal*; OOD ⇒ abstain from *removal*.
+
 ## 0. Motivation and honesty framing (Requirement 9)
 
 The prior recognition-transfer gate optimized a **positive score** plus one crude RNA reserve slot and did
@@ -62,12 +96,14 @@ At inference the gate is a **recognition-risk model + calibrated removal thresho
 1. Model outputs a per-candidate **keep-score** (higher = more likely a genuine recognizable positive).
 2. Candidates with keep-score **below the calibrated threshold τ are REMOVED** (predicted confident
    negatives). All others are KEPT.
-3. **Abstention (no removal) is triggered by** (a) patient/study **OOD**: the patient's feature distribution
-   is out-of-support vs the training studies (per-feature min/max envelope + a coverage check); or (b)
-   **missing features**: any model input absent/NaN for that candidate or patient → that candidate is KEPT
-   (never removed on missing evidence). Missing evidence always defaults to KEEP.
-4. **Top-20 PRIME safety lane:** the 20 best genuine-PRIME candidates per patient are **never removable**,
-   regardless of keep-score. The reducer may only prune outside that lane.
+3. **OOD / missing-feature abstention (no removal → KEEP).** (a) patient/study **OOD**: the patient's
+   feature distribution is out-of-support vs the training studies (per-feature min/max envelope + coverage
+   check) → KEEP all of that patient. (b) **missing features**: any model input absent/NaN for a candidate →
+   that candidate is KEPT. Missing evidence always defaults to KEEP. (This is distinct from CP-claim
+   abstention on small studies — see PROTOCOL CORRECTION 1: there the gate still removes.)
+4. **Protected PRIME core `m ∈ {0,5,10}` (per PROTOCOL CORRECTION 1, replacing the top-20 safety lane).**
+   The top-`m` genuine-PRIME candidates per patient are unremovable; `m` is nested-CV-selected (tie-break
+   prefers larger `m`); exact-PRIME-score ties at the `m` boundary are all protected (core may exceed `m`).
 5. After removal, **genuine PRIME ranks the survivors**. If a patient has < 20 survivors, **backfill** the
    top-20 by re-admitting the highest-PRIME removed candidates until 20 (or the pool) are present — removal
    never shrinks a patient below 20 rankable candidates.
@@ -87,35 +123,41 @@ survives.
   patient-CV diagnostic** and is **NOT eligible** for the transferable freeze. This is stated up front so
   rich is not silently promoted.
 
-**Models (fixed):** (a) L2-regularized **logistic regression** (interpretable, monotone in oriented
-percentiles by construction of the balanced fit); (b) **monotonic shallow gradient-boosted trees** (max
-depth ≤ 3, monotone constraints in the recognition-favoring direction) *iff the installed sklearn exposes
-`HistGradientBoostingClassifier` with `monotonic_cst`*; otherwise this model is recorded as UNAVAILABLE and
-skipped, not substituted. (c) **NULL** = no gate (remove nothing). No other model families may be added
-after seeing results.
+**Models (fixed; see PROTOCOL CORRECTION 1 for the monotonicity honesty fix):** (a) **nonnegative-
+coefficient-constrained logistic** — coefficients bounded `≥ 0` (L-BFGS-B on balanced, L2-penalized weighted
+log-loss; intercept free), which makes the keep-score monotone nondecreasing in each recognition-favoring
+percentile; falls back to **unconstrained logistic disclosed as non-monotone** only if the constrained fit
+is not robustly implementable. (b) **monotonic shallow gradient-boosted trees** (max depth ≤ 3,
+`monotonic_cst = +1`) *iff sklearn exposes `HistGradientBoostingClassifier` with `monotonic_cst`* (verified
+present: sklearn 1.9.0); else recorded UNAVAILABLE and skipped, not substituted. (c) **NULL** = no gate. No
+other model families may be added after seeing results.
 
-**Threshold grid** (removal aggressiveness, calibrated on inner CV, not free-tuned on outer): keep-score
-quantile cut `τ ∈ {none, and the largest cut whose inner CP-95%-LB retention ≥ 0.95}` — i.e. τ is chosen as
-the **most aggressive inner cut that still guarantees inner retention**, per model, per outer-train.
+**Protected-core + threshold grid** (calibrated on inner CV, not free-tuned on outer): protected PRIME core
+`m ∈ {0, 5, 10}`; keep-score cut `τ` chosen as the **most aggressive inner cut whose inner CP-95%-LB
+retention ≥ 0.95** (τ = none is always a candidate), per model, per `m`, per outer-train. Conservative
+tie-break at equal inner objective prefers **NULL > larger m > simpler model (logistic before trees) > less
+aggressive τ**.
 
 ## 5. Truly nested evaluation (Requirement 5)
 
 - **Outer:** leave-one-**study**-out across {IMPROVE, Gartner, multimer} → 3 outer folds. The held-out study
   is the outer test; the model, hyperparameters, family, AND removal threshold are selected **without it**.
-- **Inner:** patient/group CV **within the outer-train studies** for model + threshold selection. Inner CP
-  retention is computed on inner-validation positives.
+- **Inner:** patient/group CV **within the outer-train studies** selects **(model, protected-core `m`,
+  τ)**. τ is the most aggressive inner cut whose pooled inner CP-95%-LB retention ≥ 0.95; among (model, `m`)
+  the **inner objective is inner-OOF patient-macro Δhits@20** (now non-degenerate under the core grid).
 - **NULL / no-gate is always a candidate.** Conservative tie-break at equal inner objective prefers
-  **NULL > portable > simpler model (logistic before trees) > less aggressive threshold**.
-- **Reported per outer study:** raw positive retention, CP-95%-LB retention (or "underpowered/abstain"),
-  negative-removal fraction, **patient-macro hits@20 delta** (primary utility), pooled hits@20 (secondary),
-  per-positive rank changes, **patient-level paired-bootstrap CI** (fixed seed) of the hits@20 delta, a
-  **matched-random removal control** (remove the same count of non-safe-lane candidates uniformly at random,
-  averaged over seeds), and the **worst-study** result.
+  **NULL > larger `m` > simpler model (logistic before trees) > less aggressive τ**.
+- **Reported per outer study:** raw positive retention, CP-95%-LB retention (or "CP-underpowered → claim
+  abstained; gate still applied"), negative-removal fraction, **patient-macro hits@20 delta** (primary
+  utility), pooled hits@20 (secondary), per-positive rank changes, **patient-level paired-bootstrap CI**
+  (fixed seed) of the hits@20 delta, a **matched-random removal control** (same selected `m`/protected-core,
+  same removal count, uniform random over non-core candidates, averaged over seeds), and the **worst-study**
+  result.
 - **Eligibility for a non-null freeze (ALL must hold):** (i) **every** outer study has **zero catastrophic
   hit loss** (per-study patient-macro Δhits@20 ≥ `CATASTROPHIC = -0.02`); (ii) **aggregate** patient-macro
   Δhits@20 > 0 **and beats the matched-random control**; (iii) on the powered strata (aggregate/IMPROVE) the
-  retention guarantee CP-95%-LB ≥ 0.95 holds; (iv) negative-removal fraction > 0 (the gate actually does
-  something). If any fail → **freeze NULL** and say so explicitly.
+  retention guarantee CP-95%-LB ≥ 0.95 holds (small studies abstain from the CP *claim* but the gate still
+  applied); (iv) negative-removal fraction > 0. If any fail → **freeze NULL** and say so explicitly.
 
 Primary utility is **patient-macro hits@20**; pooled counts are secondary.
 
@@ -157,6 +199,7 @@ fully acceptable, reportable outcome and will be frozen honestly if the evidence
 ---
 
 ### Declared multiplicity (fixed enumeration)
-outer folds = 3 studies × {logistic, monotonic-trees(if available), NULL} × inner-calibrated τ, portable
-family only for the transferable freeze; rich = IMPROVE-internal diagnostic only. Aggregate matched-random
-control seeded over 20 draws. Nothing outside this enumeration is selected.
+outer folds = 3 studies; inner selection over {nonnegative-logistic (C grid), monotonic-trees (if
+available), NULL} × protected-core `m ∈ {0,5,10}` × inner-CP-calibrated τ; portable family only for the
+transferable freeze; rich = IMPROVE-internal diagnostic only. Matched-random control seeded over 20 draws at
+the selected `m`/count. Nothing outside this enumeration is selected.
