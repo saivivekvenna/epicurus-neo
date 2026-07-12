@@ -129,7 +129,9 @@ def balanced_weights(df: pd.DataFrame) -> np.ndarray:
 def fit_nnlogistic(X: np.ndarray, y: np.ndarray, w: np.ndarray, C: float):
     """Nonnegative-coefficient logistic (coef>=0 via L-BFGS-B; intercept free) on the balanced, L2-penalized
     weighted log-loss. coef>=0 => keep-score monotone nondecreasing in each recognition-favoring percentile.
-    Returns (intercept, coef)."""
+    Returns (intercept, coef, success). On non-convergence/non-finite it FAILS CLOSED to (0.0, zeros, False);
+    callers MUST treat success=False as ineligible / KEEP-ALL (a zero-coef constant-0.5 model is NOT safe to
+    threshold — an aggressive tau>0.5 would remove everything)."""
     n, d = X.shape
 
     def obj(theta):
@@ -148,9 +150,8 @@ def fit_nnlogistic(X: np.ndarray, y: np.ndarray, w: np.ndarray, C: float):
     res = minimize(obj, np.zeros(d + 1), jac=True, method="L-BFGS-B", bounds=bounds,
                    options={"maxiter": 500, "ftol": 1e-12})
     if not res.success or not np.all(np.isfinite(res.x)):
-        # FAIL CLOSED: a constant keep-score (zero coef) => the gate removes nothing (KEEP-all), never garbage
-        return 0.0, np.zeros(d)
-    return float(res.x[0]), res.x[1:].copy()
+        return 0.0, np.zeros(d), False           # FAIL CLOSED: caller must KEEP-ALL / mark ineligible
+    return float(res.x[0]), res.x[1:].copy(), True
 
 
 def nnlogistic_score(X: np.ndarray, intercept: float, coef: np.ndarray) -> np.ndarray:
@@ -210,14 +211,19 @@ def core_mask(df: pd.DataFrame, m: int) -> np.ndarray:
 
 
 # ---- OOD patient detection (raw-feature envelope; percentiles are always [0,1] so use RAW) ------------
-def ood_patients(train: pd.DataFrame, test: pd.DataFrame, cols, cover: float = 0.5) -> set:
-    """Patients in `test` whose RAW features fall out of the train [p1,p99] envelope for > `cover` of their
-    candidates => OOD => KEEP all (no removal)."""
+def raw_envelope(train: pd.DataFrame, cols) -> dict:
+    """Per-feature raw [p1, p99] support envelope from training (for OOD detection + payload serialization)."""
     env = {}
     for c in cols:
         v = pd.to_numeric(train[c], errors="coerce").to_numpy()
         v = v[np.isfinite(v)]
-        env[c] = (np.percentile(v, 1), np.percentile(v, 99)) if len(v) else (-np.inf, np.inf)
+        env[c] = [float(np.percentile(v, 1)), float(np.percentile(v, 99))] if len(v) else [-np.inf, np.inf]
+    return env
+
+
+def ood_from_envelope(test: pd.DataFrame, env: dict, cols, cover: float = 0.5) -> set:
+    """Patients in `test` whose RAW features fall outside the given [p1,p99] envelope for > `cover` of their
+    candidates => OOD => KEEP all (no removal)."""
     out = np.zeros(len(test), bool)
     for c in cols:
         lo, hi = env[c]
@@ -229,6 +235,27 @@ def ood_patients(train: pd.DataFrame, test: pd.DataFrame, cols, cover: float = 0
         if out[loc].mean() > cover:
             ood.add(pid)
     return ood
+
+
+def ood_patients(train: pd.DataFrame, test: pd.DataFrame, cols, cover: float = 0.5) -> set:
+    """Convenience: build the train envelope then flag OOD patients in `test`."""
+    return ood_from_envelope(test, raw_envelope(train, cols), cols, cover)
+
+
+def apply_payload(df: pd.DataFrame, payload: dict) -> np.ndarray:
+    """PURE apply-only gate (no fitting): reproduces the frozen decision. Returns a boolean REMOVED mask.
+    payload NULL/None => remove nothing. For a nonneg-logistic payload it recomputes within-patient oriented
+    percentiles, keep-score = sigmoid(coef.pct + intercept), OOD via the serialized envelope, protected core
+    m, and removes non-core / feature-present / in-support candidates with keep-score < tau."""
+    if payload is None or payload.get("model") in (None, "NULL"):
+        return np.zeros(len(df), bool)
+    cols = payload["feature_order"]
+    X = feat_matrix(df, cols)                                  # orientation from HIGHER_BETTER (matches fit)
+    keepscore = 1.0 / (1.0 + np.exp(-(X @ np.asarray(payload["coef"], float) + payload["intercept"])))
+    tau = np.inf if payload.get("tau") is None else float(payload["tau"])
+    m = int(payload["m"])
+    ood = ood_from_envelope(df, payload["ood_envelope"], cols, payload.get("ood_cover", 0.5))
+    return removable_mask(df, cols, m, ood) & (keepscore < tau)
 
 
 # ---- gate removal + hits@20 --------------------------------------------------------------------------

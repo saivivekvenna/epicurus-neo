@@ -151,8 +151,8 @@ def test_nnlogistic_coef_nonnegative_and_apply_path():
     # true signal favors higher feature values (positive)
     y = (X[:, 0] + 0.5 * X[:, 1] + rng.normal(0, 0.3, 300) > 1.0).astype(int)
     w = np.ones(300)
-    b0, coef = nr.fit_nnlogistic(X, y, w, C=1.0)
-    assert (coef >= -1e-8).all()                    # nonnegative constraint honored
+    b0, coef, ok = nr.fit_nnlogistic(X, y, w, C=1.0)
+    assert ok and (coef >= -1e-8).all()             # converged + nonnegative constraint honored
     s = nr.nnlogistic_score(X, b0, coef)
     assert np.allclose(s, 1.0 / (1.0 + np.exp(-(X @ coef + b0))))   # apply path == sigmoid(linear)
     # monotone: raising any feature cannot lower the keep-score
@@ -167,8 +167,8 @@ def test_nnlogistic_fails_closed_on_optimizer_failure(monkeypatch):
         success = False
         x = np.array([np.nan, np.nan, np.nan])
     monkeypatch.setattr(nr, "minimize", lambda *a, **k: _Bad())
-    b0, coef = nr.fit_nnlogistic(np.ones((5, 2)), np.array([1, 0, 1, 0, 1]), np.ones(5), C=1.0)
-    assert b0 == 0.0 and coef.shape == (2,) and np.all(coef == 0.0) and np.all(np.isfinite(coef))
+    b0, coef, ok = nr.fit_nnlogistic(np.ones((5, 2)), np.array([1, 0, 1, 0, 1]), np.ones(5), C=1.0)
+    assert ok is False and b0 == 0.0 and coef.shape == (2,) and np.all(coef == 0.0) and np.all(np.isfinite(coef))
 
 
 def test_nnlogistic_recovers_sign_against_anti_signal():
@@ -176,8 +176,8 @@ def test_nnlogistic_recovers_sign_against_anti_signal():
     rng = np.random.default_rng(2)
     X = rng.uniform(0, 1, (300, 2))
     y = (-X[:, 0] + rng.normal(0, 0.2, 300) > -0.5).astype(int)   # feature 0 anti-correlated with y
-    b0, coef = nr.fit_nnlogistic(X, y, np.ones(300), C=1.0)
-    assert coef[0] <= 1e-6                           # cannot go negative
+    b0, coef, ok = nr.fit_nnlogistic(X, y, np.ones(300), C=1.0)
+    assert ok and coef[0] <= 1e-6                     # converged; cannot go negative
 
 
 # ---- matched-random same count -----------------------------------------------------------------------
@@ -203,6 +203,44 @@ def test_ood_patients_flags_out_of_support():
     test["expr"] = np.full(10, 1e6)                  # wildly out of train expr envelope
     ood = nr.ood_patients(train, test, nr.PORTABLE)
     assert "te" in ood
+
+
+# ---- apply_payload equivalence (Correction 3.4) ------------------------------------------------------
+def test_apply_payload_matches_model_path_on_external():
+    # a frozen payload (coef + serialized envelope + m + tau) must reproduce the model-based gate decision
+    # on unseen external data, with NO fitting.
+    def frame(pids, seed):
+        r = np.random.default_rng(seed)
+        rows = []
+        for pid in pids:
+            for _ in range(30):
+                pos = r.random() < 0.15
+                rows.append({"study": "x", "patient_id": pid, "mut_peptide": "P",
+                             "label": "POSITIVE" if pos else "TESTED_NEGATIVE",
+                             "prime": r.uniform(0, 3) if pos else r.uniform(0, 50),
+                             "el": r.uniform(0, 3) if pos else r.uniform(0, 50), "expr": r.uniform(0, 20)})
+        d = pd.DataFrame(rows)
+        for c in ["VarAlFreq", "rna_af", "ValMutRNACoef", "CelPrev"]:
+            d[c] = np.nan
+        return d
+    train = frame([f"t{i}" for i in range(8)], 1)
+    ext = frame([f"e{i}" for i in range(5)], 2)
+    cols = nr.PORTABLE
+    X = nr.feat_matrix(train, cols)
+    y = (train["label"].to_numpy() == "POSITIVE").astype(int)
+    b0, coef, ok = nr.fit_nnlogistic(X, y, nr.balanced_weights(train), C=1.0)
+    assert ok
+    m = 5
+    tau, *_ = nr.calibrate_tau(nr.nnlogistic_score(X, b0, coef), y, nr.removable_mask(train, cols, m, set()))
+    payload = {"model": "nnlog", "feature_order": cols, "coef": [float(x) for x in coef], "intercept": float(b0),
+               "m": m, "tau": (None if not np.isfinite(tau) else float(tau)),
+               "ood_envelope": nr.raw_envelope(train, cols), "ood_cover": 0.5}
+    # model path (with fitting) vs pure apply_payload (no fitting)
+    ood = nr.ood_from_envelope(ext, payload["ood_envelope"], cols, 0.5)
+    model_removed = nr.gate_removed(ext, nr.nnlogistic_score(nr.feat_matrix(ext, cols), b0, coef),
+                                    (np.inf if payload["tau"] is None else payload["tau"]), cols, m, ood)
+    assert np.array_equal(nr.apply_payload(ext, payload), model_removed)
+    assert np.array_equal(nr.apply_payload(ext, {"model": "NULL"}), np.zeros(len(ext), bool))
 
 
 # ---- quarantine --------------------------------------------------------------------------------------
