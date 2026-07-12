@@ -1,0 +1,118 @@
+{
+  "name": "sid_recognition_gate",
+  "version": "1.0.0",
+  "stage": "1_non_sid_frozen",
+  "frozen": {
+    "arm": "core_deployable",
+    "C": 0.1,
+    "alpha": 0.1,
+    "q": 1,
+    "hits_clean": 88,
+    "delta_clean": 8,
+    "per_cohort_delta_clean": {
+      "Basket": 2.0,
+      "bladder": 3.0,
+      "melanoma": 3.0
+    },
+    "worst_cohort": 2.0,
+    "matched_random_reserve_hits_clean": 82.3,
+    "beats_random": true
+  },
+  "null_hits_clean": 80.0,
+  "n_leaked_rows_quarantined": 731,
+  "selected_on": "IMPROVE official partitions OOF, LEAKAGE-CLEAN only; matched-random; transport",
+  "sid_never_consulted": true,
+  "declared_multiplicity_configs": 77,
+  "nested_cv_procedure": {
+    "nested_total_hits": 84,
+    "nested_null_hits": 80,
+    "nested_delta": 4,
+    "per_cohort_delta": {
+      "Basket": 1.0,
+      "bladder": 2.0,
+      "melanoma": 1.0
+    },
+    "procedure_generalizes": true,
+    "chosen_config_per_fold": [
+      {
+        "fold": 0,
+        "chosen": {
+          "arm": "core_deployable",
+          "C": 1.0,
+          "alpha": 0.1,
+          "q": 1
+        },
+        "outer_test_hits": 22,
+        "null_hits": 21
+      },
+      {
+        "fold": 1,
+        "chosen": {
+          "arm": "core_deployable",
+          "C": 0.1,
+          "alpha": 0.0,
+          "q": 3
+        },
+        "outer_test_hits": 17,
+        "null_hits": 18
+      },
+      {
+        "fold": 2,
+        "chosen": {
+          "arm": "core_deployable",
+          "C": 0.1,
+          "alpha": 0.1,
+          "q": 1
+        },
+        "outer_test_hits": 7,
+        "null_hits": 6
+      },
+      {
+        "fold": 3,
+        "chosen": {
+          "arm": "core_deployable",
+          "C": 0.1,
+          "alpha": 0.1,
+          "q": 1
+        },
+        "outer_test_hits": 23,
+        "null_hits": 21
+      },
+      {
+        "fold": 4,
+        "chosen": {
+          "arm": "core_deployable",
+          "C": 1.0,
+          "alpha": 0.2,
+          "q": 1
+        },
+        "outer_test_hits": 15,
+        "null_hits": 14
+      }
+    ]
+  },
+  "external_transport_gartner_multimer": {
+    "gartner": {
+      "base": 18,
+      "gated": 18,
+      "delta": 0,
+      "note": "VAF/RNA neutral where absent"
+    },
+    "multimer": {
+      "base": 21,
+      "gated": 22,
+      "delta": 1,
+      "note": "VAF/RNA neutral where absent"
+    }
+  },
+  "improve_to_sid_feature_map": {
+    "prime": "prime_rank",
+    "el": "mixmhcpred_rank(EL proxy)",
+    "expr": "gene TPM",
+    "VarAlFreq": "WES tumor VAF",
+    "rna_af": "variant_vafs_long tumor-RNA VAF",
+    "CelPrev": "MISSING->neutral"
+  },
+  "limitations": "bootstrap patient CI on +hits spans 0 (underpowered, n=70) -> reported not gated; Sid previously inspected -> Stage-2 is exploratory confirmation, not pristine validation.",
+  "sha256": "d69c498d04abe9ef4d44cf8731545bb2a1448a8943d1508b6860a6dabb96afd1"
+}

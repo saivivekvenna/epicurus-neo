@@ -1,0 +1,1351 @@
+{
+  "checkpoint": "PRE-SID: no Sid file/label accessed; STOP for audit before Stage 2.",
+  "data_files_read": [
+    "data/raw/gartner_nci/_cache_improve_prime.tsv",
+    "data/raw/improve/data.zip"
+  ],
+  "frozen": {
+    "declared_multiplicity_configs": 77,
+    "external_transport_gartner_multimer": {
+      "gartner": {
+        "base": 18,
+        "delta": 0,
+        "gated": 18,
+        "note": "VAF/RNA neutral where absent"
+      },
+      "multimer": {
+        "base": 21,
+        "delta": 1,
+        "gated": 22,
+        "note": "VAF/RNA neutral where absent"
+      }
+    },
+    "frozen": {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 8,
+      "hits_clean": 88,
+      "matched_random_reserve_hits_clean": 82.3,
+      "per_cohort_delta_clean": {
+        "Basket": 2.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 2.0
+    },
+    "improve_to_sid_feature_map": {
+      "CelPrev": "MISSING->neutral",
+      "VarAlFreq": "WES tumor VAF",
+      "el": "mixmhcpred_rank(EL proxy)",
+      "expr": "gene TPM",
+      "prime": "prime_rank",
+      "rna_af": "variant_vafs_long tumor-RNA VAF"
+    },
+    "limitations": "bootstrap patient CI on +hits spans 0 (underpowered, n=70) -> reported not gated; Sid previously inspected -> Stage-2 is exploratory confirmation, not pristine validation.",
+    "n_leaked_rows_quarantined": 731,
+    "name": "sid_recognition_gate",
+    "nested_cv_procedure": {
+      "chosen_config_per_fold": [
+        {
+          "chosen": {
+            "C": 1.0,
+            "alpha": 0.1,
+            "arm": "core_deployable",
+            "q": 1
+          },
+          "fold": 0,
+          "null_hits": 21,
+          "outer_test_hits": 22
+        },
+        {
+          "chosen": {
+            "C": 0.1,
+            "alpha": 0.0,
+            "arm": "core_deployable",
+            "q": 3
+          },
+          "fold": 1,
+          "null_hits": 18,
+          "outer_test_hits": 17
+        },
+        {
+          "chosen": {
+            "C": 0.1,
+            "alpha": 0.1,
+            "arm": "core_deployable",
+            "q": 1
+          },
+          "fold": 2,
+          "null_hits": 6,
+          "outer_test_hits": 7
+        },
+        {
+          "chosen": {
+            "C": 0.1,
+            "alpha": 0.1,
+            "arm": "core_deployable",
+            "q": 1
+          },
+          "fold": 3,
+          "null_hits": 21,
+          "outer_test_hits": 23
+        },
+        {
+          "chosen": {
+            "C": 1.0,
+            "alpha": 0.2,
+            "arm": "core_deployable",
+            "q": 1
+          },
+          "fold": 4,
+          "null_hits": 14,
+          "outer_test_hits": 15
+        }
+      ],
+      "nested_delta": 4,
+      "nested_null_hits": 80,
+      "nested_total_hits": 84,
+      "per_cohort_delta": {
+        "Basket": 1.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "procedure_generalizes": true
+    },
+    "null_hits_clean": 80.0,
+    "selected_on": "IMPROVE official partitions OOF, LEAKAGE-CLEAN only; matched-random; transport",
+    "sha256": "d69c498d04abe9ef4d44cf8731545bb2a1448a8943d1508b6860a6dabb96afd1",
+    "sid_never_consulted": true,
+    "stage": "1_non_sid_frozen",
+    "version": "1.0.0"
+  },
+  "grid": [
+    {
+      "C": 0.1,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 79.3,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.05,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.25,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 3.0,
+        "bladder": 0.0,
+        "melanoma": 0.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 8,
+      "hits_clean": 88,
+      "matched_random_reserve_hits_clean": 82.3,
+      "per_cohort_delta_clean": {
+        "Basket": 2.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 2.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.6,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 76.4,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 1.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.2,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.5,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 75.1,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 7,
+      "hits_clean": 87,
+      "matched_random_reserve_hits_clean": 82.35,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 4.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.45,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 77.05,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 80.2,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.3,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 76.1,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 79.3,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.05,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.25,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 3.0,
+        "bladder": 0.0,
+        "melanoma": 0.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 8,
+      "hits_clean": 88,
+      "matched_random_reserve_hits_clean": 82.3,
+      "per_cohort_delta_clean": {
+        "Basket": 2.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.6,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 76.4,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 1.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.2,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.5,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 76.05,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 7,
+      "hits_clean": 87,
+      "matched_random_reserve_hits_clean": 82.35,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 4.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.5,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.05,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 0,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 80.2,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.3,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "core_deployable",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 76.15,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.0,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 79.3,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.0,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.05,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.0,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.25,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 2.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 80.25,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.6,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 78.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.55,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.1,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 2.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 1,
+      "hits_clean": 81,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.4,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 77.1,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 1,
+      "hits_clean": 81,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.2,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.4,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 0.1,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 78.75,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 79.3,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 79.05,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.0,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 77.25,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 1.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 2.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 79.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 4,
+      "hits_clean": 84,
+      "matched_random_reserve_hits_clean": 79.6,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 1.0
+      },
+      "q": 2,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.1,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 78.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 1.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.55,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.2,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 2,
+      "hits_clean": 82,
+      "matched_random_reserve_hits_clean": 75.25,
+      "per_cohort_delta_clean": {
+        "Basket": -2.0,
+        "bladder": 1.0,
+        "melanoma": 3.0
+      },
+      "q": 3,
+      "worst_cohort": -2.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 1,
+      "hits_clean": 81,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.25,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 78.4,
+      "per_cohort_delta_clean": {
+        "Basket": -1.0,
+        "bladder": 2.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": -1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.25,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 3,
+      "hits_clean": 83,
+      "matched_random_reserve_hits_clean": 76.9,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 2.0,
+        "melanoma": 1.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 1,
+      "hits_clean": 81,
+      "matched_random_reserve_hits_clean": null,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 0.0,
+        "melanoma": 1.0
+      },
+      "q": 0,
+      "worst_cohort": 0.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 7,
+      "hits_clean": 87,
+      "matched_random_reserve_hits_clean": 82.3,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 3.0,
+        "melanoma": 3.0
+      },
+      "q": 1,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 6,
+      "hits_clean": 86,
+      "matched_random_reserve_hits_clean": 81.55,
+      "per_cohort_delta_clean": {
+        "Basket": 1.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 2,
+      "worst_cohort": 1.0
+    },
+    {
+      "C": 1.0,
+      "alpha": 0.3,
+      "arm": "improve_rich_partial_bridge",
+      "beats_random": true,
+      "delta_clean": 5,
+      "hits_clean": 85,
+      "matched_random_reserve_hits_clean": 78.9,
+      "per_cohort_delta_clean": {
+        "Basket": 0.0,
+        "bladder": 3.0,
+        "melanoma": 2.0
+      },
+      "q": 3,
+      "worst_cohort": 0.0
+    }
+  ],
+  "n_leaked_quarantined": 731,
+  "n_rows": 17520,
+  "null_hits": {
+    "all": 83.0,
+    "clean": 80.0
+  },
+  "sha256": "d69c498d04abe9ef4d44cf8731545bb2a1448a8943d1508b6860a6dabb96afd1",
+  "stage": 1
+}
