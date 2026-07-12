@@ -316,9 +316,11 @@ def select_route_aware_topk(
         )
 
     out = routed.reset_index(drop=True).copy()
-    peptide = out.get("mutant_peptide", pd.Series("", index=out.index)).astype(str)
-    hla = out.get("hla_allele", pd.Series("", index=out.index)).astype(str)
-    out["_tie_key"] = (peptide + "|" + hla).map(_md5)
+    empty = pd.Series("", index=out.index)
+    peptide = out["mutant_peptide"] if "mutant_peptide" in out else empty
+    hla = out["hla_allele"] if "hla_allele" in out else empty
+    # NaN-safe, dtype-agnostic (real CSVs may carry arrow-backed strings / NaN peptides).
+    out["_tie_key"] = [_md5(f"{_text(p)}|{_text(h)}") for p, h in zip(peptide, hla)]
     out["route_selected"] = False
     out["route_rank"] = pd.Series(pd.NA, index=out.index, dtype="Int64")
     out["route_selection_kind"] = ""
