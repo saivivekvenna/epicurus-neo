@@ -149,6 +149,19 @@ def normalize_product_candidates(
         if source is not None:
             out[canonical] = frame[source]
 
+    # Common lossless-generation / PRIME adapter columns. Percentile ranks are
+    # lower-is-better, while the product contract requires higher-is-better
+    # evidence scores in [0, 1]. Derive these only when an explicit canonical
+    # value was not supplied; never overwrite caller-provided evidence.
+    if "dna_vaf" not in out and "tumor_vaf" in frame:
+        out["dna_vaf"] = frame["tumor_vaf"]
+    if "presentation_score" not in out and "mixmhcpred_rank" in frame:
+        rank = pd.to_numeric(frame["mixmhcpred_rank"], errors="coerce")
+        out["presentation_score"] = (1.0 - rank / 100.0).clip(0.0, 1.0)
+    if "recognition_score" not in out and "prime_rank" in frame:
+        rank = pd.to_numeric(frame["prime_rank"], errors="coerce")
+        out["recognition_score"] = (1.0 - rank / 100.0).clip(0.0, 1.0)
+
     if patient_id is not None:
         out["patient_id"] = patient_id
     elif "patient_id" not in out:
