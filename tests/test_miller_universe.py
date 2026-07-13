@@ -54,10 +54,85 @@ def test_classify_consequence_only_protein_altering_enumerable(monkeypatch):
         assert kind is None and raw == term
 
 
-# ---- Fix 1: no genuine pVAC -> empty (never fabricated from lossless) --------------------------------
-def test_load_pvac_candidates_absent_is_empty(monkeypatch, tmp_path):
-    monkeypatch.setattr(u, "PVAC_CANDIDATES", tmp_path / "nope.csv")
+# ---- Fix 1: genuine pVAC only — a CSV alone must NOT establish a pVAC lane ---------------------------
+def test_load_pvac_candidates_requires_genuine_provenance(monkeypatch, tmp_path):
+    csv, prov = tmp_path / "pvac.csv", tmp_path / "prov.json"
+    monkeypatch.setattr(u, "PVAC_CANDIDATES", csv)
+    monkeypatch.setattr(u, "PVAC_PROVENANCE", prov)
+    assert u.load_pvac_candidates().empty                         # both absent
+    # a valid-looking CSV with NO provenance is rejected (no file alone establishes genuine pVAC)
+    csv.write_text("mutation_id,mutant_peptide,hla_allele\n6:31000000:C:T,AAAAAAAAA,A*02:01\n")
     assert u.load_pvac_candidates().empty
+    # provenance with wrong tool -> rejected
+    prov.write_text(json.dumps({"tool": "homemade", "version": "1"}))
+    assert u.load_pvac_candidates().empty
+    # genuine provenance + schema + position-based id -> accepted, HLA normalized, source=pvac
+    prov.write_text(json.dumps({"tool": "pvacseq", "version": "4.0.1"}))
+    got = u.load_pvac_candidates()
+    assert len(got) == 1 and got["candidate_source"].iloc[0] == "pvac"
+    assert got["hla_allele"].iloc[0] == "HLA-A*02:01"
+    # a non-position-based mutation_id is rejected even with provenance
+    csv.write_text("mutation_id,mutant_peptide,hla_allele\nATRX-chrX-1,AAAAAAAAA,A*02:01\n")
+    assert u.load_pvac_candidates().empty
+
+
+def test_normalize_hla_form():
+    assert u.normalize_hla("A*02:01") == "HLA-A*02:01" and u.normalize_hla("HLA-B*07:02") == "HLA-B*07:02"
+
+
+# ---- Fix 3 (strengthened): freeze NEVER opens LABELS on a fully-mocked SUCCESS path ------------------
+def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
+    import builtins
+    for name in ("PASS_VCF", "QUANT", "HLA_JSON", "REF"):
+        p = tmp_path / name
+        p.write_text("x")
+        monkeypatch.setattr(u, name, p)
+    (tmp_path / "HLA_JSON").write_text(json.dumps({"class_i_alleles": ["HLA-A*02:01"]}))
+    monkeypatch.setattr(u, "FREEZE_DIR", tmp_path / "freeze")
+    monkeypatch.setattr(u, "ART", tmp_path / "art")
+    monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: pv)
+    monkeypatch.setattr(u, "load_filtered_variants",
+                        lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True]}))
+    uni = pd.DataFrame({"patient_id": ["Hu_287"], "mutation_id": ["6:1:C:T"], "candidate_source": ["lossless_recovery"],
+                        "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"],
+                        "genuine_prime": [0.9], "epicurus": [0.5]})
+    monkeypatch.setattr(u, "build_universe", lambda v, h, t: (uni, [], False))
+    monkeypatch.setattr(u, "score_universe", lambda x: x)
+    monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
+    monkeypatch.setattr(u, "arm_selection", lambda uni, arm: pd.DataFrame(
+        {"mutation_id": ["6:1:C:T"], "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"]}))
+    # tripwire: opening the sealed label path during freeze is a hard failure
+    real_open = builtins.open
+    monkeypatch.setattr(builtins, "open",
+                        lambda f, *a, **k: (_ for _ in ()).throw(AssertionError("freeze opened LABELS"))
+                        if str(f) == str(u.LABELS) else real_open(f, *a, **k))
+    m = u.freeze()
+    assert m["LOCK"] == "FROZEN_NO_LABELS" and m["labels_opened"] is False
+
+
+# ---- Fix A: unseal reports null (not 0) for NOT_EVALUABLE arms ---------------------------------------
+def test_unseal_reports_null_for_non_evaluable_arm(monkeypatch, tmp_path):
+    # craft a frozen dir with one evaluable + one non-evaluable arm + a tiny labels file
+    fd = tmp_path / "freeze"
+    fd.mkdir()
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    monkeypatch.setattr(u, "ART", tmp_path / "art")
+    (tmp_path / "art").mkdir()
+    (fd / "variants.csv").write_text("key,pass_filters\n6:1:C:T,True\n")
+    (fd / "select_lossless_prime.csv").write_text("mutation_id\n6:1:C:T\n")
+    (fd / "select_pvac_prime.csv").write_text("mutation_id\n")
+    data_files = ("variants.csv", "select_lossless_prime.csv", "select_pvac_prime.csv")
+    man = {"sha256": {f: u.sha256_file(fd / f) for f in data_files}, "arms": {
+        "lossless_prime": {"evaluable": True, "n_selected": 1, "saturated": False, "selection_file": "select_lossless_prime.csv"},
+        "pvac_prime": {"evaluable": False, "missing": ["pvac_candidates"], "n_selected": 0, "saturated": False, "selection_file": "select_pvac_prime.csv"}}}
+    (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
+    labels = tmp_path / "labels.csv"
+    labels.write_text("patient_id,gene_symbol,chrom,pos,ref,alt,label\nHu_287,G,6,1,C,T,POSITIVE\n")
+    monkeypatch.setattr(u, "LABELS", labels)
+    out = u.unseal()
+    assert out["endpoint_b_class_i_four_arm"]["pvac_prime"]["hits_at_20_unique_mutations"] is None
+    assert out["endpoint_b_class_i_four_arm"]["pvac_prime"]["n_selected"] is None
+    assert out["endpoint_b_class_i_four_arm"]["lossless_prime"]["hits_at_20_unique_mutations"] == 1
 
 
 # ---- Fix 3: freeze/unseal hash lock ------------------------------------------------------------------

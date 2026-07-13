@@ -22,6 +22,8 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import re
+import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -32,9 +34,13 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 HU = ROOT / "data/raw/miller_ipv/hu_287"
 PASS_VCF = HU / "somatic/Hu_287.somatic.pass.vcf.gz"
+NORM_VCF = HU / "somatic/Hu_287.somatic.pass.norm.vcf.gz"
+REF = ROOT / "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 QUANT = HU / "salmon_quant/quant.sf"
 HLA_JSON = ROOT / "artifacts/milestone_7_decision/external_validation/miller_ipv/hu_287_reconstruction/HLA_PROVENANCE.json"
 PVAC_CANDIDATES = HU / "pvac/pvac_candidates.csv"       # genuine pVACseq output if the env ran; else absent
+PVAC_PROVENANCE = HU / "pvac/PVAC_PROVENANCE.json"      # required proof of a genuine pVACseq run
+_KEY_RE = re.compile(r"^[0-9XYMT]+:\d+:[ACGTN]+:[ACGTN]+$")
 LABELS = ROOT / "data/raw/miller_ipv/miller_recognition_labels.csv"          # SEALED until unseal()
 ENS_CACHE = HU / "ensembl_cache"
 ART = ROOT / "artifacts/milestone_7_decision/external_validation/miller_ipv/hu_287_reconstruction"
@@ -111,14 +117,43 @@ def classify_consequence(client, chrom, pos, ref, alt) -> tuple[str | None, str]
     return _ENUMERABLE.get(term), term
 
 
+def normalize_hla(a) -> str:
+    """Normalize an HLA allele to the 'HLA-A*02:01' form used by the panel/PRIME adapter."""
+    s = str(a).strip().upper().replace("HLA-", "")
+    return f"HLA-{s}" if s else ""
+
+
 def load_pvac_candidates() -> pd.DataFrame:
-    """Genuine pVACseq class-I candidates if a real run produced them; else empty (pvac arm NOT_EVALUABLE).
-    NEVER synthesized from lossless rows."""
-    if not PVAC_CANDIDATES.exists():
+    """Genuine pVACseq class-I candidates ONLY. A CSV alone is insufficient — it must be accompanied by a
+    provenance file proving a real pvacseq/pvactools run (tool+version), carry the required schema, use
+    position-based mutation_ids (chrom:pos:ref:alt), and normalized HLA. Anything else is REJECTED (empty,
+    => pvac arm NOT_EVALUABLE). Lossless rows are NEVER relabeled pVAC."""
+    if not (PVAC_CANDIDATES.exists() and PVAC_PROVENANCE.exists()):
         return pd.DataFrame()
+    try:
+        prov = json.loads(PVAC_PROVENANCE.read_text())
+    except Exception:
+        return pd.DataFrame()
+    if str(prov.get("tool", "")).lower() not in {"pvacseq", "pvactools"} or not prov.get("version"):
+        return pd.DataFrame()                            # no genuine provenance -> reject
     d = pd.read_csv(PVAC_CANDIDATES)
+    if not {"mutation_id", "mutant_peptide", "hla_allele"}.issubset(d.columns):
+        return pd.DataFrame()                            # wrong schema -> reject
+    if not d["mutation_id"].astype(str).map(lambda x: bool(_KEY_RE.match(x))).all():
+        return pd.DataFrame()                            # non-position-based mutation_id -> reject
+    d = d.copy()
+    d["hla_allele"] = d["hla_allele"].map(normalize_hla)
     d["candidate_source"] = "pvac"
     return d
+
+
+def normalize_pass_vcf(pass_vcf: Path, ref: Path, out: Path) -> Path:
+    """Left-align + split multiallelics against the EXACT reference (bcftools norm) so indel keys are
+    canonical before enumeration/freeze. SNVs are unchanged. Fail-closed on error."""
+    subprocess.run(["bcftools", "norm", "-f", str(ref), "-m-any", "-Oz", "-o", str(out), str(pass_vcf)],
+                   check=True, capture_output=True)
+    subprocess.run(["bcftools", "index", "-t", str(out)], check=True, capture_output=True)
+    return out
 
 
 def build_universe(variants: pd.DataFrame, hla_panel: list[str], tpm_by_ensg: dict):
@@ -189,11 +224,12 @@ def arm_selection(uni: pd.DataFrame, arm) -> pd.DataFrame:
 def freeze() -> dict:
     """Build + score + select, then LOCK — with NO label access."""
     from benchmark.four_arm import FOUR_ARMS, detect_available, evaluate_eligibility
-    for f in (PASS_VCF, QUANT, HLA_JSON):
+    for f in (PASS_VCF, QUANT, HLA_JSON, REF):
         if not f.exists():
             return {"status": "NOT_EVALUABLE", "missing": str(f)}
     hla_panel = json.loads(HLA_JSON.read_text())["class_i_alleles"]
-    variants = load_filtered_variants(PASS_VCF)
+    norm_vcf = normalize_pass_vcf(PASS_VCF, REF, NORM_VCF)     # Fix: bcftools norm indels vs exact FASTA
+    variants = load_filtered_variants(norm_vcf)
     uni, notes, has_pvac = build_universe(variants, hla_panel, gene_tpm_by_ensg(QUANT))
     if len(uni):
         uni = score_universe(uni)
@@ -216,6 +252,7 @@ def freeze() -> dict:
                                  "selection_file": fn, "n_unique_mutations": int(sel["mutation_id"].nunique()) if len(sel) else 0}
     manifest = {"patient_id": "Hu_287", "labels_opened": False, "LOCK": "FROZEN_NO_LABELS",
                 "hla_panel": hla_panel, "genuine_pvac_lane": has_pvac,
+                "indel_normalization": "bcftools norm -f GRCh38.fa -m-any (left-align+split) before enumeration",
                 "n_variants_pass": int(variants["pass_filters"].sum()), "n_universe_rows": int(len(uni)),
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
                 "el_feature": "NaN (NetMHCpan-EL unavailable; MixMHCpred is NOT a valid el substitute) -> frozen 0.5 fallback",
@@ -238,7 +275,7 @@ def verify_frozen_hashes(man: dict, freeze_dir: Path = FREEZE_DIR) -> tuple[bool
 def unseal() -> dict:
     """Verify frozen hashes, then open labels ONCE for the two endpoints."""
     man = json.loads((FREEZE_DIR / "FREEZE_MANIFEST.json").read_text())
-    ok, bad = verify_frozen_hashes(man)                  # integrity gate BEFORE any label read
+    ok, bad = verify_frozen_hashes(man, FREEZE_DIR)      # integrity gate BEFORE any label read
     if not ok:
         return {"status": "HASH_MISMATCH", "file": bad}
     labels = pd.read_csv(LABELS)                          # <-- the ONLY label read
@@ -255,16 +292,20 @@ def unseal() -> dict:
              "n_tested_mutations": lab["key"].nunique()}
     arms = {}
     for arm_id, meta in man["arms"].items():
+        if not meta["evaluable"]:                        # NOT evaluated -> null, never 0 (0 implies evaluated)
+            arms[arm_id] = {"evaluable": False, "missing": meta.get("missing"), "n_selected": None,
+                            "saturated": None, "hits_at_20_unique_mutations": None, "hit_mutation_keys": None}
+            continue
         sel = pd.read_csv(FREEZE_DIR / meta["selection_file"])
         hit_muts = sorted(set(sel["mutation_id"]) & recognized) if len(sel) else []
-        arms[arm_id] = {"evaluable": meta["evaluable"], "n_selected": meta["n_selected"],
+        arms[arm_id] = {"evaluable": True, "n_selected": meta["n_selected"],
                         "saturated": meta["saturated"], "hits_at_20_unique_mutations": len(hit_muts),
                         "hit_mutation_keys": hit_muts}
     out = {"patient_id": "Hu_287", "endpoint_a_hla_agnostic_reachability": reach,
            "endpoint_b_class_i_four_arm": arms,
            "limitation": "Miller IFN-g 20mers are NOT HLA-I restricted (CD4/class-II possible); endpoint (b) "
                          "is a CD8/class-I mechanistic view and undercounts full biological recall.",
-           "el_disclosure": man["el_feature"], "pvac_disclosure": man["pvac_note"]}
+           "el_disclosure": man.get("el_feature"), "pvac_disclosure": man.get("pvac_note")}
     (ART / "FOUR_ARM_RESULT.json").write_text(json.dumps(out, indent=2, default=str) + "\n")
     return out
 

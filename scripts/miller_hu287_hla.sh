@@ -8,7 +8,7 @@ MM="$ROOT/data/raw/tools/bin/micromamba"
 OUT="$ROOT/data/raw/miller_ipv/hu_287/hla"; mkdir -p "$OUT"
 PROV="$ROOT/artifacts/milestone_7_decision/external_validation/miller_ipv/hu_287_reconstruction"
 NBAM="$ROOT/data/raw/miller_ipv/hu_287/somatic/Hu_287_N.md.bam"
-REGION="6:29800000:33600000"                     # GRCh38 (Ensembl contig '6') MHC class-I A/C/B region
+REGION="6:29800000-33600000"                     # GRCh38 (Ensembl contig '6') MHC region — HYPHEN (samtools)
 LOG="$OUT/run.log"; : > "$LOG"
 say(){ echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
 
@@ -18,7 +18,9 @@ say "extracting MHC-region reads ($REGION) -> paired FASTQ"
 samtools view -b "$NBAM" "$REGION" 2>>"$LOG" \
   | samtools collate -Oun128 - 2>>"$LOG" \
   | samtools fastq -1 "$OUT/hla_1.fq" -2 "$OUT/hla_2.fq" -0 /dev/null -s /dev/null -n 2>>"$LOG"
-say "OptiType (DNA) on $(($(wc -l < "$OUT/hla_1.fq")/4)) read pairs"
+NPAIR=$(( $(wc -l < "$OUT/hla_1.fq") / 4 ))
+if [ "$NPAIR" -le 0 ]; then say "FAIL-CLOSED: 0 read pairs extracted from $REGION (aborting; not running OptiType)"; exit 1; fi
+say "OptiType (DNA) on $NPAIR read pairs"
 rm -rf "$OUT/optitype"; mkdir -p "$OUT/optitype"
 "$MM" run -n hla OptiTypePipeline.py --dna -i "$OUT/hla_1.fq" "$OUT/hla_2.fq" \
      --outdir "$OUT/optitype" 2>>"$LOG"
