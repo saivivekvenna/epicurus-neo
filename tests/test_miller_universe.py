@@ -107,6 +107,7 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
     monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (sfile,))
     monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {"PRIME": {"match": True}}))
     monkeypatch.setattr(u, "verify_git_tracked_clean", lambda: (True, {"x": "CLEAN"}))
+    monkeypatch.setattr(u, "verify_frozen_module_integrity", lambda: (True, {"module": "m"}))
     monkeypatch.setattr(u, "arm_selection", lambda uni, arm: pd.DataFrame(
         {"mutation_id": ["6:1:C:T"], "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"]}))
     # tripwire: opening the sealed label path during freeze is a hard failure
@@ -249,6 +250,7 @@ def test_freeze_not_evaluable_when_pvac_inputs_missing_no_manifest(monkeypatch, 
     monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
     monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {}))
     monkeypatch.setattr(u, "verify_git_tracked_clean", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_frozen_module_integrity", lambda: (True, {}))
     # genuine_pvac_lane True but the pVAC CSV/provenance are absent -> _all_inputs includes them -> refuse
     monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (present, tmp_path / "pvac.csv") if has_pvac else (present,))
     monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: present)
@@ -347,6 +349,54 @@ def test_freeze_not_evaluable_on_untracked_semantic_file_no_manifest(monkeypatch
                         lambda: (False, {"src/event_b/prime_adapter.py": "UNTRACKED"}))
     out = u.freeze()
     assert out["status"] == "NOT_EVALUABLE" and "git_tracking_issue" in out
+    assert not (fd / "FREEZE_MANIFEST.json").exists()
+
+
+def test_frozen_module_integrity_match_mismatch_missing_malformed(tmp_path, monkeypatch):
+    # MATCH: the real committed config must match the on-disk prime_transfer.py module (post-correction)
+    ok, info = u.verify_frozen_module_integrity()
+    assert ok is True and info["module"] == "src/event_b/prime_transfer.py"
+    mod = tmp_path / "mod.py"
+    mod.write_text("x=1\n")
+    monkeypatch.setattr(u, "ROOT", tmp_path)                          # so ROOT/code.module resolves to mod
+    good = sha256_hex(mod)
+
+    def cfg(code):
+        p = tmp_path / "c.json"
+        p.write_text(json.dumps(code))
+        return p
+    # MATCH via a synthetic config
+    assert u.verify_frozen_module_integrity(cfg({"code": {"module": "mod.py", "module_sha256": good}}))[0] is True
+    # MISMATCH
+    bad = "0" * 64
+    r = u.verify_frozen_module_integrity(cfg({"code": {"module": "mod.py", "module_sha256": bad}}))
+    assert r[0] is False and r[1]["reason"] == "module_sha256_mismatch"
+    # MISSING code block
+    assert u.verify_frozen_module_integrity(cfg({"formula": {}}))[0] is False
+    # declared sha not hex
+    assert u.verify_frozen_module_integrity(cfg({"code": {"module": "mod.py", "module_sha256": "nope"}}))[0] is False
+    # MALFORMED config
+    p = tmp_path / "bad.json"
+    p.write_text("{not json")
+    assert u.verify_frozen_module_integrity(p)[0] is False
+
+
+def sha256_hex(p):
+    import hashlib
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def test_freeze_not_evaluable_on_frozen_module_mismatch_no_manifest(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    present = tmp_path / "present"
+    present.write_text("x")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
+    monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_git_tracked_clean", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_frozen_module_integrity", lambda: (False, {"reason": "module_sha256_mismatch"}))
+    out = u.freeze()
+    assert out["status"] == "NOT_EVALUABLE" and "frozen_module_issue" in out
     assert not (fd / "FREEZE_MANIFEST.json").exists()
 
 

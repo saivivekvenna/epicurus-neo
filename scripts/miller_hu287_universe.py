@@ -183,6 +183,29 @@ def _is_hex_sha(v) -> bool:
     return isinstance(v, str) and len(v) == 64 and all(c in "0123456789abcdef" for c in v.lower())
 
 
+def verify_frozen_module_integrity(config_path: Path = FROZEN_EPICURUS) -> tuple[bool, dict]:
+    """Verify the frozen config's declared code.module + module_sha256 against the ACTUAL committed module on
+    disk. Fail-CLOSED with a precise reason: config malformed, code block missing, declared sha not 64-hex,
+    module absent, or sha mismatch. (The formula lives in the JSON; this pins the applier code too.)"""
+    try:
+        cfg = json.loads(Path(config_path).read_text())
+    except Exception:
+        return False, {"reason": "config_unreadable_or_malformed", "config": _rel(Path(config_path))}
+    code = cfg.get("code")
+    if not isinstance(code, dict) or "module" not in code or "module_sha256" not in code:
+        return False, {"reason": "config.code missing module/module_sha256"}
+    module, declared = ROOT / code["module"], code["module_sha256"]
+    if not _is_hex_sha(declared):
+        return False, {"reason": "declared_module_sha256_not_hex", "declared": declared}
+    if not module.exists():
+        return False, {"reason": "declared_module_absent", "module": code["module"]}
+    actual = sha256_file(module)
+    if actual != declared:
+        return False, {"reason": "module_sha256_mismatch", "module": code["module"],
+                       "declared": declared, "actual": actual}
+    return True, {"module": code["module"], "module_sha256": actual}
+
+
 def verify_input_hashes(man: dict) -> tuple[bool, str | None, str | None]:
     """Fail-CLOSED gate on recorded input hashes: input_sha256 must be a dict covering EVERY expected input
     key (for this lane) with a valid 64-hex sha (never 'MISSING'/empty), each recompute-matching on disk."""
@@ -437,6 +460,9 @@ def freeze() -> dict:
     git_ok, git_tracking = verify_git_tracked_clean()    # semantic files must be tracked + clean (reconstructable)
     if not git_ok:
         return {"status": "NOT_EVALUABLE", "git_tracking_issue": git_tracking}
+    mod_ok, mod_info = verify_frozen_module_integrity()  # frozen config's declared module sha must match on disk
+    if not mod_ok:
+        return {"status": "NOT_EVALUABLE", "frozen_module_issue": mod_info}
     hla_panel = json.loads(HLA_JSON.read_text())["class_i_alleles"]
     norm_vcf = normalize_pass_vcf(PASS_VCF, REF, NORM_VCF)     # bcftools norm indels vs exact FASTA
     variants = load_filtered_variants(norm_vcf)
@@ -478,7 +504,8 @@ def freeze() -> dict:
                 "n_variants_pass": int(variants["pass_filters"].sum()), "n_universe_rows": int(len(uni)),
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
                 "input_sha256": input_sha, "code_files": [_rel(c) for c in CODE_FILES],
-                "tool_commits": tool_commits, "git_tracked_clean": git_tracking, "git_commit": _git_commit(),
+                "tool_commits": tool_commits, "git_tracked_clean": git_tracking,
+                "frozen_module_integrity": mod_info, "git_commit": _git_commit(),
                 "router_policy_id": DEFAULT_ROUTER_POLICY.policy_id,
                 "presentation_evidence": "router binding_percentile_rank = MixMHCpred %rank (real predictor; not NetMHCpan-EL)",
                 "el_feature": "NaN (NetMHCpan-EL unavailable; MixMHCpred is NOT a valid el substitute) -> frozen 0.5 fallback",
