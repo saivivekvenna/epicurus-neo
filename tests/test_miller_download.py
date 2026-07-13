@@ -143,6 +143,47 @@ def test_reconstruction_stages_method_specific_tools_and_reference_sentinels():
     assert all(x["missing_tools"] for x in by["mutanome_enumeration"]["method_status"])
 
 
+# ---- pinned micromamba env resolution (the Hu_287-identical toolchain) ------------------------------
+def test_pinned_env_tool_resolves_by_env_bin_and_fails_closed(tmp_path, monkeypatch):
+    envs = tmp_path / "envs"
+    (envs / "hla" / "bin").mkdir(parents=True)
+    opti = envs / "hla" / "bin" / "OptiTypePipeline.py"
+    opti.write_text("#!/usr/bin/env python\n")
+    monkeypatch.setattr(md, "_MAMBA_ENVS", envs)
+    # launcher present + env bin present -> resolves to the pinned path
+    monkeypatch.setattr(md, "_MICROMAMBA", tmp_path / "micromamba")
+    (tmp_path / "micromamba").write_text("")
+    assert md.pinned_env_tool("OptiTypePipeline.py") == str(opti)
+    assert md.pinned_env_tool("razers3") is None            # declared for `hla` env but bin absent
+    assert md.pinned_env_tool("not-a-pinned-tool") is None  # unknown tool -> never resolves
+    # fail-closed: launcher missing -> even an installed env bin does not count as runnable
+    monkeypatch.setattr(md, "_MICROMAMBA", tmp_path / "absent-micromamba")
+    assert md.pinned_env_tool("OptiTypePipeline.py") is None
+
+
+def test_resolve_tool_falls_through_path_local_then_pinned_env(monkeypatch):
+    monkeypatch.setattr(md, "pinned_env_tool", lambda name: "/pinned/vep" if name == "vep" else None)
+    assert md.resolve_tool("vep", which=lambda n: "/usr/bin/vep") == "/usr/bin/vep"   # PATH wins
+    assert md.resolve_tool("vep", which=lambda n: None) == "/pinned/vep"              # pinned env fallback
+    assert md.resolve_tool("nope", which=lambda n: None) is None
+
+
+def test_hla_and_mutanome_runnable_via_pinned_toolchain():
+    # With the pinned `hla`/`vep` envs + bcftools + GRCh38 present, the two previously-blocked stages become
+    # RUNNABLE through the EXACT providers that reconstructed Hu_287 (OptiType env; Ensembl-REST enumeration).
+    present = {"OptiTypePipeline.py": "/e/hla/OptiTypePipeline.py", "razers3": "/e/hla/razers3",
+               "bcftools": "/usr/bin/bcftools"}
+    def ref(p):                                   # GRCh38 fasta + .fai exist; no local VEP cache/GTF
+        return p.startswith(md._G)
+    by = {s["stage"]: s for s in md.reconstruction_stages(resolve=lambda t: present.get(t), ref_exists=ref)}
+    hla = by["hla_typing_classI"]
+    assert hla["status"] == "RUNNABLE" and hla["runnable_method"] == "OptiType"
+    opti = [m for m in hla["method_status"] if m["method"] == "OptiType"][0]
+    assert opti["missing_tools"] == [] and opti["missing_refs"] == []   # env self-contained: no external FASTA
+    mut = by["mutanome_enumeration"]
+    assert mut["status"] == "RUNNABLE" and mut["runnable_method"] == "VEP-REST+lossless"
+
+
 def test_scoring_stage_recognizes_local_prime_but_stays_upstream_blocked():
     # Fix 4: scoring must recognize the on-disk PRIME/MixMHCpred (not require PATH), yet stay NOT_EVALUABLE
     by = {s["stage"]: s for s in md.reconstruction_stages(resolve=lambda t: None, ref_exists=lambda p: False)}
@@ -153,7 +194,10 @@ def test_scoring_stage_recognizes_local_prime_but_stays_upstream_blocked():
         assert "UPSTREAM-BLOCKED" in sc["reason"] and sc["resolved_tools"]["PRIME"]
 
 
-def test_build_manifest_records_provenance_and_isolation():
+def test_build_manifest_records_provenance_and_isolation(monkeypatch):
+    # Bare-machine simulation: neutralize BOTH the PATH lookup (which) and the PATH-independent pinned
+    # micromamba launcher so no toolchain resolves and every downstream stage is NOT_EVALUABLE.
+    monkeypatch.setattr(md, "_MICROMAMBA", Path("/nonexistent/micromamba"))
     targets = md.patient_targets(FIXTURE, "Hu_287")
     results = {t["run"]: {"bytes": 100, "expected_size_bytes": 100, "sha256": "deadbeef",
                           "complete": True, "resumed_from": 0} for t in targets}

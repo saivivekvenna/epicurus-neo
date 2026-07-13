@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import importlib
+from pathlib import Path
+
+from benchmark import miller_download as md
 
 mr = importlib.import_module("scripts.miller_reconstruct")
 
 
-def test_dependency_manifest_gates_on_refs_and_carries_install_hints():
+def test_dependency_manifest_gates_on_refs_and_carries_install_hints(monkeypatch):
+    # Bare-machine premise: also hide the PATH-independent pinned micromamba envs so injected `which`
+    # alone determines tool availability (otherwise HLA/mutanome resolve via the real on-disk envs).
+    monkeypatch.setattr(md, "_MICROMAMBA", Path("/nonexistent/micromamba"))
     present = {"fasterq-dump": "/x/fasterq-dump", "bwa": "/x/bwa", "samtools": "/x/samtools",
                "bcftools": "/x/bcftools", "salmon": "/x/salmon"}
     # no references present at all -> even tool-satisfied stages are NOT_EVALUABLE (missing reference)

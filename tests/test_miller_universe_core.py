@@ -59,6 +59,13 @@ def test_code_files_pin_the_frozen_script_and_patient_resolver():
             "evidence_router.py", "miller_product_freeze.py", "end_to_end_product.py",
             "universal_portfolio.py", "product.py", "gates.py"} <= names
     assert {"contracts.py", "schema.py"} <= names
+    assert {
+        "miller_patient_reconstruct.py",
+        "miller_reconstruct.py",
+        "miller_hu287_somatic.sh",
+        "miller_hu287_hla.sh",
+        "miller_hu287_rna.sh",
+    } <= names
     # semantic_files (via for_patient) = code files + the three frozen configs
     c = core.UniverseConfig.for_patient(load_patient("Hu_315"))
     sem = {p.name for p in c.semantic_files}

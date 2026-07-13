@@ -30,6 +30,12 @@ PRIME_BIN = _ROOT / "data/raw/tools/PRIME/PRIME"
 MIXMHC_BIN = _ROOT / "data/raw/tools/MixMHCpred/MixMHCpred"
 # tools we may install locally (not on PATH) — resolved by existence in addition to shutil.which
 LOCAL_TOOLS = {"gatk": _ROOT / "data/raw/tools/gatk-4.5.0.0/gatk"}
+# pinned, reproducible micromamba environments — the EXACT envs that reconstructed Hu_287. Tools inside
+# them are not on PATH; they are invoked as `micromamba run -n <env> <tool>`. We resolve them by the
+# existence of the env's bin/<tool>, so a Hu_287-identical toolchain is recognized without ad-hoc installs.
+_MICROMAMBA = _ROOT / "data/raw/tools/bin/micromamba"
+_MAMBA_ENVS = _ROOT / "data/raw/tools/micromamba/envs"
+PINNED_ENV_TOOLS = {"OptiTypePipeline.py": "hla", "razers3": "hla", "vep": "vep"}
 
 # reference sentinel paths (repo-relative)
 _G = "data/raw/refs/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
@@ -41,13 +47,27 @@ def _default_ref_exists(rel_path: str) -> bool:
     return (_ROOT / rel_path).exists()
 
 
+def pinned_env_tool(name: str) -> str | None:
+    """Resolve a tool provided by a pinned micromamba env (env bin/<tool>), else None.
+
+    Fail-closed: returns None unless BOTH the pinned micromamba launcher and the env's bin/<tool> exist,
+    so a partially-provisioned toolchain is never reported as runnable."""
+    env = PINNED_ENV_TOOLS.get(name)
+    if env is None or not _MICROMAMBA.exists():
+        return None
+    cand = _MAMBA_ENVS / env / "bin" / name
+    return str(cand) if cand.exists() else None
+
+
 def resolve_tool(name: str, which=shutil.which) -> str | None:
-    """Resolve a tool by PATH first, then by a known local (gitignored) install path."""
+    """Resolve a tool by PATH first, then a known local install path, then a pinned micromamba env."""
     hit = which(name)
     if hit:
         return hit
     local = LOCAL_TOOLS.get(name)
-    return str(local) if local and local.exists() else None
+    if local and local.exists():
+        return str(local)
+    return pinned_env_tool(name)
 
 
 def odp_url(run: str) -> str:
@@ -144,8 +164,10 @@ def reconstruction_stages(which=shutil.which, ref_exists=_default_ref_exists, re
                      {"method": "fastq-dump", "tools": ["fastq-dump"], "refs": []}]},
         {"stage": "hla_typing_classI",
          "produces": "4-digit class-I HLA (A/B/C) from normal exome (needed for PRIME/EL ranking)",
-         "methods": [{"method": "OptiType", "tools": ["OptiTypePipeline.py", "razers3"],
-                      "refs": ["data/raw/refs/hla/hla_reference_dna.fasta"]},
+         "methods": [{"method": "OptiType", "tools": ["OptiTypePipeline.py", "razers3"], "refs": [],
+                      "note": "pinned micromamba `hla` env (OptiType+razers3+GLPK); OptiType bundles its own "
+                              "HLA reference so no external FASTA sentinel is required — the exact provider "
+                              "that typed Hu_287 via scripts/miller_hu287_hla.sh"},
                      {"method": "arcasHLA", "tools": ["arcasHLA"], "refs": ["data/raw/refs/hla/IMGTHLA"]},
                      {"method": "T1K", "tools": ["run-t1k"], "refs": ["data/raw/refs/hla/t1k_hlaidx"]}]},
         {"stage": "wes_alignment", "produces": "coordinate-sorted, dup-marked tumor & normal BAM",
@@ -161,7 +183,12 @@ def reconstruction_stages(which=shutil.which, ref_exists=_default_ref_exists, re
         {"stage": "mutanome_enumeration",
          "produces": "full class-I 8-11mer lossless peptide universe (shared by the lossless arms; the "
                      "pvac arm generates its own set from the same base variants)",
-         "methods": [{"method": "VEP+lossless", "tools": ["vep"],
+         "methods": [{"method": "VEP-REST+lossless", "tools": ["bcftools"], "refs": [_G, _G + ".fai"],
+                      "note": "the EXACT provider that produced the frozen Hu_287 universe: Ensembl VEP REST "
+                              "consequence + reference-protein enumeration (event_b.lossless_peptide_generation, "
+                              "responses cached per-patient under ensembl_cache/); bcftools left-aligns/splits "
+                              "indels against GRCh38 before enumeration. Needs network, no local VEP cache/GTF."},
+                     {"method": "VEP+lossless", "tools": ["vep"],
                       "refs": ["data/raw/refs/vep/homo_sapiens", _G, "data/raw/refs/gencode/gencode.v44.annotation.gtf"]},
                      {"method": "pvacseq", "tools": ["pvacseq", "vep"],
                       "refs": ["data/raw/refs/vep/homo_sapiens", _G]}]},
