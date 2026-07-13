@@ -37,6 +37,16 @@ def test_prime_percentile_direction_is_lower_rank_first():
     assert selections["prime_mutation_cap1"]["mutation_id"].tolist() == ["1:1:A:T", "1:2:C:G"]
 
 
+def test_epicurus_arms_use_shipped_product_score_not_legacy_research_score():
+    _, selections = build_selections(_tiny(), k=2)
+    # The legacy research score orders mutation 2 first, but the shipped product's
+    # recognition/evidence score strongly favors mutation 1 through genuine PRIME.
+    assert selections["epicurus_plain"]["mutation_id"].tolist() == ["1:1:A:T", "1:2:C:G"]
+    assert selections["epicurus_mutation_cap1"]["mutation_id"].tolist() == [
+        "1:1:A:T", "1:2:C:G"
+    ]
+
+
 def test_label_column_is_rejected_before_scoring():
     raw = _tiny().assign(label=[1, 0])
     with pytest.raises(ValueError, match="labels reached product inference"):
@@ -52,6 +62,14 @@ def test_freeze_writes_all_ordered_arms_and_hashes(tmp_path):
         path = tmp_path / meta["arms"][arm]["selection_file"]
         assert path.exists()
         assert pd.read_csv(path)["selection_rank"].tolist() == [1, 2]
+
+
+def test_empty_universe_freezes_as_unsaturated_without_crashing(tmp_path):
+    meta = freeze_product_selections(pd.DataFrame(), tmp_path, k=20)
+    assert meta["labels_opened"] is False
+    assert all(arm["n_selected"] == 0 for arm in meta["arms"].values())
+    assert all(not arm["saturated"] for arm in meta["arms"].values())
+    assert all(count == 0 for count in meta["feature_availability_rows"].values())
 
 
 def test_hu287_shipped_product_exact_ordered_parity():

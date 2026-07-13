@@ -26,7 +26,7 @@ ARM_IDS = (
     "rank_fusion_cap1",
     "evidence_lane_portfolio",
 )
-FUSION_COLUMNS = ("recognition_score", "frozen_epicurus_score")
+FUSION_COLUMNS = ("recognition_score", "epicurus_lower_evidence_score")
 LANE_COLUMNS = (*FUSION_COLUMNS, "presented_evidence_score")
 
 
@@ -82,8 +82,11 @@ def build_selections(raw: pd.DataFrame, *, k: int = K) -> tuple[pd.DataFrame, di
     valid = scored[scored["deterministic_gate_pass"].astype(bool)].copy()
 
     shipped = scored[scored["selected"].astype(bool)].sort_values("rank", kind="mergesort").head(k)
-    epicurus_plain = _ordered(valid, "frozen_epicurus_score", cap1=False, k=k)
-    epicurus_cap1 = _ordered(valid, "frozen_epicurus_score", cap1=True, k=k)
+    # The generalization target is the shipped end-to-end product.  The legacy v0.1
+    # research score remains in the frozen universe for provenance/diagnostics, but it
+    # must not silently stand in for the product score in the preregistered Epicurus arms.
+    epicurus_plain = _ordered(valid, "epicurus_lower_evidence_score", cap1=False, k=k)
+    epicurus_cap1 = _ordered(valid, "epicurus_lower_evidence_score", cap1=True, k=k)
 
     prime_pool = valid[valid["genuine_prime_available"].astype(bool)].copy()
     prime_plain = _ordered(prime_pool, "recognition_score", cap1=False, k=k)
@@ -116,7 +119,8 @@ def freeze_product_selections(raw: pd.DataFrame, freeze_dir: Path, *, k: int = K
     """Write ordered product selections and return manifest metadata for the enclosing freeze."""
     if raw.empty:
         scored = pd.DataFrame(
-            columns=(*LANE_COLUMNS, "genuine_prime_available", "translated_evidence_available",
+            columns=(*LANE_COLUMNS, "frozen_epicurus_score", "genuine_prime_available",
+                     "translated_evidence_available",
                      "presented_evidence_available", "recognized_evidence_available",
                      "coverage_evidence_available")
         )
@@ -157,11 +161,15 @@ def freeze_product_selections(raw: pd.DataFrame, freeze_dir: Path, *, k: int = K
     availability["frozen_epicurus_available"] = int(
         pd.to_numeric(scored["frozen_epicurus_score"], errors="coerce").notna().sum()
     )
+    availability["shipped_epicurus_score_available"] = int(
+        pd.to_numeric(scored["epicurus_lower_evidence_score"], errors="coerce").notna().sum()
+    )
     return {
         "policy_id": POLICY_ID,
         "k": k,
         "labels_opened": False,
         "prime_provenance": "genuine PRIME percentile rank from frozen universe prime_rank; converted once to higher-is-better recognition_score",
+        "epicurus_arm_score": "shipped epicurus_lower_evidence_score; legacy frozen_epicurus_score is diagnostic only",
         "shipped_product_arm": "shipped_epicurus_product",
         "preregistered_arm_ids": [arm for arm in ARM_IDS if arm != "shipped_epicurus_product"],
         "feature_availability_rows": availability,

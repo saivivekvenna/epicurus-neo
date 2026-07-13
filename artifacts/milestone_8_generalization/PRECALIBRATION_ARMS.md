@@ -23,15 +23,24 @@ The additional Miller patients must distinguish three possible sources of value:
 
 - `prime_plain`: genuine PRIME route-level top 20.
 - `prime_mutation_cap1`: genuine PRIME, at most one route per mutation.
-- `epicurus_plain`: frozen Epicurus route-level top 20.
-- `epicurus_mutation_cap1`: frozen Epicurus, at most one route per mutation.
+- `epicurus_plain`: the shipped product's frozen
+  `epicurus_lower_evidence_score`, route-level top 20.
+- `epicurus_mutation_cap1`: the same shipped product score, at most one route
+  per mutation.
+
+This score definition was clarified before any additional Miller outcomes were
+opened. The legacy research-only `epicurus`/`frozen_epicurus_score` column remains
+available for provenance and diagnostics, but is not an Epicurus product arm and
+does not participate in fusion or evidence-lane selection.
 
 ## Pre-registered candidate policies
 
 - `rank_fusion_cap1`: mutation-level, within-patient percentile-rank fusion of
-  genuine PRIME and Epicurus; missing evidence contributes no advantage.
+  genuine PRIME and the shipped Epicurus product score; missing evidence
+  contributes no advantage.
 - `evidence_lane_portfolio`: mutation-level round-robin union of independent
-  PRIME, Epicurus, and presentation-evidence lanes, deduplicated by mutation.
+  PRIME, the shipped Epicurus product score, and presentation-evidence lanes,
+  deduplicated by mutation.
   A lane that is unavailable for a patient is skipped and its slots are shared
   by the remaining lanes. This is dynamic with respect to evidence availability,
   never patient identity.
@@ -48,4 +57,3 @@ The universal final policy is selected by the locked lexicographic objective in
 `PROTOCOL.md`. Candidate-arm comparison and any one permitted policy revision are
 development only. The six final patients receive exactly one frozen policy and
 one final outcome join.
-

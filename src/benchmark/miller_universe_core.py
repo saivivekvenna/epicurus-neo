@@ -62,6 +62,8 @@ CODE_FILES = (
     ROOT / "src/epicurus_neo/evidence_router.py",
     ROOT / "src/epicurus_neo/product.py",
     ROOT / "src/epicurus_neo/gates.py",
+    ROOT / "src/epicurus_neo/contracts.py",
+    ROOT / "src/epicurus_neo/schema.py",
 )
 
 
@@ -391,7 +393,14 @@ def freeze(config: UniverseConfig) -> dict:
     config.freeze_dir.mkdir(parents=True, exist_ok=True)
     variants.to_csv(config.freeze_dir / "variants.csv", index=False)
     (uni if len(uni) else pd.DataFrame()).to_csv(config.freeze_dir / "universe.csv", index=False)
-    product = freeze_product_selections(uni, config.freeze_dir, k=K)
+    # Product portfolios are derived from the byte-persisted universe, not the richer
+    # in-memory frame, so a future evaluator can reproduce the exact selection boundary.
+    persisted_uni = (
+        pd.read_csv(config.freeze_dir / "universe.csv", low_memory=False)
+        if len(uni)
+        else pd.DataFrame()
+    )
+    product = freeze_product_selections(persisted_uni, config.freeze_dir, k=K)
     available = detect_available(uni, {"__any__"}) if len(uni) else set()
     elig = evaluate_eligibility(available)
     arms_meta = {}
