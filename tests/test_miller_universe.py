@@ -106,6 +106,7 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
     monkeypatch.setattr(u, "_source_inputs", lambda: (sfile,))
     monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (sfile,))
     monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {"PRIME": {"match": True}}))
+    monkeypatch.setattr(u, "verify_git_tracked_clean", lambda: (True, {"x": "CLEAN"}))
     monkeypatch.setattr(u, "arm_selection", lambda uni, arm: pd.DataFrame(
         {"mutation_id": ["6:1:C:T"], "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"]}))
     # tripwire: opening the sealed label path during freeze is a hard failure
@@ -247,6 +248,7 @@ def test_freeze_not_evaluable_when_pvac_inputs_missing_no_manifest(monkeypatch, 
     present.write_text("x")
     monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
     monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_git_tracked_clean", lambda: (True, {}))
     # genuine_pvac_lane True but the pVAC CSV/provenance are absent -> _all_inputs includes them -> refuse
     monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (present, tmp_path / "pvac.csv") if has_pvac else (present,))
     monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: present)
@@ -304,6 +306,47 @@ def test_freeze_not_evaluable_on_tool_commit_mismatch_no_manifest(monkeypatch, t
                         lambda: (False, {"PRIME": {"dir_head": "abc", "adapter_constant": "def", "match": False}}))
     out = u.freeze()
     assert out["status"] == "NOT_EVALUABLE" and "tool_commit_issue" in out
+    assert not (fd / "FREEZE_MANIFEST.json").exists()
+
+
+def test_verify_git_tracked_clean_states(tmp_path, monkeypatch):
+    import subprocess as sp
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
+           "GIT_COMMITTER_EMAIL": "t@t", "PATH": __import__("os").environ["PATH"]}
+    sp.check_call(["git", "init", "-q", str(repo)])
+    clean, staged, unstaged = repo / "clean.py", repo / "staged.py", repo / "unstaged.py"
+    for f, t in ((clean, "a=1\n"), (staged, "b=1\n"), (unstaged, "c=1\n")):
+        f.write_text(t)
+        sp.check_call(["git", "-C", str(repo), "add", f.name])
+    sp.check_call(["git", "-C", str(repo), "commit", "-qm", "init"], env=env)
+    untracked = repo / "untracked.py"
+    untracked.write_text("d=1\n")
+    staged.write_text("b=2\n")
+    sp.check_call(["git", "-C", str(repo), "add", "staged.py"])       # staged modification
+    unstaged.write_text("c=2\n")                                       # unstaged modification
+    monkeypatch.setattr(u, "ROOT", repo)
+    monkeypatch.setattr(u, "_repo_semantic_files", lambda: (clean, staged, unstaged, untracked))
+    ok, info = u.verify_git_tracked_clean()
+    assert not ok
+    assert info["clean.py"] == "CLEAN"
+    assert info["staged.py"] == "STAGED_MODIFIED"
+    assert info["unstaged.py"] == "UNSTAGED_MODIFIED"
+    assert info["untracked.py"] == "UNTRACKED"
+
+
+def test_freeze_not_evaluable_on_untracked_semantic_file_no_manifest(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    present = tmp_path / "present"
+    present.write_text("x")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
+    monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_git_tracked_clean",
+                        lambda: (False, {"src/event_b/prime_adapter.py": "UNTRACKED"}))
+    out = u.freeze()
+    assert out["status"] == "NOT_EVALUABLE" and "git_tracking_issue" in out
     assert not (fd / "FREEZE_MANIFEST.json").exists()
 
 

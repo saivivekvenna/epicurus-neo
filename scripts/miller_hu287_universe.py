@@ -136,6 +136,35 @@ def _fai() -> Path:
     return REF.parent / (REF.name + ".fai")
 
 
+# repo-local semantic files that a checkout must be able to reconstruct: code + frozen configs. (Data
+# inputs under data/raw are gitignored and are pinned by content hash instead.)
+def _repo_semantic_files() -> tuple[Path, ...]:
+    return (*CODE_FILES, FROZEN_EPICURUS, FROZEN_EXPR_POLICY, FROZEN_ROUTER)
+
+
+def verify_git_tracked_clean() -> tuple[bool, dict]:
+    """Every repo-local semantic file must be GIT-TRACKED and byte-identical to HEAD (no staged/unstaged
+    change) so the exact run is reconstructable by checkout. Hashing current bytes is NOT enough for an
+    untracked file. Returns (ok, {rel: UNTRACKED|STAGED_MODIFIED|UNSTAGED_MODIFIED|CLEAN}); untracked
+    __pycache__ etc is irrelevant (only the named files are checked)."""
+    def _rc(*args) -> int:
+        return subprocess.call(["git", "-C", str(ROOT), *args], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    info, ok = {}, True
+    for f in _repo_semantic_files():
+        rel = _rel(f)
+        if _rc("ls-files", "--error-unmatch", "--", rel) != 0:
+            status = "UNTRACKED"
+        elif _rc("diff", "--cached", "--quiet", "--", rel) != 0:
+            status = "STAGED_MODIFIED"
+        elif _rc("diff", "--quiet", "--", rel) != 0:
+            status = "UNSTAGED_MODIFIED"
+        else:
+            status = "CLEAN"
+        info[rel] = status
+        ok = ok and status == "CLEAN"
+    return ok, info
+
+
 def _source_inputs() -> tuple[Path, ...]:
     """Mandatory inputs that MUST pre-exist before freeze proceeds (RNA BAM+.bai included => freeze is
     NOT_EVALUABLE until the tumor-RNA alignment is complete)."""
@@ -405,6 +434,9 @@ def freeze() -> dict:
     tools_ok, tool_commits = verify_tool_commits()       # PRIME/MixMHCpred HEAD must match adapter constants
     if not tools_ok:
         return {"status": "NOT_EVALUABLE", "tool_commit_issue": tool_commits}
+    git_ok, git_tracking = verify_git_tracked_clean()    # semantic files must be tracked + clean (reconstructable)
+    if not git_ok:
+        return {"status": "NOT_EVALUABLE", "git_tracking_issue": git_tracking}
     hla_panel = json.loads(HLA_JSON.read_text())["class_i_alleles"]
     norm_vcf = normalize_pass_vcf(PASS_VCF, REF, NORM_VCF)     # bcftools norm indels vs exact FASTA
     variants = load_filtered_variants(norm_vcf)
@@ -446,7 +478,7 @@ def freeze() -> dict:
                 "n_variants_pass": int(variants["pass_filters"].sum()), "n_universe_rows": int(len(uni)),
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
                 "input_sha256": input_sha, "code_files": [_rel(c) for c in CODE_FILES],
-                "tool_commits": tool_commits, "git_commit": _git_commit(),
+                "tool_commits": tool_commits, "git_tracked_clean": git_tracking, "git_commit": _git_commit(),
                 "router_policy_id": DEFAULT_ROUTER_POLICY.policy_id,
                 "presentation_evidence": "router binding_percentile_rank = MixMHCpred %rank (real predictor; not NetMHCpan-EL)",
                 "el_feature": "NaN (NetMHCpan-EL unavailable; MixMHCpred is NOT a valid el substitute) -> frozen 0.5 fallback",
