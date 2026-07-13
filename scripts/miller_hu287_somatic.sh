@@ -21,8 +21,19 @@ else
 fi
 mkdir -p "$OUT" "$PROV"
 THREADS="${THREADS:-$(sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
-LOG="$OUT/run.log"; : > "$LOG"
+LOG="$OUT/run.log"; touch "$LOG"
 say(){ echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
+
+bam_ready(){  # $1=coordinate-sorted BAM; repairs a missing index, but never trusts an invalid BAM
+  local bam="$1"
+  [[ -s "$bam" ]] || return 1
+  samtools quickcheck -q "$bam" || return 1
+  if [[ ! -s "${bam}.bai" ]]; then
+    say "bam_ready: valid BAM lacks index; rebuilding ${bam}.bai"
+    samtools index "$bam" 2>>"$LOG" || return 1
+  fi
+  samtools idxstats "$bam" >/dev/null 2>>"$LOG" || return 1
+}
 
 # frozen sample names / read groups (prereg §2) — plain vars (macOS bash 3.2 has no assoc arrays)
 RUN_N="${NORMAL_EXOME_RUN:-SRR24836184}"; SM_N="${PATIENT_ID}_N"
@@ -31,16 +42,31 @@ RUN_T="${TUMOR_EXOME_RUN:-SRR24836169}"; SM_T="${PATIENT_ID}_T"
 align(){  # $1=run  $2=sample_name
   local run="$1" sm="$2"
   local md="$OUT/${sm}.md.bam"
-  if [[ -f "$md" ]]; then say "align: $md exists, skip"; return; fi
+  local sorted="$OUT/${sm}.sorted.bam"
+  local partial="$OUT/${sm}.md.partial.bam"
+  if [[ -e "$md" ]]; then
+    if bam_ready "$md"; then
+      say "align: validated $md + index, skip"
+      return
+    fi
+    say "ERROR: existing final BAM failed integrity/index validation: $md"
+    return 1
+  fi
+  # These names are private intermediates produced by this function.  A previous
+  # interruption cannot make either one authoritative, so restarting may replace them.
+  rm -f "$sorted" "${sorted}.bai" "$partial" "${partial}.bai"
   say "align bwa-mem $run SM=$sm (RG)"
   bwa mem -t "$THREADS" -R "@RG\tID:${run}\tSM:${sm}\tPL:ILLUMINA\tLB:${sm}_xE" \
       "$REF" "$FQ/${run}_1.fastq" "$FQ/${run}_2.fastq" 2>>"$LOG" \
-    | samtools sort -@ "$THREADS" -o "$OUT/${sm}.sorted.bam" - 2>>"$LOG"
-  samtools index "$OUT/${sm}.sorted.bam"
+    | samtools sort -@ "$THREADS" -o "$sorted" - 2>>"$LOG"
+  samtools quickcheck -q "$sorted"
   say "align MarkDuplicates $sm"
-  "$GATK" MarkDuplicates -I "$OUT/${sm}.sorted.bam" -O "$md" -M "$OUT/${sm}.dupmetrics.txt" 2>>"$LOG"
+  "$GATK" MarkDuplicates -I "$sorted" -O "$partial" -M "$OUT/${sm}.dupmetrics.txt" 2>>"$LOG"
+  samtools quickcheck -q "$partial"
+  mv "$partial" "$md"
   samtools index "$md"
-  rm -f "$OUT/${sm}.sorted.bam" "$OUT/${sm}.sorted.bam.bai"
+  bam_ready "$md"
+  rm -f "$sorted" "${sorted}.bai"
 }
 
 say "=== $PATIENT_ID somatic reconstruction (threads=$THREADS) ==="

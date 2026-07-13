@@ -64,3 +64,18 @@ def test_summarize_quant_aggregates_transcript_tpm_to_gene(tmp_path):
     assert s["status"] == "OK" and s["n_transcripts"] == 3 and s["n_genes"] == 2
     assert s["top10_genes_tpm"]["G1"] == 100.0 and s["top10_genes_tpm"]["G2"] == 100.0
     assert s["sum_tpm"] == 200.0
+
+
+def test_somatic_driver_is_interruption_safe_and_validates_skip_artifacts():
+    script = (Path(__file__).parents[1] / "scripts" / "miller_hu287_somatic.sh").read_text()
+
+    # A resume must preserve the forensic record from the interrupted invocation.
+    assert 'LOG="$OUT/run.log"; touch "$LOG"' in script
+    assert ': > "$LOG"' not in script
+    # Final BAM existence alone is not a completion sentinel.
+    assert 'samtools quickcheck -q "$bam"' in script
+    assert 'samtools idxstats "$bam"' in script
+    # MarkDuplicates publishes through a private partial path only after validation.
+    assert 'local partial="$OUT/${sm}.md.partial.bam"' in script
+    assert 'samtools quickcheck -q "$partial"' in script
+    assert 'mv "$partial" "$md"' in script
