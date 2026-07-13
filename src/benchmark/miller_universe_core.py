@@ -49,14 +49,19 @@ _is_hex_sha = u._is_hex_sha
 # resolves every per-patient path and sample id fed into the freeze.
 CODE_FILES = (
     ROOT / "src/benchmark/miller_universe_core.py",
+    ROOT / "src/benchmark/miller_product_freeze.py",
     ROOT / "scripts/miller_patient_universe.py",
     ROOT / "scripts/miller_hu287_universe.py",
     ROOT / "src/benchmark/miller_patient.py",
+    ROOT / "src/benchmark/end_to_end_product.py",
+    ROOT / "src/benchmark/universal_portfolio.py",
     ROOT / "src/benchmark/four_arm.py",
     ROOT / "src/event_b/lossless_peptide_generation.py",
     ROOT / "src/event_b/prime_adapter.py",
     ROOT / "src/event_b/prime_transfer.py",
     ROOT / "src/epicurus_neo/evidence_router.py",
+    ROOT / "src/epicurus_neo/product.py",
+    ROOT / "src/epicurus_neo/gates.py",
 )
 
 
@@ -317,6 +322,7 @@ def freeze(config: UniverseConfig) -> dict:
     """Build + score + select, then LOCK — with NO label access. ONE-SHOT/IMMUTABLE: refuses to overwrite an
     existing valid LOCK. Hu_287 is refused outright (its dedicated frozen script owns that provenance)."""
     from benchmark.four_arm import (DEFAULT_ROUTER_POLICY, FOUR_ARMS, detect_available, evaluate_eligibility)
+    from benchmark.miller_product_freeze import freeze_product_selections
 
     if config.patient_id == "Hu_287":
         return {"status": "REFUSED_HU287", "reason": "Hu_287 is owned by scripts/miller_hu287_universe.py; "
@@ -385,11 +391,13 @@ def freeze(config: UniverseConfig) -> dict:
     config.freeze_dir.mkdir(parents=True, exist_ok=True)
     variants.to_csv(config.freeze_dir / "variants.csv", index=False)
     (uni if len(uni) else pd.DataFrame()).to_csv(config.freeze_dir / "universe.csv", index=False)
+    product = freeze_product_selections(uni, config.freeze_dir, k=K)
     available = detect_available(uni, {"__any__"}) if len(uni) else set()
     elig = evaluate_eligibility(available)
     arms_meta = {}
     hashes = {"variants.csv": u.sha256_file(config.freeze_dir / "variants.csv"),
               "universe.csv": u.sha256_file(config.freeze_dir / "universe.csv")}
+    hashes.update(product["sha256"])
     for arm in FOUR_ARMS:
         sel = u.arm_selection(uni, arm) if len(uni) else pd.DataFrame(columns=["mutation_id"])
         fn = f"select_{arm.arm_id}.csv"
@@ -411,6 +419,7 @@ def freeze(config: UniverseConfig) -> dict:
                 "base_filter_policy": "prereg §3.1 (2026-07-12): Mutect2 PASS + normal VAF<=0.05 + depth>=10 both "
                                       "+ tumor alt-reads>=3; tumor VAF = continuous annotation (NOT a gate)",
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
+                "product_portfolios": product,
                 "input_sha256": input_sha, "code_files": [u._rel(c) for c in config.code_files],
                 "tool_commits": tool_commits, "git_tracked_clean": git_tracking,
                 "frozen_module_integrity": mod_info, "ensembl_used_responses": ensembl_used,

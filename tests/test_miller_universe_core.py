@@ -56,7 +56,8 @@ def test_code_files_pin_the_frozen_script_and_patient_resolver():
     assert "miller_patient.py" in names
     assert {"miller_universe_core.py", "miller_patient_universe.py", "four_arm.py",
             "lossless_peptide_generation.py", "prime_adapter.py", "prime_transfer.py",
-            "evidence_router.py"} <= names
+            "evidence_router.py", "miller_product_freeze.py", "end_to_end_product.py",
+            "universal_portfolio.py", "product.py", "gates.py"} <= names
     # semantic_files (via for_patient) = code files + the three frozen configs
     c = core.UniverseConfig.for_patient(load_patient("Hu_315"))
     sem = {p.name for p in c.semantic_files}
@@ -230,6 +231,9 @@ def test_freeze_success_writes_lock_with_real_patient_id_no_label_read(monkeypat
     monkeypatch.setattr(core, "build_universe", lambda config, v, h, t, r: (uni, [], False, [{"used": 1}]))
     monkeypatch.setattr(core.u, "arm_selection", lambda uni, arm: pd.DataFrame(
         {"mutation_id": ["6:1:C:T"], "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"]}))
+    import benchmark.miller_product_freeze as product_freeze
+    monkeypatch.setattr(product_freeze, "freeze_product_selections", lambda raw, freeze_dir, k: {
+        "policy_id": "test", "labels_opened": False, "arms": {}, "sha256": {}})
     # tripwire: freeze must open NO recognition-label file
     import builtins
     real_open = builtins.open
@@ -247,3 +251,4 @@ def test_freeze_success_writes_lock_with_real_patient_id_no_label_read(monkeypat
     # the pinned code_files list carries the frozen script + the patient resolver
     assert "scripts/miller_hu287_universe.py" in m["code_files"]
     assert "src/benchmark/miller_patient.py" in m["code_files"]
+    assert m["product_portfolios"]["labels_opened"] is False
