@@ -14,7 +14,7 @@ FQ="$ROOT/data/raw/miller_ipv/$PATIENT_SLUG/fastq"
 OUT="$ROOT/data/raw/miller_ipv/$PATIENT_SLUG/rna"; mkdir -p "$OUT" "$(dirname "$IDX")"
 LOG="$OUT/run.log"; : > "$LOG"
 say(){ echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
-THREADS="$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"
+THREADS="${THREADS:-$(sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
 
 if [[ ! -f "${IDX}.1.ht2" ]]; then
   say "hisat2-build GRCh38 index (~1-2h)"

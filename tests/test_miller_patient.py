@@ -107,4 +107,16 @@ def test_driver_dispatches_stage_with_parameterized_env(monkeypatch, capsys):
     # the four label-blind parameters are threaded into the child environment
     for k, v in script_env(load_patient("Hu_287")).items():
         assert calls["env"][k] == v
+    assert calls["env"]["THREADS"] == "4"
     assert str(calls["cwd"]) == str(mpr.ROOT)
+
+
+def test_driver_threads_are_forwarded_to_reconstruction_script(monkeypatch):
+    calls = {}
+
+    def _fake_run(cmd, cwd=None, env=None, check=None):
+        calls["env"] = env
+
+    monkeypatch.setattr(mpr.subprocess, "run", _fake_run)
+    assert mpr.main(["Hu_315", "rna", "--threads", "3"]) == 0
+    assert calls["env"]["THREADS"] == "3"

@@ -20,7 +20,7 @@ else
   PROV="$ROOT/artifacts/milestone_8_generalization/patients/$PATIENT_ID"
 fi
 mkdir -p "$OUT" "$PROV"
-THREADS="$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"
+THREADS="${THREADS:-$(sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
 LOG="$OUT/run.log"; : > "$LOG"
 say(){ echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
 

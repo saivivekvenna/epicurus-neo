@@ -101,6 +101,7 @@ def main(argv=None) -> int:
         script = script_for(args.command)
         env = os.environ.copy()
         env.update(script_env(p))
+        env["THREADS"] = str(args.threads)
         subprocess.run([str(script)], cwd=ROOT, env=env, check=True)
         result = {"patient_id": p.patient_id, "stage": args.command, "status": "OK"}
 
