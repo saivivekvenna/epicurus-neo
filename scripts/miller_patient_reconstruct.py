@@ -98,20 +98,10 @@ def main(argv=None) -> int:
         (p.artifact_dir / "EXPRESSION_QUANT.json").write_text(json.dumps(result, indent=2) + "\n")
 
     else:
-        root = Path(__file__).resolve().parents[1]
-        script = {
-            "wes": root / "scripts/miller_hu287_somatic.sh",
-            "hla": root / "scripts/miller_hu287_hla.sh",
-            "rna": root / "scripts/miller_hu287_rna.sh",
-        }[args.command]
+        script = script_for(args.command)
         env = os.environ.copy()
-        env.update({
-            "PATIENT_ID": p.patient_id,
-            "NORMAL_EXOME_RUN": p.normal_exome_run,
-            "TUMOR_EXOME_RUN": p.tumor_exome_run,
-            "TUMOR_RNA_RUN": p.tumor_rna_run,
-        })
-        subprocess.run([str(script)], cwd=root, env=env, check=True)
+        env.update(script_env(p))
+        subprocess.run([str(script)], cwd=ROOT, env=env, check=True)
         result = {"patient_id": p.patient_id, "stage": args.command, "status": "OK"}
 
     print(json.dumps(result, indent=2, default=str))
