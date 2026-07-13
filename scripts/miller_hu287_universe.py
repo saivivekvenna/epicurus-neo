@@ -100,7 +100,36 @@ def _rel(p: Path) -> str:
 
 # executable semantics — git_commit does NOT capture a dirty worktree, so hash the code that shapes output
 CODE_FILES = (ROOT / "scripts/miller_hu287_universe.py", ROOT / "src/benchmark/four_arm.py",
-              ROOT / "src/event_b/lossless_peptide_generation.py")
+              ROOT / "src/event_b/lossless_peptide_generation.py", ROOT / "src/event_b/prime_adapter.py",
+              ROOT / "src/event_b/prime_transfer.py", ROOT / "src/epicurus_neo/evidence_router.py")
+
+
+def verify_tool_commits() -> tuple[bool, dict]:
+    """Record the ACTUAL PRIME/MixMHCpred repo HEADs (git -C tool-dir rev-parse HEAD) and require they match
+    the adapter's pinned commit constants. Returns (ok, info). If a HEAD is unavailable or mismatched, freeze
+    must return NOT_EVALUABLE before writing a lock (the scored ranks depend on these exact tool builds)."""
+    from event_b.prime_adapter import MIX_COMMIT, PRIME_COMMIT, PRIME_DIR
+    dirs = {"PRIME": (PRIME_DIR, PRIME_COMMIT), "MixMHCpred": (PRIME_DIR.parent / "MixMHCpred", MIX_COMMIT)}
+    info, ok = {}, True
+    for name, (d, expected) in dirs.items():
+        try:
+            head = subprocess.check_output(["git", "-C", str(d), "rev-parse", "HEAD"], text=True,
+                                           stderr=subprocess.DEVNULL).strip()
+        except Exception:
+            head = None
+        tracked_clean = False                            # HEAD match is insufficient if tracked files differ
+        if head:
+            try:                                         # both must be clean; untracked (e.g. __pycache__) is fine
+                subprocess.check_call(["git", "-C", str(d), "diff", "--quiet"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.check_call(["git", "-C", str(d), "diff", "--cached", "--quiet"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                tracked_clean = True
+            except Exception:
+                tracked_clean = False
+        match = head == expected
+        info[name] = {"dir_head": head, "adapter_constant": expected, "match": bool(match),
+                      "tracked_clean": bool(tracked_clean)}
+        ok = ok and bool(head) and match and tracked_clean
+    return ok, info
 
 
 def _fai() -> Path:
@@ -373,6 +402,9 @@ def freeze() -> dict:
     missing = [_rel(p) for p in _source_inputs() if not Path(p).exists()]
     if missing:                                          # e.g. RNA BAM not complete yet -> NOT_EVALUABLE
         return {"status": "NOT_EVALUABLE", "missing_inputs": missing}
+    tools_ok, tool_commits = verify_tool_commits()       # PRIME/MixMHCpred HEAD must match adapter constants
+    if not tools_ok:
+        return {"status": "NOT_EVALUABLE", "tool_commit_issue": tool_commits}
     hla_panel = json.loads(HLA_JSON.read_text())["class_i_alleles"]
     norm_vcf = normalize_pass_vcf(PASS_VCF, REF, NORM_VCF)     # bcftools norm indels vs exact FASTA
     variants = load_filtered_variants(norm_vcf)
@@ -413,7 +445,8 @@ def freeze() -> dict:
                 "class_i_length_filter": length_counts, "rna_alt_evidence_status": rna_status,
                 "n_variants_pass": int(variants["pass_filters"].sum()), "n_universe_rows": int(len(uni)),
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
-                "input_sha256": input_sha, "code_files": [_rel(c) for c in CODE_FILES], "git_commit": _git_commit(),
+                "input_sha256": input_sha, "code_files": [_rel(c) for c in CODE_FILES],
+                "tool_commits": tool_commits, "git_commit": _git_commit(),
                 "router_policy_id": DEFAULT_ROUTER_POLICY.policy_id,
                 "presentation_evidence": "router binding_percentile_rank = MixMHCpred %rank (real predictor; not NetMHCpan-EL)",
                 "el_feature": "NaN (NetMHCpan-EL unavailable; MixMHCpred is NOT a valid el substitute) -> frozen 0.5 fallback",

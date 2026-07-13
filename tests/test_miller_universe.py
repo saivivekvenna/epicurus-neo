@@ -105,6 +105,7 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
     sfile.write_text("code")
     monkeypatch.setattr(u, "_source_inputs", lambda: (sfile,))
     monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (sfile,))
+    monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {"PRIME": {"match": True}}))
     monkeypatch.setattr(u, "arm_selection", lambda uni, arm: pd.DataFrame(
         {"mutation_id": ["6:1:C:T"], "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"]}))
     # tripwire: opening the sealed label path during freeze is a hard failure
@@ -245,6 +246,7 @@ def test_freeze_not_evaluable_when_pvac_inputs_missing_no_manifest(monkeypatch, 
     present = tmp_path / "present"
     present.write_text("x")
     monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
+    monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {}))
     # genuine_pvac_lane True but the pVAC CSV/provenance are absent -> _all_inputs includes them -> refuse
     monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (present, tmp_path / "pvac.csv") if has_pvac else (present,))
     monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: present)
@@ -259,6 +261,49 @@ def test_freeze_not_evaluable_when_pvac_inputs_missing_no_manifest(monkeypatch, 
     (tmp_path / "hla.json").write_text(json.dumps({"class_i_alleles": ["HLA-A*02:01"]}))
     out = u.freeze()
     assert out["status"] == "NOT_EVALUABLE" and "pvac.csv" in out.get("missing_input", "")
+    assert not (fd / "FREEZE_MANIFEST.json").exists()
+
+
+def test_code_files_cover_all_six_semantics_files():
+    names = {p.name for p in u.CODE_FILES}
+    assert names == {"miller_hu287_universe.py", "four_arm.py", "lossless_peptide_generation.py",
+                     "prime_adapter.py", "prime_transfer.py", "evidence_router.py"}
+    assert len(u.CODE_FILES) == 6
+
+
+def test_verify_tool_commits_matches_adapter_constants():
+    # the on-disk PRIME/MixMHCpred repos must match the adapter's pinned commits AND be tracked-clean
+    ok, info = u.verify_tool_commits()
+    assert ok is True
+    assert info["PRIME"]["match"] and info["MixMHCpred"]["match"]
+    assert info["PRIME"]["tracked_clean"] and info["MixMHCpred"]["tracked_clean"]
+    assert info["PRIME"]["dir_head"] == info["PRIME"]["adapter_constant"]
+
+
+def test_verify_tool_commits_fails_closed_on_dirty_tracked(monkeypatch):
+    from event_b.prime_adapter import MIX_COMMIT, PRIME_COMMIT
+    # HEAD matches, but tracked files are dirty (git diff --quiet exits non-zero) -> fail closed
+    monkeypatch.setattr(u.subprocess, "check_output",
+                        lambda cmd, **k: (PRIME_COMMIT if "MixMHCpred" not in cmd[2] else MIX_COMMIT) + "\n")
+
+    def _dirty(cmd, **k):
+        raise u.subprocess.CalledProcessError(1, cmd)
+    monkeypatch.setattr(u.subprocess, "check_call", _dirty)
+    ok, info = u.verify_tool_commits()
+    assert ok is False
+    assert info["PRIME"]["match"] and info["PRIME"]["tracked_clean"] is False
+
+
+def test_freeze_not_evaluable_on_tool_commit_mismatch_no_manifest(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    present = tmp_path / "present"
+    present.write_text("x")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
+    monkeypatch.setattr(u, "verify_tool_commits",
+                        lambda: (False, {"PRIME": {"dir_head": "abc", "adapter_constant": "def", "match": False}}))
+    out = u.freeze()
+    assert out["status"] == "NOT_EVALUABLE" and "tool_commit_issue" in out
     assert not (fd / "FREEZE_MANIFEST.json").exists()
 
 
