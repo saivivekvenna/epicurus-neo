@@ -43,8 +43,9 @@ assay peptide table is not end-to-end eligible.
 - **Hu_287:** complete local raw WES/RNA/HLA reconstruction and lossless class-I
   universe; discovery patient, not independent.
 - **Sid:** raw longitudinal genomic/RNA reconstruction with patient HLA and
-  label-blind generation; generator covers 130/147 eligible mutations (88.4%);
-  repeatedly inspected, not blind.
+  label-blind generation; 137/147 eligible mutations are generated and the
+  remaining 10 have documented non-enumerable consequences; repeatedly
+  inspected, not blind.
 
 No other local patient currently has both a reconstructed mutation denominator
 and a runnable patient-level candidate universe. Peptide-table-only cohorts are

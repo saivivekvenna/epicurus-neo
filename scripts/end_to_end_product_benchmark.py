@@ -84,7 +84,7 @@ def main() -> int:
         frozen["patients"][patient]["evidence_status"] = (
             "complete local tumor/normal WES + tumor RNA + inferred HLA + lossless class-I generation"
             if patient == "Hu_287"
-            else "longitudinal WES/WGS + matched T2 RNA + inferred HLA; generation 130/147 mutations"
+            else "longitudinal WES/WGS + matched T2 RNA + inferred HLA; 137/147 generated and 10 documented non-enumerable"
         )
 
     freeze_path = OUT / "FROZEN_PIPELINE.json"
@@ -162,7 +162,7 @@ def _markdown(result: dict) -> str:
     lines += [
         "## Honest interpretation",
         "",
-        "This report is the deliverable-level check: every headline number comes from the same shipped product logic, not from a mix-and-match research arm. Hu_287 tests a complete local raw-data reconstruction; Sid exposes both incomplete generation (130/147 mutations) and any downstream product losses. Neither patient is blind, so this establishes runnable behavior and patient-specific outcomes—not general superiority.",
+        "This report is the deliverable-level check: every headline number comes from the same shipped product logic, not from a mix-and-match research arm. Hu_287 tests a complete local raw-data reconstruction; Sid accounts for all 147 eligible variants (137 generated plus 10 documented non-enumerable) and exposes downstream product losses. Neither patient is blind, so this establishes runnable behavior and patient-specific outcomes—not general superiority.",
     ]
     return "\n".join(lines) + "\n"
 
