@@ -96,10 +96,15 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
     uni = pd.DataFrame({"patient_id": ["Hu_287"], "mutation_id": ["6:1:C:T"], "candidate_source": ["lossless_recovery"],
                         "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"],
                         "genuine_prime": [0.9], "epicurus": [0.5]})
-    monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "NOT_ASSESSED"))
+    monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
     monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], False))
     monkeypatch.setattr(u, "score_universe", lambda x: x)
     monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
+    # provenance inputs mocked to a single existing file so freeze can proceed on the success path
+    sfile = tmp_path / "srcfile"
+    sfile.write_text("code")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (sfile,))
+    monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (sfile,))
     monkeypatch.setattr(u, "arm_selection", lambda uni, arm: pd.DataFrame(
         {"mutation_id": ["6:1:C:T"], "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"]}))
     # tripwire: opening the sealed label path during freeze is a hard failure
@@ -130,6 +135,7 @@ def test_unseal_reports_null_for_non_evaluable_arm(monkeypatch, tmp_path):
     labels = tmp_path / "labels.csv"
     labels.write_text("patient_id,gene_symbol,chrom,pos,ref,alt,label\nHu_287,G,6,1,C,T,POSITIVE\n")
     monkeypatch.setattr(u, "LABELS", labels)
+    monkeypatch.setattr(u, "verify_input_hashes", lambda man: (True, None, None))   # not under test here
     out = u.unseal()
     assert out["endpoint_b_class_i_four_arm"]["pvac_prime"]["hits_at_20_unique_mutations"] is None
     assert out["endpoint_b_class_i_four_arm"]["pvac_prime"]["n_selected"] is None
@@ -207,6 +213,7 @@ def test_freeze_is_immutable_and_fails_closed(monkeypatch, tmp_path):
     fd = tmp_path / "freeze"
     fd.mkdir()
     monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    monkeypatch.setattr(u, "verify_input_hashes", lambda man: (True, None, None))   # input gate not under test here
     # valid LOCK with matching derived hash -> ALREADY_FROZEN (never overwrite)
     (fd / "variants.csv").write_text("k\n1\n")
     man = {"LOCK": "FROZEN_NO_LABELS", "sha256": {"variants.csv": u.sha256_file(fd / "variants.csv")}, "arms": {}}
@@ -219,6 +226,40 @@ def test_freeze_is_immutable_and_fails_closed(monkeypatch, tmp_path):
     (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
     (fd / "variants.csv").write_text("k\n1\n2\n")
     assert u.freeze()["status"] == "FROZEN_HASH_MISMATCH"
+
+
+def test_freeze_not_evaluable_when_rna_missing_no_manifest(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    present = tmp_path / "present"
+    present.write_text("x")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (present, tmp_path / "rna.bam"))   # RNA BAM absent
+    out = u.freeze()
+    assert out["status"] == "NOT_EVALUABLE" and any("rna.bam" in m for m in out["missing_inputs"])
+    assert not (fd / "FREEZE_MANIFEST.json").exists()      # NEVER writes a lock when an input is missing
+
+
+def test_freeze_not_evaluable_when_pvac_inputs_missing_no_manifest(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    present = tmp_path / "present"
+    present.write_text("x")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
+    # genuine_pvac_lane True but the pVAC CSV/provenance are absent -> _all_inputs includes them -> refuse
+    monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (present, tmp_path / "pvac.csv") if has_pvac else (present,))
+    monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: present)
+    monkeypatch.setattr(u, "load_filtered_variants", lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True]}))
+    monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
+    uni = pd.DataFrame({"patient_id": ["Hu_287"], "mutation_id": ["6:1:C:T"], "candidate_source": ["pvac"],
+                        "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"], "genuine_prime": [0.9], "epicurus": [0.5]})
+    monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], True))    # has_pvac=True
+    monkeypatch.setattr(u, "score_universe", lambda x: x)
+    monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
+    monkeypatch.setattr(u, "HLA_JSON", tmp_path / "hla.json")
+    (tmp_path / "hla.json").write_text(json.dumps({"class_i_alleles": ["HLA-A*02:01"]}))
+    out = u.freeze()
+    assert out["status"] == "NOT_EVALUABLE" and "pvac.csv" in out.get("missing_input", "")
+    assert not (fd / "FREEZE_MANIFEST.json").exists()
 
 
 def test_unseal_is_once_only(monkeypatch, tmp_path):
@@ -253,6 +294,40 @@ def test_unseal_missing_frozen_file_is_hash_mismatch_no_label_read(monkeypatch, 
     assert out["status"] == "HASH_MISMATCH" and out["file"] == "variants.csv"
 
 
+def test_sha256_file_streams_match(tmp_path):
+    import hashlib as _h
+    blob = b"hello-world" * 300000                        # ~3.3MB, forces multiple chunks
+    p = tmp_path / "big.bin"
+    p.write_bytes(blob)
+    assert u.sha256_file(p, chunk=4096) == _h.sha256(blob).hexdigest()
+
+
+def test_verify_input_hashes_requires_complete_valid_set(monkeypatch, tmp_path):
+    a, b = tmp_path / "a", tmp_path / "b"
+    a.write_text("A")
+    b.write_text("B")
+    monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (a, b))
+    complete = {u._rel(a): u.sha256_file(a), u._rel(b): u.sha256_file(b)}
+    assert u.verify_input_hashes({"input_sha256": complete})[0] is True
+    assert u.verify_input_hashes({"input_sha256": {u._rel(a): u.sha256_file(a)}})[0] is False   # key missing
+    assert u.verify_input_hashes({"input_sha256": {u._rel(a): "MISSING", u._rel(b): u.sha256_file(b)}})[0] is False
+    assert u.verify_input_hashes({"input_sha256": {}})[0] is False                               # empty fails closed
+    assert u.verify_input_hashes({})[0] is False                                                 # absent fails closed
+
+
+def test_unseal_fails_closed_on_incomplete_input_hashes_no_label_read(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    fd.mkdir()
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    (fd / "variants.csv").write_text("k\n1\n")
+    man = {"sha256": {"variants.csv": u.sha256_file(fd / "variants.csv")}, "arms": {}, "input_sha256": {}}
+    (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
+    monkeypatch.setattr(u.pd, "read_csv",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("unseal read LABELS on incomplete inputs")))
+    out = u.unseal()
+    assert out["status"] == "INPUT_HASH_INCOMPLETE_OR_MISMATCH"    # derived hashes OK, input gate fails closed
+
+
 def test_rna_alt_snv_counts_indel_not_assessed(monkeypatch, tmp_path):
     # no BAM -> NOT_ASSESSED status (never fabricated)
     monkeypatch.setattr(u, "RNA_BAM", tmp_path / "absent.bam")
@@ -261,9 +336,9 @@ def test_rna_alt_snv_counts_indel_not_assessed(monkeypatch, tmp_path):
     assert got == {} and "NOT_ASSESSED" in status
 
 
-def test_freeze_manifest_discloses_el_and_pvac(tmp_path, monkeypatch):
-    # freeze returns NOT_EVALUABLE cleanly when inputs are missing (no crash, no label access)
+def test_freeze_not_evaluable_on_missing_inputs(tmp_path, monkeypatch):
+    # freeze returns NOT_EVALUABLE cleanly when a source input is missing (no crash, no label access)
+    monkeypatch.setattr(u, "FREEZE_DIR", tmp_path / "freeze")
     monkeypatch.setattr(u, "PASS_VCF", tmp_path / "absent.vcf.gz")
     m = u.freeze()
-    assert m["status"] == "NOT_EVALUABLE" and "absent" in m["missing"]
-    _ = json  # keep import used
+    assert m["status"] == "NOT_EVALUABLE" and any("absent.vcf.gz" in x for x in m["missing_inputs"])

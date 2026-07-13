@@ -82,8 +82,65 @@ def _vaf_depth(sample) -> tuple[float, int]:
     return (float(af) if af is not None else 0.0), int(dp)
 
 
-def sha256_file(p: Path) -> str:
-    return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def sha256_file(p: Path, chunk: int = 1 << 20) -> str:
+    """Streaming SHA-256 (constant memory) — never loads a multi-GB FASTA fully into RAM."""
+    h = hashlib.sha256()
+    with open(p, "rb") as fh:
+        for block in iter(lambda: fh.read(chunk), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _rel(p: Path) -> str:
+    try:
+        return str(Path(p).relative_to(ROOT))
+    except ValueError:
+        return str(p)
+
+
+# executable semantics — git_commit does NOT capture a dirty worktree, so hash the code that shapes output
+CODE_FILES = (ROOT / "scripts/miller_hu287_universe.py", ROOT / "src/benchmark/four_arm.py",
+              ROOT / "src/event_b/lossless_peptide_generation.py")
+
+
+def _fai() -> Path:
+    return REF.parent / (REF.name + ".fai")
+
+
+def _source_inputs() -> tuple[Path, ...]:
+    """Mandatory inputs that MUST pre-exist before freeze proceeds (RNA BAM+.bai included => freeze is
+    NOT_EVALUABLE until the tumor-RNA alignment is complete)."""
+    return (PASS_VCF, RNA_BAM, Path(str(RNA_BAM) + ".bai"), HLA_JSON, QUANT, REF, _fai(),
+            FROZEN_EPICURUS, FROZEN_EXPR_POLICY, FROZEN_ROUTER, *CODE_FILES)
+
+
+def _all_inputs(has_pvac: bool) -> tuple[Path, ...]:
+    """Every input whose SHA-256 is recorded + verified: sources + the derived NORM_VCF, plus BOTH pVAC
+    CSV and provenance when the genuine pVAC lane is used."""
+    extra = (PVAC_CANDIDATES, PVAC_PROVENANCE) if has_pvac else ()
+    return (*_source_inputs(), NORM_VCF, *extra)
+
+
+def _is_hex_sha(v) -> bool:
+    return isinstance(v, str) and len(v) == 64 and all(c in "0123456789abcdef" for c in v.lower())
+
+
+def verify_input_hashes(man: dict) -> tuple[bool, str | None, str | None]:
+    """Fail-CLOSED gate on recorded input hashes: input_sha256 must be a dict covering EVERY expected input
+    key (for this lane) with a valid 64-hex sha (never 'MISSING'/empty), each recompute-matching on disk."""
+    isha = man.get("input_sha256")
+    if not isinstance(isha, dict) or not isha:
+        return False, None, "input_sha256 missing/empty/malformed"
+    for p in _all_inputs(bool(man.get("genuine_pvac_lane", False))):
+        key = _rel(p)
+        if key not in isha:
+            return False, key, "expected input hash key absent"
+        if not _is_hex_sha(isha[key]):
+            return False, key, "recorded hash not a valid sha256 (MISSING/empty/malformed)"
+        cur = sha256_file(ROOT / key) if (ROOT / key).exists() else None
+        if cur != isha[key]:
+            return False, key, "input hash mismatch or file absent"
+    return True, None, None
 
 
 def load_filtered_variants(vcf_path: Path) -> pd.DataFrame:
@@ -306,19 +363,33 @@ def freeze() -> dict:
         if prev.get("LOCK") != "FROZEN_NO_LABELS":
             return {"status": "FROZEN_INVALID", "reason": "existing manifest lacks a valid LOCK; refusing to overwrite"}
         ok, bad = verify_frozen_hashes(prev, FREEZE_DIR)   # verify derived hashes; fail closed on corruption
-        return {"status": "ALREADY_FROZEN" if ok else "FROZEN_HASH_MISMATCH", "bad_file": bad,
-                "sha256": prev.get("sha256"), "arms": prev.get("arms")}
-    for f in (PASS_VCF, QUANT, HLA_JSON, REF):
-        if not f.exists():
-            return {"status": "NOT_EVALUABLE", "missing": str(f)}
+        if not ok:
+            return {"status": "FROZEN_HASH_MISMATCH", "bad_file": bad}
+        iok, ibad, ireason = verify_input_hashes(prev)     # also verify recorded INPUT hashes
+        if not iok:
+            return {"status": "FROZEN_INPUT_HASH_MISMATCH", "bad_input": ibad, "reason": ireason}
+        return {"status": "ALREADY_FROZEN", "sha256": prev.get("sha256"), "arms": prev.get("arms"),
+                "git_commit": prev.get("git_commit"), "input_verified": True}
+    missing = [_rel(p) for p in _source_inputs() if not Path(p).exists()]
+    if missing:                                          # e.g. RNA BAM not complete yet -> NOT_EVALUABLE
+        return {"status": "NOT_EVALUABLE", "missing_inputs": missing}
     hla_panel = json.loads(HLA_JSON.read_text())["class_i_alleles"]
     norm_vcf = normalize_pass_vcf(PASS_VCF, REF, NORM_VCF)     # bcftools norm indels vs exact FASTA
     variants = load_filtered_variants(norm_vcf)
-    rna_by_key, rna_status = rna_alt_evidence(variants)       # evidence-only (NOT_ASSESSED if BAM absent)
+    rna_by_key, rna_status = rna_alt_evidence(variants)       # RNA BAM guaranteed present (source preflight)
     uni, notes, has_pvac = build_universe(variants, hla_panel, gene_tpm_by_ensg(QUANT), rna_by_key)
     uni, length_counts = filter_class_i_lengths(uni)          # class-I 8-11 only, BEFORE scoring/selection
     if len(uni):
         uni = score_universe(uni)
+    # Compute ALL input hashes and REFUSE (no manifest written) if any input is absent or non-64-hex.
+    input_sha = {}
+    for p in _all_inputs(has_pvac):
+        if not Path(p).exists():
+            return {"status": "NOT_EVALUABLE", "missing_input": _rel(p)}
+        s = sha256_file(p)
+        if not _is_hex_sha(s):
+            return {"status": "NOT_EVALUABLE", "bad_input_hash": _rel(p)}
+        input_sha[_rel(p)] = s
     FREEZE_DIR.mkdir(parents=True, exist_ok=True)
     # freeze the filtered variant keys (for HLA-agnostic reachability at unseal) + the scored universe
     variants.to_csv(FREEZE_DIR / "variants.csv", index=False)
@@ -336,22 +407,13 @@ def freeze() -> dict:
                                  "missing": elig[arm.arm_id].missing,
                                  "n_selected": int(len(sel)), "saturated": bool(len(sel) >= K),
                                  "selection_file": fn, "n_unique_mutations": int(sel["mutation_id"].nunique()) if len(sel) else 0}
-    def _rel(p: Path) -> str:
-        try:
-            return str(p.relative_to(ROOT))
-        except ValueError:
-            return str(p)
-    fai = REF.parent / (REF.name + ".fai")
-    input_sha = {_rel(p): (sha256_file(p) if p.exists() else "MISSING")
-                 for p in (NORM_VCF, HLA_JSON, QUANT, FROZEN_EPICURUS, FROZEN_EXPR_POLICY, FROZEN_ROUTER,
-                           fai, REF)}   # fai = contig names/lengths; REF = actual FASTA bases (3GB, hashed)
     manifest = {"patient_id": "Hu_287", "labels_opened": False, "LOCK": "FROZEN_NO_LABELS",
                 "hla_panel": hla_panel, "genuine_pvac_lane": has_pvac,
                 "indel_normalization": "bcftools norm -f GRCh38.fa -m-any (left-align+split) before enumeration",
                 "class_i_length_filter": length_counts, "rna_alt_evidence_status": rna_status,
                 "n_variants_pass": int(variants["pass_filters"].sum()), "n_universe_rows": int(len(uni)),
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
-                "input_sha256": input_sha, "git_commit": _git_commit(),
+                "input_sha256": input_sha, "code_files": [_rel(c) for c in CODE_FILES], "git_commit": _git_commit(),
                 "router_policy_id": DEFAULT_ROUTER_POLICY.policy_id,
                 "presentation_evidence": "router binding_percentile_rank = MixMHCpred %rank (real predictor; not NetMHCpan-EL)",
                 "el_feature": "NaN (NetMHCpan-EL unavailable; MixMHCpred is NOT a valid el substitute) -> frozen 0.5 fallback",
@@ -391,10 +453,9 @@ def unseal() -> dict:
     ok, bad = verify_frozen_hashes(man, FREEZE_DIR)      # derived-file integrity gate BEFORE any label read
     if not ok:
         return {"status": "HASH_MISMATCH", "file": bad}
-    for rel, h in man.get("input_sha256", {}).items():   # input integrity gate BEFORE any label read
-        cur = sha256_file(ROOT / rel) if (ROOT / rel).exists() else "MISSING"
-        if cur != h:
-            return {"status": "INPUT_HASH_MISMATCH", "file": rel, "expected": h, "got": cur}
+    iok, ibad, ireason = verify_input_hashes(man)        # COMPLETE input-hash gate BEFORE any label read
+    if not iok:
+        return {"status": "INPUT_HASH_INCOMPLETE_OR_MISMATCH", "file": ibad, "reason": ireason}
     labels = pd.read_csv(LABELS)                          # <-- the ONLY label read
     lab = labels[labels["patient_id"] == "Hu_287"].copy()
     lab["key"] = [variant_key(c, p, r, a) for c, p, r, a in zip(lab["chrom"], lab["pos"], lab["ref"], lab["alt"])]
