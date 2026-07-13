@@ -17,19 +17,76 @@ def test_norm_chrom_and_variant_key_are_join_safe():
     assert u.variant_key("6", "31000000", "C", "T") == "6:31000000:C:T"
 
 
-def test_base_filters_frozen_thresholds():
-    assert u.passes_base_filters(0.30, 0.00, 40, 38) is True
-    assert u.passes_base_filters(0.04, 0.00, 40, 38) is False
-    assert u.passes_base_filters(0.30, 0.10, 40, 38) is False
-    assert u.passes_base_filters(0.30, 0.00, 8, 38) is False
-    assert u.passes_base_filters(0.30, 0.00, 40, 6) is False
-    assert u.passes_base_filters(0.05, 0.05, 10, 10) is True
+def test_base_filters_prereg_3_1_thresholds():
+    # passes_base_filters(nvaf, tdp, ndp, talt) — PROTOCOL CORRECTION 2026-07-12 (prereg §3.1)
+    assert u.passes_base_filters(0.00, 40, 38, 12) is True     # clean somatic, ample alt support
+    assert u.passes_base_filters(0.10, 40, 38, 12) is False    # normal VAF > 0.05 -> germline/artifact
+    assert u.passes_base_filters(0.00, 8, 38, 12) is False     # tumor depth < 10
+    assert u.passes_base_filters(0.00, 40, 6, 12) is False     # normal depth < 10
+    # boundary: normal VAF exactly 0.05, both depths exactly 10, alt reads exactly 3 -> PASS
+    assert u.passes_base_filters(0.05, 10, 10, 3) is True
+    # tumor alt-read floor is the support gate (replaces the removed 5% VAF cut)
+    assert u.passes_base_filters(0.00, 40, 38, 2) is False     # 2 alt reads < floor of 3
+    assert u.passes_base_filters(0.00, 40, 38, 3) is True      # exactly at floor
+    # AD absent -> exact alt reads unavailable -> FAIL CLOSED (never estimated)
+    assert u.passes_base_filters(0.00, 40, 38, None) is False
 
 
-def test_vaf_depth_prefers_AD_then_falls_back():
-    assert u._vaf_depth({"AD": (30, 10)}) == (0.25, 40)
-    v, d = u._vaf_depth({"DP": 50, "AF": (0.2,)})
-    assert d == 50 and abs(v - 0.2) < 1e-9
+def test_base_filters_low_vaf_subclonal_retained_if_supported():
+    # a subclonal SNV (tumor VAF ~1.6%) with >=3 alt reads and clean normal is NOW retained (was dropped by 5% cut)
+    assert u.passes_base_filters(0.00, 500, 300, 8) is True
+
+
+def test_legacy_strict5_is_independent_predicate():
+    # ORIGINAL prereg-v1 §3 rule, VAF-based, NOT alt-read based (prereg §3.1 sensitivity view)
+    assert u.legacy_strict5_filters(0.05, 0.00, 40, 40) is True    # boundary: exactly 5% VAF
+    assert u.legacy_strict5_filters(0.04, 0.00, 40, 40) is False   # below 5% VAF
+    assert u.legacy_strict5_filters(0.30, 0.10, 40, 40) is False   # normal VAF > 5%
+    assert u.legacy_strict5_filters(0.30, 0.00, 8, 40) is False    # tumor depth < 10
+    assert u.legacy_strict5_filters(0.0296, 0.00, 541, 289) is False  # subclonal fails the legacy cut
+    # KEY: legacy predicate does NOT depend on alt reads — 2 alt reads at depth 40 (=5% VAF) passes legacy
+    assert u.legacy_strict5_filters(0.05, 0.00, 40, 40) is True
+
+
+def test_vaf_depth_prefers_AD_then_no_estimate_when_absent():
+    # now returns (vaf, depth, alt_reads); alt is None (never estimated) when AD is absent
+    assert u._vaf_depth({"AD": (30, 10)}) == (0.25, 40, 10)
+    v, d, alt = u._vaf_depth({"DP": 50, "AF": (0.2,)})
+    assert d == 50 and abs(v - 0.2) < 1e-9 and alt is None   # AF/DP annotation only; alt NOT estimated
+
+
+class _Rec:
+    def __init__(self, chrom, pos, ref, alt, t_smp, n_ad):
+        self.chrom, self.pos, self.ref, self.alts = chrom, pos, ref, (alt,)
+        self.samples = {"Hu_287_T": t_smp, "Hu_287_N": {"AD": n_ad}}
+
+
+def test_load_filtered_variants_membership_and_independent_strict5(monkeypatch):
+    """AD extraction + pass_filters universe membership + strict-5% computed INDEPENDENTLY (diverges both ways)."""
+    recs = [
+        _Rec("6", 100, "C", "T", {"AD": (200, 100)}, (300, 0)),  # VAF .333, alt 100 -> PASS + strict5   [both]
+        _Rec("6", 200, "A", "G", {"AD": (525, 16)}, (289, 0)),   # VAF .030, alt 16  -> PASS, NOT strict5 [new only]
+        _Rec("6", 300, "T", "C", {"AD": (38, 2)}, (300, 0)),     # VAF .05,  alt 2   -> FAIL, strict5 TRUE [legacy only]
+        _Rec("6", 400, "T", "C", {"AD": (40, 30)}, (10, 5)),     # normal VAF .333   -> FAIL both         [neither]
+        _Rec("6", 500, "G", "A", {"DP": 60, "AF": (0.4,)}, (300, 0)),  # AD absent -> gate fails closed   [neither]
+    ]
+
+    class _VF:
+        def __init__(self, path):
+            pass
+
+        def __iter__(self):
+            return iter(recs)
+
+    monkeypatch.setitem(u.sys.modules, "pysam", type("pysam", (), {"VariantFile": _VF}))
+    df = u.load_filtered_variants(u.Path("unused.vcf"))
+    assert list(df["tumor_alt_reads"].iloc[:4]) == [100, 16, 2, 30]  # AD alt-read extraction
+    assert pd.isna(df["tumor_alt_reads"].iloc[4])                    # None (not estimated) when AD absent
+    assert list(df["pass_filters"]) == [True, True, False, False, False]   # membership; AD-absent fails closed
+    assert list(df["strict5_pass"]) == [True, False, True, False, True]    # INDEPENDENT legacy predicate
+    # divergence BOTH ways proves strict5 is not a subset of pass_filters (audit correction):
+    assert int((df["strict5_pass"] & ~df["pass_filters"]).sum()) == 2     # legacy-only rows (5%-VAF, low alt)
+    assert int((df["pass_filters"] & ~df["strict5_pass"]).sum()) == 1     # new-only row (subclonal, well-supported)
 
 
 # ---- Fix 4: VEP consequence gates enumeration (synonymous/stop/splice -> NOT_ENUMERABLE) --------------
@@ -204,13 +261,14 @@ def test_build_universe_true_gene_type_and_evidence(monkeypatch):
     monkeypatch.setattr(u, "load_pvac_candidates", lambda: pd.DataFrame())
     variants = pd.DataFrame({"key": ["7:1:A:ATG"], "chrom": ["7"], "pos": [1], "ref": ["A"], "alt": ["ATG"],
                              "tumor_vaf": [0.4], "normal_vaf": [0.0], "tumor_dp": [50], "normal_dp": [40],
-                             "pass_filters": [True]})
+                             "tumor_alt_reads": [20], "pass_filters": [True]})
     rna = {"7:1:A:ATG": {"rna_alt_obs": 7, "rna_depth": 20, "rna_vaf": 0.35}}
     uni, notes, has_pvac, used = u.build_universe(variants, ["HLA-A*02:01"], {"ENSG0": 12.3}, rna)
     row = uni.iloc[0]
     assert row["gene_symbol"] == "BRAF"                   # Fix 6: real gene, not blank
     assert row["source_variant_type"] == "INFRAME"        # Fix 7: not mislabeled SNV
     assert row["tumor_vaf"] == 0.4 and row["normal_dp"] == 40   # Fix 6: WES evidence propagated
+    assert row["tumor_alt_reads"] == 20                  # §3.1: alt-read support propagated as evidence
     assert row["rna_vaf"] == 0.35 and row["rna_alt_obs"] == 7   # RNA evidence attached
     assert row["expr"] == 12.3 and not has_pvac
 

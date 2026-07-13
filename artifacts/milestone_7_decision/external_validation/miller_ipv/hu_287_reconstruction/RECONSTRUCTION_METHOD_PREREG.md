@@ -78,6 +78,11 @@ Hu_287.
   retuning.)
 
 ## 3. Candidate-universe filters (FROZEN, applied identically to ALL FOUR arms)
+> **SUPERSEDED IN PART by §3.1 (2026-07-12).** The original rule is preserved verbatim below for a
+> self-contained audit trail; the tumor-VAF ≥ 0.05 hard gate and the T/N-ratio gate it describes are
+> superseded by §3.1. The original predicate is retained in code as `legacy_strict5_filters` and reported
+> as a preregistered sensitivity analysis.
+
 Applied to the shared base somatic variant set that seeds enumeration for every arm (mirrors the paper
 where sensible):
 `tumor VAF ≥ 0.05`, `normal VAF ≤ 0.05`, `tumor depth ≥ 10`, `normal depth ≥ 10`,
@@ -86,6 +91,43 @@ where sensible):
 recognized mutations are not silently dropped before the reachability endpoint. Class-I peptide lengths
 **8–11** (superset of the paper's 9–11). Any peptide with a non-standard residue or invalid length is
 `NOT_EVALUABLE`, never a negative.
+
+### 3.1 PROTOCOL CORRECTION — 2026-07-12 (pre-outcome, labels SEALED)
+**Superseding rule (now in force).** The candidate-universe filter is: Mutect2 **PASS**, `normal VAF ≤
+0.05`, `normal depth ≥ 10`, `tumor depth ≥ 10`, `tumor alt-read support ≥ 3` (exact AD alt count required;
+if AD is absent the gate is **not assessed → fail-closed exclusion**, AF/DP kept only as annotation),
+coding/exonic consequence. **Tumor VAF is retained as a continuous evidence annotation only — NOT a gate.**
+
+**Change.** The original §3 hard gate `tumor VAF ≥ 0.05` (and the now-redundant `tumor/normal
+alt-frequency ratio ≥ 1`) is **removed** from the candidate-universe filter and **replaced** by an
+absolute `tumor alt-read support ≥ 3`. Germline exclusion is retained via `normal VAF ≤ 0.05` (the
+matched-normal Mutect2 model already discriminates somatic-vs-germline, making the T/N ratio redundant).
+Tumor VAF is kept as a continuous per-candidate annotation and is **not** added to any scorer.
+
+**Why (patient-agnostic).** A 5% VAF fraction conflates *subclonal prevalence* with *impossibility*: a
+Mutect2 PASS coding SNV with normal VAF ≈ 0 is a real somatic variant whose class-I recognizability
+depends on presentation, not clonal fraction, and vaccine neoantigen selection routinely includes
+subclonal variants. A hard VAF cut also double-penalizes calls FilterMutectCalls already vetted and can
+turn genuinely-reachable neoantigens into unrecoverable reachability misses — the exact upstream-pruning
+failure mode this milestone has repeatedly re-derived. An **absolute alt-read floor** is a direct,
+purity-independent evidence requirement; it is the honest support criterion. This mirrors the treatment
+RNA already receives (evidence, not a hard filter) and the evidence-router doctrine (non-presentation
+signals are rescuable flags, never impossibility).
+
+**No scoring/ranking change.** The frozen Epicurus v0.1 scorer uses only `{prime, el, expr}`; the evidence
+router uses no DNA/tumor VAF. Removing the VAF gate therefore changes only the reachability *denominator*
+(which mutations enter the shared universe), never any per-candidate score, arm attribution, or ranking.
+
+**Timing/overadaptation guard.** Decided BEFORE any recognition label is read (labels remain sealed; only
+label-blind call statistics — 24 Mutect2 PASS SNVs, normal VAF 0 for 23/24 — informed the design). To make
+the threshold's effect fully transparent, the **original §3 predicate is preregistered here as a
+sensitivity analysis**. `strict5_pass` reproduces the ORIGINAL rule INDEPENDENTLY and exactly —
+`legacy_strict5_filters(tvaf, nvaf, tdp, ndp)` = `tumor VAF ≥ 0.05` ∧ `normal VAF ≤ 0.05` ∧
+`tumor depth ≥ 10` ∧ `normal depth ≥ 10` ∧ old T/N ratio — evaluated on the *same* frozen variant rows.
+It is **not** `pass_filters AND tumor_vaf ≥ 0.05`: the new alt-read floor changes the set (e.g. 2 alt reads
+at depth 40 = 5% VAF passes the old rule but fails the new one), so the legacy view must be computed on its
+own terms. Its reachability is reported at unseal alongside the primary universe. No re-run, no post-hoc
+tuning.
 
 ## 4. Frozen deviations from the paper (each with rationale, decided now)
 | paper | ours | rationale |

@@ -46,7 +46,8 @@ ENS_CACHE = HU / "ensembl_cache"
 ART = ROOT / "artifacts/milestone_7_decision/external_validation/miller_ipv/hu_287_reconstruction"
 FREEZE_DIR = HU / "freeze"
 
-MIN_TUMOR_VAF, MAX_NORMAL_VAF, MIN_DEPTH = 0.05, 0.05, 10
+MAX_NORMAL_VAF, MIN_DEPTH, MIN_TUMOR_ALT_READS = 0.05, 10, 3   # PROTOCOL CORRECTION 2026-07-12 (prereg §3.1)
+STRICT_MIN_TUMOR_VAF = 0.05                                    # legacy strict-5% SENSITIVITY view only (not a gate)
 K = 20
 CLASS_I_MIN, CLASS_I_MAX = 8, 11                        # prereg §3 class-I lengths (generator/PRIME allow 8-14)
 _ENUMERABLE = {"missense_variant": "missense", "inframe_insertion": "inframe",
@@ -67,19 +68,38 @@ def variant_key(chrom, pos, ref, alt) -> str:
     return f"{norm_chrom(chrom)}:{int(pos)}:{str(ref).upper()}:{str(alt).upper()}"
 
 
-def passes_base_filters(tvaf: float, nvaf: float, tdp: int, ndp: int) -> bool:
-    return bool(tvaf >= MIN_TUMOR_VAF and nvaf <= MAX_NORMAL_VAF and tdp >= MIN_DEPTH and ndp >= MIN_DEPTH
+def passes_base_filters(nvaf: float, tdp: int, ndp: int, talt: int | None) -> bool:
+    """PROTOCOL CORRECTION 2026-07-12 (prereg §3.1): germline exclusion (normal VAF <= 0.05) + depth
+    (tumor & normal >= 10) + ABSOLUTE tumor alt-read support (>= 3). Tumor VAF is NOT a hard gate — it is
+    kept as continuous annotation. The prior 5% tumor-VAF cut and the redundant T/N-ratio gate are removed.
+    Because the gate requires EXACT alt reads, a missing AD (talt is None) FAILS CLOSED (never estimated)."""
+    if talt is None:                                     # AD absent -> gate not assessable -> exclude
+        return False
+    return bool(nvaf <= MAX_NORMAL_VAF and tdp >= MIN_DEPTH and ndp >= MIN_DEPTH and talt >= MIN_TUMOR_ALT_READS)
+
+
+def legacy_strict5_filters(tvaf: float, nvaf: float, tdp: int, ndp: int) -> bool:
+    """ORIGINAL prereg-v1 §3 predicate, preserved INDEPENDENTLY for the legacy strict-5% SENSITIVITY view
+    (NOT a gate). Deliberately does NOT depend on alt reads: tumor VAF >= 0.05, normal VAF <= 0.05, both
+    depths >= 10, and the old tumor/normal alt-frequency ratio >= 1. NOT equivalent to (pass_filters AND
+    tvaf>=0.05) — the new alt-read floor changes the set (e.g. 2 alt reads at depth 40 = 5% VAF)."""
+    return bool(tvaf >= STRICT_MIN_TUMOR_VAF and nvaf <= MAX_NORMAL_VAF and tdp >= MIN_DEPTH and ndp >= MIN_DEPTH
                 and (nvaf == 0 or tvaf / max(nvaf, 1e-9) >= 1.0))
 
 
-def _vaf_depth(sample) -> tuple[float, int]:
+def _vaf_depth(sample) -> tuple[float, int, int | None]:
+    """Return (vaf, depth, alt_reads). alt_reads is the EXACT AD alt count; None when AD is absent — the
+    primary gate requires exact alt reads and fails closed on None, so alt is NEVER estimated from AF*DP.
+    AF/DP are still returned (as vaf/depth) for annotation and for the legacy VAF-based sensitivity view."""
     ad = sample.get("AD")
     if ad and len(ad) >= 2 and sum(ad) > 0:
-        return ad[1] / sum(ad), int(sum(ad))
-    dp = sample.get("DP") or 0
+        alt = int(ad[1])
+        return alt / sum(ad), int(sum(ad)), alt
+    dp = int(sample.get("DP") or 0)
     af = sample.get("AF")
     af = af[0] if isinstance(af, (tuple, list)) else af
-    return (float(af) if af is not None else 0.0), int(dp)
+    vaf = float(af) if af is not None else 0.0
+    return vaf, dp, None                                 # alt NOT estimated -> primary gate fails closed
 
 
 def sha256_file(p: Path, chunk: int = 1 << 20) -> str:
@@ -274,14 +294,17 @@ def load_filtered_variants(vcf_path: Path) -> pd.DataFrame:
             continue
         alt = rec.alts[0]
         try:
-            tvaf, tdp = _vaf_depth(rec.samples["Hu_287_T"])
-            nvaf, ndp = _vaf_depth(rec.samples["Hu_287_N"])
+            tvaf, tdp, talt = _vaf_depth(rec.samples["Hu_287_T"])
+            nvaf, ndp, nalt = _vaf_depth(rec.samples["Hu_287_N"])
         except KeyError:
             continue
         rows.append({"key": variant_key(rec.chrom, rec.pos, rec.ref, alt), "chrom": norm_chrom(rec.chrom),
                      "pos": int(rec.pos), "ref": rec.ref, "alt": alt,
                      "tumor_vaf": round(tvaf, 4), "normal_vaf": round(nvaf, 4), "tumor_dp": tdp, "normal_dp": ndp,
-                     "pass_filters": passes_base_filters(tvaf, nvaf, tdp, ndp)})
+                     "tumor_alt_reads": talt, "normal_alt_reads": nalt,
+                     "pass_filters": passes_base_filters(nvaf, tdp, ndp, talt),
+                     # legacy strict-5% SENSITIVITY view: ORIGINAL predicate, computed INDEPENDENTLY (prereg §3.1)
+                     "strict5_pass": legacy_strict5_filters(tvaf, nvaf, tdp, ndp)})
     return pd.DataFrame(rows)
 
 
@@ -404,7 +427,7 @@ def build_universe(variants: pd.DataFrame, hla_panel: list[str], tpm_by_ensg: di
         ensg = str(res["provenance"].get("gene_id", "")).split(".")[0]
         cand["expr"] = float(tpm_by_ensg.get(ensg, 0.0))
         cand["expression_tpm"] = cand["expr"]
-        for col in ("tumor_vaf", "normal_vaf", "tumor_dp", "normal_dp"):        # Fix: propagate WES evidence
+        for col in ("tumor_vaf", "normal_vaf", "tumor_dp", "normal_dp", "tumor_alt_reads"):  # propagate WES evidence
             cand[col] = getattr(v, col)
         rna = rna_by_key.get(v.key, {})
         cand["rna_alt_obs"] = rna.get("rna_alt_obs", np.nan)
@@ -554,6 +577,9 @@ def freeze() -> dict:
                 "indel_normalization": "bcftools norm -f GRCh38.fa -m-any (left-align+split) before enumeration",
                 "class_i_length_filter": length_counts, "rna_alt_evidence_status": rna_status,
                 "n_variants_pass": int(variants["pass_filters"].sum()), "n_universe_rows": int(len(uni)),
+                "n_variants_pass_strict5": int(variants["strict5_pass"].sum()) if "strict5_pass" in variants.columns else 0,  # prereg §3.1 legacy sensitivity view
+                "base_filter_policy": "prereg §3.1 (2026-07-12): Mutect2 PASS + normal VAF<=0.05 + depth>=10 both "
+                                      "+ tumor alt-reads>=3; tumor VAF = continuous annotation (NOT a gate)",
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
                 "input_sha256": input_sha, "code_files": [_rel(c) for c in CODE_FILES],
                 "tool_commits": tool_commits, "git_tracked_clean": git_tracking,
@@ -612,11 +638,18 @@ def unseal() -> dict:
     variants = pd.read_csv(FREEZE_DIR / "variants.csv")
     called = set(variants["key"])
     called_pass = set(variants.loc[variants["pass_filters"], "key"])
+    # prereg §3.1 legacy strict-5% SENSITIVITY view — derived from the SAME frozen universe (annotation-based)
+    called_pass_strict5 = (set(variants.loc[variants["strict5_pass"], "key"])
+                           if "strict5_pass" in variants.columns else set())
     reach = {"n_recognized_mutations": len(recognized),
              "reachability_called": len(recognized & called),
              "reachability_called_and_passed": len(recognized & called_pass),
              "recognized_called_and_passed_keys": sorted(recognized & called_pass),
-             "n_tested_mutations": lab["key"].nunique()}
+             "n_tested_mutations": lab["key"].nunique(),
+             "sensitivity_strict5_reachability_called_and_passed": len(recognized & called_pass_strict5),
+             "sensitivity_strict5_recognized_keys": sorted(recognized & called_pass_strict5),
+             "sensitivity_note": "strict5 = legacy tumor-VAF>=0.05 view (prereg §3.1); primary universe drops "
+                                 "the VAF gate and uses tumor alt-reads>=3"}
     arms = {}
     for arm_id, meta in man["arms"].items():
         if not meta["evaluable"]:                        # NOT evaluated -> null, never 0 (0 implies evaluated)
