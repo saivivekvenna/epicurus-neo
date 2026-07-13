@@ -166,6 +166,45 @@ def test_build_universe_stamps_real_patient_id_and_uses_patient_cache(monkeypatc
     assert seen["cache"] == c.ens_cache and not has_pvac  # patient-specific Ensembl cache
 
 
+def test_score_universe_passes_real_patient_id_to_frozen_epicurus(monkeypatch, tmp_path):
+    c = _tmp_config(tmp_path, patient_id="Hu_315")
+    captured = {}
+
+    import event_b.prime_adapter as prime_adapter
+    import event_b.prime_transfer as prime_transfer
+
+    class _PrimeResult:
+        scored = pd.DataFrame(
+            {
+                "peptide": ["AAAAAAAAA"],
+                "hla_allele": ["HLA-A*02:01"],
+                "prime_rank": [0.4],
+                "mixmhcpred_rank": [0.2],
+            }
+        )
+
+    monkeypatch.setattr(prime_adapter, "score_prime", lambda frame: _PrimeResult())
+
+    def _score_with_frozen(frame):
+        captured["patient_ids"] = frame["patient_id"].tolist()
+        return pd.Series([0.7], index=frame.index)
+
+    monkeypatch.setattr(prime_transfer, "score_with_frozen", _score_with_frozen)
+    universe = pd.DataFrame(
+        {
+            "mutant_peptide": ["AAAAAAAAA"],
+            "hla_allele": ["HLA-A*02:01"],
+            "expr": [12.0],
+        }
+    )
+
+    out = core.score_universe(c, universe)
+
+    assert captured["patient_ids"] == ["Hu_315"]
+    assert out["epicurus"].tolist() == [0.7]
+    assert out["genuine_prime"].tolist() == [-0.4]
+
+
 # ---------------------------------------------------------------------------
 # Parameterized provenance gates
 # ---------------------------------------------------------------------------
@@ -229,7 +268,7 @@ def test_freeze_success_writes_lock_with_real_patient_id_no_label_read(monkeypat
     monkeypatch.setattr(core.u, "normalize_pass_vcf", lambda pv, ref, out: pv)
     monkeypatch.setattr(core.u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
     monkeypatch.setattr(core.u, "gene_tpm_by_ensg", lambda q: {})
-    monkeypatch.setattr(core.u, "score_universe", lambda x: x)
+    monkeypatch.setattr(core, "score_universe", lambda config, x: x)
     monkeypatch.setattr(core, "load_filtered_variants",
                         lambda config, p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True],
                                                         "strict5_pass": [True]}))

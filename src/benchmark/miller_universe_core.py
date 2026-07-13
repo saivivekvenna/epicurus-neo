@@ -221,6 +221,48 @@ def build_universe(config: UniverseConfig, variants: pd.DataFrame, hla_panel: li
     return uni, notes, bool(len(pvac)), used
 
 
+def score_universe(config: UniverseConfig, uni: pd.DataFrame) -> pd.DataFrame:
+    """Run genuine PRIME and frozen Epicurus with this patient's identity.
+
+    The frozen Hu_287 module necessarily hard-codes Hu_287 in its scorer.  The
+    generic lane must not call that patient-bound function: doing so silently
+    stamps every calibration/held-out row as the development patient before
+    frozen-model inference.
+    """
+    import numpy as np
+
+    from event_b.prime_adapter import score_prime
+    from event_b.prime_transfer import score_with_frozen
+
+    res = score_prime(
+        uni[["mutant_peptide", "hla_allele"]].rename(columns={"mutant_peptide": "peptide"})
+    )
+    scored = res.scored.rename(columns={"peptide": "mutant_peptide"})
+    uni = uni.merge(
+        scored[
+            ["mutant_peptide", "hla_allele", "prime_rank", "mixmhcpred_rank"]
+        ].drop_duplicates(),
+        on=["mutant_peptide", "hla_allele"],
+        how="left",
+    )
+    uni["genuine_prime"] = -pd.to_numeric(uni["prime_rank"], errors="coerce")
+    uni["binding_percentile_rank"] = pd.to_numeric(
+        uni["mixmhcpred_rank"], errors="coerce"
+    )
+    uni["binding_rank_provenance"] = (
+        "MixMHCpred 3.0 %rank (via genuine PRIME); not NetMHCpan-EL"
+    )
+    uni["el"] = np.nan
+    epicurus_input = uni.rename(columns={"prime_rank": "prime"})[
+        ["mutant_peptide", "hla_allele", "prime", "el", "expr"]
+    ].copy()
+    epicurus_input["patient_id"] = config.patient_id
+    uni["epicurus"] = score_with_frozen(
+        epicurus_input[["patient_id", "prime", "el", "expr"]]
+    )
+    return uni
+
+
 # ---------------------------------------------------------------------------
 # Provenance gates (parameterized versions of the Hu_287 globals-bound gates)
 # ---------------------------------------------------------------------------
@@ -384,7 +426,7 @@ def freeze(config: UniverseConfig) -> dict:
         return {"status": "NOT_EVALUABLE", "ensembl_used_issue": ereason}
     uni, length_counts = u.filter_class_i_lengths(uni)
     if len(uni):
-        uni = u.score_universe(uni)
+        uni = score_universe(config, uni)
 
     input_sha = {}
     for p in _all_inputs(config, has_pvac):
