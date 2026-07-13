@@ -1,0 +1,86 @@
+{
+  "calibration": [
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_182",
+      "size_gb": 20.686,
+      "split_hash": "1bb6e977d2afe232e740d2bcdec6f3c8f9edb28a8bc5ec0c8ffac1c855e90e89"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_315",
+      "size_gb": 14.953,
+      "split_hash": "3b8ec3c0b3b27b9ee90090b44b9fccc77c0c3e5b9c9835512aca84211fa19810"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_277",
+      "size_gb": 15.409,
+      "split_hash": "47ba24b329087d95061208a850089572827f999337411a7c173df64d70a828bd"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_268",
+      "size_gb": 17.12,
+      "split_hash": "53d7d0378e1c4056b3d783edd0b9faf2c8282afb286f47a4a4aa3b73cee8ca73"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_254",
+      "size_gb": 20.987,
+      "split_hash": "6017c1edc8d145e172f739db00e53443d06942b53b66d964e082e049ad4b9e14"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_343",
+      "size_gb": 16.954,
+      "split_hash": "7645eb61bf9b9259f2c5e22fab350601cc897d81ba0e36c4286a4345709f0a62"
+    }
+  ],
+  "crosswalk_sha256": "e8830da12764d940d886073338756bc7015b5f10266024e9fdb316c834f7faeb",
+  "final_held_out": [
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_333",
+      "size_gb": 11.777,
+      "split_hash": "8409bd4cc86368e4138664466cda300313848c829a823d82926eb0dd82ed6c27"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_159",
+      "size_gb": 19.746,
+      "split_hash": "8b259b79e4e982f34cb52dff17a4792adc6a9c7b72ba5cf8f3beb05da9e7e1db"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_344",
+      "size_gb": 23.262,
+      "split_hash": "a8a10e1d6937791aa70917ec441c0d717042189215136077060f68860cb5c5ab"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_048",
+      "size_gb": 16.532,
+      "split_hash": "bf8ceae1c8e5f006acf51cfa62a107f40cf38bbfcf8c3d0638da09b6d996223f"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_293",
+      "size_gb": 11.494,
+      "split_hash": "cd6c781be8ed835efa90257308d1e15db64bf83e398924a79ad2db1378f5ec7c"
+    },
+    {
+      "complete_raw_input_crosswalk": true,
+      "patient_id": "Hu_250",
+      "size_gb": 21.045,
+      "split_hash": "d1d37acf534cb14076dc2c1ab1f68b78feaf27fc79b4356e5da01117814df05d"
+    }
+  ],
+  "known_development": [
+    "Hu_287",
+    "Sid"
+  ],
+  "label_columns_read": [],
+  "method": "sort sha256('epicurus-generalization-v1|' + patient_id); first 6 calibration, last 6 final",
+  "split_id": "miller-generalization-v1"
+}
