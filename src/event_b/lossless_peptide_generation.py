@@ -134,11 +134,15 @@ class EnsemblClient:
         self.manifest: dict[str, dict] = (
             json.loads(self.manifest_path.read_text()) if self.manifest_path.exists() else {}
         )
+        # exact per-run access log: every URL actually CONSUMED this run (cache hit OR network fetch),
+        # with the cache filename + content SHA. Additive provenance; does not affect caching behavior.
+        self.accessed: dict[str, dict] = {}
 
     def _get(self, url: str) -> tuple[bytes, str]:
         entry = self.manifest.get(url)
         if entry is not None:
             data = (self.cache_dir / entry["file"]).read_bytes()
+            self.accessed[url] = {"file": entry["file"], "sha256": entry["sha256"]}
             return data, entry["sha256"]
         if self.offline:
             raise CacheMiss(f"offline Ensembl client has no cache for {url}")
@@ -149,6 +153,7 @@ class EnsemblClient:
         (self.cache_dir / filename).write_bytes(data)
         self.manifest[url] = {"file": filename, "sha256": sha}
         self.manifest_path.write_text(json.dumps(self.manifest, indent=2, sort_keys=True) + "\n")
+        self.accessed[url] = {"file": filename, "sha256": sha}
         return data, sha
 
     def vep_hgvs(self, hgvs: str) -> dict:

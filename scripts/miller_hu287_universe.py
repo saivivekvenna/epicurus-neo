@@ -206,6 +206,47 @@ def verify_frozen_module_integrity(config_path: Path = FROZEN_EPICURUS) -> tuple
     return True, {"module": code["module"], "module_sha256": actual}
 
 
+def verify_ensembl_used(records, *, require_nonempty: bool) -> tuple[bool, str | None]:
+    """Fail-CLOSED verification of the EXACT Ensembl responses consumed by generation. `records` must be a
+    LIST (None/missing fails closed). Each entry must be {url, cache_path, sha256} with a non-empty string
+    url, string cache_path resolving to a REGULAR FILE inside ENS_CACHE (no traversal/dir), a valid 64-hex
+    sha that recompute-matches (hash I/O errors -> False); duplicate URLs are rejected. `require_nonempty`
+    (derived from n_variants_pass>0) fails an empty ledger. Extra unrelated cache entries are ignored."""
+    if records is None or not isinstance(records, list):
+        return False, "records_missing_or_not_a_list"
+    if require_nonempty and not records:
+        return False, "empty_used_response_set_with_variants_processed"
+    cache_root = ENS_CACHE.resolve()
+    seen: set[str] = set()
+    for r in records:
+        if not isinstance(r, dict) or not {"url", "cache_path", "sha256"} <= set(r):
+            return False, "malformed_record"
+        url, cp, sha = r["url"], r["cache_path"], r["sha256"]
+        if not isinstance(url, str) or not url.strip():
+            return False, "bad_url"
+        if not isinstance(cp, str) or not cp:
+            return False, "bad_cache_path"
+        if not _is_hex_sha(sha):
+            return False, f"bad_sha:{cp}"
+        if url in seen:
+            return False, f"duplicate_url:{url}"
+        seen.add(url)
+        p = (ROOT / cp).resolve()
+        try:
+            p.relative_to(cache_root)                    # path-traversal / escape guard
+        except ValueError:
+            return False, f"path_escapes_cache:{cp}"
+        if not p.is_file():                              # rejects missing AND directories (no IsADirectoryError)
+            return False, f"not_a_regular_file:{cp}"
+        try:
+            actual = sha256_file(p)
+        except OSError:
+            return False, f"hash_io_error:{cp}"
+        if actual != sha:
+            return False, f"sha_mismatch:{cp}"
+    return True, None
+
+
 def verify_input_hashes(man: dict) -> tuple[bool, str | None, str | None]:
     """Fail-CLOSED gate on recorded input hashes: input_sha256 must be a dict covering EVERY expected input
     key (for this lane) with a valid 64-hex sha (never 'MISSING'/empty), each recompute-matching on disk."""
@@ -374,7 +415,10 @@ def build_universe(variants: pd.DataFrame, hla_panel: list[str], tpm_by_ensg: di
     lossless = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
     pvac = load_pvac_candidates()
     uni = union_candidates([pvac, lossless]) if len(pvac) else lossless
-    return uni, notes, bool(len(pvac))
+    # exact Ensembl responses ACTUALLY consumed this run (incl. VEP calls that excluded a variant)
+    used = [{"url": url, "cache_path": _rel(client.cache_dir / e["file"]), "sha256": e["sha256"]}
+            for url, e in client.accessed.items()]
+    return uni, notes, bool(len(pvac)), used
 
 
 def filter_class_i_lengths(uni: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
@@ -449,6 +493,10 @@ def freeze() -> dict:
         iok, ibad, ireason = verify_input_hashes(prev)     # also verify recorded INPUT hashes
         if not iok:
             return {"status": "FROZEN_INPUT_HASH_MISMATCH", "bad_input": ibad, "reason": ireason}
+        eok, ereason = verify_ensembl_used(prev.get("ensembl_used_responses"),   # None if field deleted -> fail
+                                           require_nonempty=int(prev.get("n_variants_pass", 0)) > 0)
+        if not eok:
+            return {"status": "FROZEN_ENSEMBL_USED_MISMATCH", "reason": ereason}
         return {"status": "ALREADY_FROZEN", "sha256": prev.get("sha256"), "arms": prev.get("arms"),
                 "git_commit": prev.get("git_commit"), "input_verified": True}
     missing = [_rel(p) for p in _source_inputs() if not Path(p).exists()]
@@ -467,7 +515,11 @@ def freeze() -> dict:
     norm_vcf = normalize_pass_vcf(PASS_VCF, REF, NORM_VCF)     # bcftools norm indels vs exact FASTA
     variants = load_filtered_variants(norm_vcf)
     rna_by_key, rna_status = rna_alt_evidence(variants)       # RNA BAM guaranteed present (source preflight)
-    uni, notes, has_pvac = build_universe(variants, hla_panel, gene_tpm_by_ensg(QUANT), rna_by_key)
+    uni, notes, has_pvac, ensembl_used = build_universe(variants, hla_panel, gene_tpm_by_ensg(QUANT), rna_by_key)
+    n_processed = int(variants["pass_filters"].sum())
+    eok, ereason = verify_ensembl_used(ensembl_used, require_nonempty=n_processed > 0)   # before scoring/LOCK
+    if not eok:
+        return {"status": "NOT_EVALUABLE", "ensembl_used_issue": ereason}
     uni, length_counts = filter_class_i_lengths(uni)          # class-I 8-11 only, BEFORE scoring/selection
     if len(uni):
         uni = score_universe(uni)
@@ -505,7 +557,8 @@ def freeze() -> dict:
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
                 "input_sha256": input_sha, "code_files": [_rel(c) for c in CODE_FILES],
                 "tool_commits": tool_commits, "git_tracked_clean": git_tracking,
-                "frozen_module_integrity": mod_info, "git_commit": _git_commit(),
+                "frozen_module_integrity": mod_info, "ensembl_used_responses": ensembl_used,
+                "git_commit": _git_commit(),
                 "router_policy_id": DEFAULT_ROUTER_POLICY.policy_id,
                 "presentation_evidence": "router binding_percentile_rank = MixMHCpred %rank (real predictor; not NetMHCpan-EL)",
                 "el_feature": "NaN (NetMHCpan-EL unavailable; MixMHCpred is NOT a valid el substitute) -> frozen 0.5 fallback",
@@ -548,6 +601,10 @@ def unseal() -> dict:
     iok, ibad, ireason = verify_input_hashes(man)        # COMPLETE input-hash gate BEFORE any label read
     if not iok:
         return {"status": "INPUT_HASH_INCOMPLETE_OR_MISMATCH", "file": ibad, "reason": ireason}
+    eok, ereason = verify_ensembl_used(man.get("ensembl_used_responses"),    # None if field deleted -> fail
+                                       require_nonempty=int(man.get("n_variants_pass", 0)) > 0)
+    if not eok:                                          # recheck every recorded Ensembl response too
+        return {"status": "ENSEMBL_USED_MISMATCH", "reason": ereason}
     labels = pd.read_csv(LABELS)                          # <-- the ONLY label read
     lab = labels[labels["patient_id"] == "Hu_287"].copy()
     lab["key"] = [variant_key(c, p, r, a) for c, p, r, a in zip(lab["chrom"], lab["pos"], lab["ref"], lab["alt"])]

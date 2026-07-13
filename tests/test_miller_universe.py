@@ -97,7 +97,8 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
                         "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"],
                         "genuine_prime": [0.9], "epicurus": [0.5]})
     monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
-    monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], False))
+    monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], False, []))
+    monkeypatch.setattr(u, "verify_ensembl_used", lambda records, require_nonempty: (True, None))
     monkeypatch.setattr(u, "score_universe", lambda x: x)
     monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
     # provenance inputs mocked to a single existing file so freeze can proceed on the success path
@@ -139,6 +140,7 @@ def test_unseal_reports_null_for_non_evaluable_arm(monkeypatch, tmp_path):
     labels.write_text("patient_id,gene_symbol,chrom,pos,ref,alt,label\nHu_287,G,6,1,C,T,POSITIVE\n")
     monkeypatch.setattr(u, "LABELS", labels)
     monkeypatch.setattr(u, "verify_input_hashes", lambda man: (True, None, None))   # not under test here
+    monkeypatch.setattr(u, "verify_ensembl_used", lambda records, require_nonempty: (True, None))
     out = u.unseal()
     assert out["endpoint_b_class_i_four_arm"]["pvac_prime"]["hits_at_20_unique_mutations"] is None
     assert out["endpoint_b_class_i_four_arm"]["pvac_prime"]["n_selected"] is None
@@ -189,7 +191,8 @@ def test_build_universe_true_gene_type_and_evidence(monkeypatch):
 
     class _Client:
         def __init__(self, *a, **k):
-            pass
+            self.accessed = {}
+            self.cache_dir = u.ENS_CACHE
 
     def _gen(variant, client, panel, **k):
         cand = pd.DataFrame({"mutant_peptide": ["AAAAAAAAA"], "hla_allele": panel,
@@ -203,7 +206,7 @@ def test_build_universe_true_gene_type_and_evidence(monkeypatch):
                              "tumor_vaf": [0.4], "normal_vaf": [0.0], "tumor_dp": [50], "normal_dp": [40],
                              "pass_filters": [True]})
     rna = {"7:1:A:ATG": {"rna_alt_obs": 7, "rna_depth": 20, "rna_vaf": 0.35}}
-    uni, notes, has_pvac = u.build_universe(variants, ["HLA-A*02:01"], {"ENSG0": 12.3}, rna)
+    uni, notes, has_pvac, used = u.build_universe(variants, ["HLA-A*02:01"], {"ENSG0": 12.3}, rna)
     row = uni.iloc[0]
     assert row["gene_symbol"] == "BRAF"                   # Fix 6: real gene, not blank
     assert row["source_variant_type"] == "INFRAME"        # Fix 7: not mislabeled SNV
@@ -219,7 +222,8 @@ def test_freeze_is_immutable_and_fails_closed(monkeypatch, tmp_path):
     monkeypatch.setattr(u, "verify_input_hashes", lambda man: (True, None, None))   # input gate not under test here
     # valid LOCK with matching derived hash -> ALREADY_FROZEN (never overwrite)
     (fd / "variants.csv").write_text("k\n1\n")
-    man = {"LOCK": "FROZEN_NO_LABELS", "sha256": {"variants.csv": u.sha256_file(fd / "variants.csv")}, "arms": {}}
+    man = {"LOCK": "FROZEN_NO_LABELS", "sha256": {"variants.csv": u.sha256_file(fd / "variants.csv")},
+           "arms": {}, "n_variants_pass": 0, "ensembl_used_responses": []}
     (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
     assert u.freeze()["status"] == "ALREADY_FROZEN"
     # corrupt lock -> fail closed, never overwrite
@@ -258,7 +262,8 @@ def test_freeze_not_evaluable_when_pvac_inputs_missing_no_manifest(monkeypatch, 
     monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
     uni = pd.DataFrame({"patient_id": ["Hu_287"], "mutation_id": ["6:1:C:T"], "candidate_source": ["pvac"],
                         "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"], "genuine_prime": [0.9], "epicurus": [0.5]})
-    monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], True))    # has_pvac=True
+    monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], True, []))   # has_pvac=True
+    monkeypatch.setattr(u, "verify_ensembl_used", lambda records, require_nonempty: (True, None))
     monkeypatch.setattr(u, "score_universe", lambda x: x)
     monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
     monkeypatch.setattr(u, "HLA_JSON", tmp_path / "hla.json")
@@ -397,6 +402,123 @@ def test_freeze_not_evaluable_on_frozen_module_mismatch_no_manifest(monkeypatch,
     monkeypatch.setattr(u, "verify_frozen_module_integrity", lambda: (False, {"reason": "module_sha256_mismatch"}))
     out = u.freeze()
     assert out["status"] == "NOT_EVALUABLE" and "frozen_module_issue" in out
+    assert not (fd / "FREEZE_MANIFEST.json").exists()
+
+
+def test_ensembl_client_tracks_exact_access(tmp_path):
+    import event_b.lossless_peptide_generation as lg
+    calls = {"n": 0}
+
+    def fetch(url):
+        calls["n"] += 1
+        return b'[{"most_severe_consequence":"missense_variant"}]'
+    c1 = lg.EnsemblClient(tmp_path / "cache", fetcher=fetch)
+    r = c1.vep_hgvs("1:100A>T")
+    assert calls["n"] == 1 and r["url"] in c1.accessed              # network fetch tracked
+    assert c1.accessed[r["url"]]["sha256"] == r["sha256"]
+    # a fresh client over the same cache dir -> CACHE HIT is also tracked (no new fetch)
+    c2 = lg.EnsemblClient(tmp_path / "cache", fetcher=fetch)
+    r2 = c2.vep_hgvs("1:100A>T")
+    assert calls["n"] == 1 and r2["url"] in c2.accessed and c2.accessed[r2["url"]]["sha256"] == r["sha256"]
+
+
+def _ens_record(monkeypatch, tmp_path):
+    ens = tmp_path / "ens"
+    ens.mkdir()
+    monkeypatch.setattr(u, "ROOT", tmp_path)
+    monkeypatch.setattr(u, "ENS_CACHE", ens)
+    f = ens / "resp.json"
+    f.write_text('{"x":1}')
+    return ens, f, {"url": "https://rest.ensembl.org/vep/x", "cache_path": u._rel(f), "sha256": u.sha256_file(f)}
+
+
+def test_verify_ensembl_used_rejections_and_valid(monkeypatch, tmp_path):
+    ens, f, rec = _ens_record(monkeypatch, tmp_path)
+    assert u.verify_ensembl_used([rec], require_nonempty=True)[0] is True          # valid
+    # missing ledger (None) / non-list fail closed EVEN when not required
+    assert u.verify_ensembl_used(None, require_nonempty=False)[0] is False
+    assert u.verify_ensembl_used({"url": "u"}, require_nonempty=False)[0] is False  # non-list
+    assert u.verify_ensembl_used([], require_nonempty=True)[0] is False            # empty + variants processed
+    assert u.verify_ensembl_used([], require_nonempty=False)[0] is True            # empty tolerated when not required
+    assert u.verify_ensembl_used([{"url": "u"}], require_nonempty=False)[0] is False  # malformed record
+    # empty URL
+    assert u.verify_ensembl_used([{**rec, "url": "  "}], require_nonempty=False)[1] == "bad_url"
+    # non-string cache_path
+    assert u.verify_ensembl_used([{**rec, "cache_path": 5}], require_nonempty=False)[1] == "bad_cache_path"
+    # duplicate URL records
+    ok, reason = u.verify_ensembl_used([rec, dict(rec)], require_nonempty=False)
+    assert ok is False and "duplicate_url" in reason
+    # directory path (no IsADirectoryError)
+    d = {"url": "u2", "cache_path": u._rel(ens), "sha256": "0" * 64}
+    assert u.verify_ensembl_used([d], require_nonempty=False)[1].startswith("not_a_regular_file")
+    # tampered bytes -> sha mismatch; then missing file
+    f.write_text('{"x":2}')
+    assert u.verify_ensembl_used([rec], require_nonempty=False)[1].startswith("sha_mismatch")
+    f.unlink()
+    assert u.verify_ensembl_used([rec], require_nonempty=False)[1].startswith("not_a_regular_file")
+    # path traversal escaping ENS_CACHE
+    outside = tmp_path / "secret.json"
+    outside.write_text("s")
+    bad = {"url": "u3", "cache_path": u._rel(outside), "sha256": u.sha256_file(outside)}
+    ok, reason = u.verify_ensembl_used([bad], require_nonempty=False)
+    assert ok is False and "path_escapes_cache" in reason
+
+
+def test_ensembl_cache_hit_stale_sha_is_caught_by_verifier(tmp_path, monkeypatch):
+    import event_b.lossless_peptide_generation as lg
+    cache = tmp_path / "ens"
+    c1 = lg.EnsemblClient(cache, fetcher=lambda url: b'{"most_severe_consequence":"missense_variant"}')
+    r = c1.vep_hgvs("1:1A>T")
+    cached_file = cache / c1.accessed[r["url"]]["file"]
+    # cache-hit trusts the manifest SHA silently (does NOT re-hash) -> returns stale sha after tamper.
+    # Tamper with DIFFERENT-but-valid JSON so vep_hgvs still parses; the bytes (and true sha) now differ.
+    cached_file.write_text('{"most_severe_consequence":"synonymous_variant"}')
+    c2 = lg.EnsemblClient(cache, fetcher=lambda url: b'x')
+    r2 = c2.vep_hgvs("1:1A>T")
+    assert r2["sha256"] == r["sha256"]                    # stale sha (not re-hashed on the hit)
+    # but the freeze/unseal verifier RE-HASHES and catches the tamper
+    monkeypatch.setattr(u, "ROOT", tmp_path)
+    monkeypatch.setattr(u, "ENS_CACHE", cache)
+    rec = {"url": r["url"], "cache_path": u._rel(cached_file), "sha256": r["sha256"]}
+    assert u.verify_ensembl_used([rec], require_nonempty=True)[1].startswith("sha_mismatch")
+
+
+def test_unseal_missing_ensembl_ledger_with_variants_fails_closed(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    fd.mkdir()
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    (fd / "variants.csv").write_text("k\n1\n")
+    man = {"sha256": {"variants.csv": u.sha256_file(fd / "variants.csv")}, "arms": {}, "n_variants_pass": 5}
+    # input hashes stubbed OK; ledger field ABSENT -> must fail closed BEFORE labels
+    (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
+    monkeypatch.setattr(u, "verify_input_hashes", lambda m: (True, None, None))
+    monkeypatch.setattr(u.pd, "read_csv",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("read LABELS w/ missing ensembl ledger")))
+    out = u.unseal()
+    assert out["status"] == "ENSEMBL_USED_MISMATCH"
+
+
+def test_freeze_refuses_on_empty_ensembl_used_no_manifest(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    present = tmp_path / "present"
+    present.write_text("x")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (present,))
+    monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_git_tracked_clean", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_frozen_module_integrity", lambda: (True, {}))
+    monkeypatch.setattr(u, "HLA_JSON", tmp_path / "hla.json")
+    (tmp_path / "hla.json").write_text(json.dumps({"class_i_alleles": ["HLA-A*02:01"]}))
+    monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: present)
+    monkeypatch.setattr(u, "load_filtered_variants",
+                        lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True]}))   # 1 processed
+    monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
+    monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
+    uni = pd.DataFrame({"mutation_id": ["6:1:C:T"], "candidate_source": ["lossless_recovery"],
+                        "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"]})
+    monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], False, []))   # EMPTY used set
+    out = u.freeze()
+    assert out["status"] == "NOT_EVALUABLE" and "ensembl_used_issue" in out
     assert not (fd / "FREEZE_MANIFEST.json").exists()
 
 
