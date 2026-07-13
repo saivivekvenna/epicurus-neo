@@ -96,7 +96,8 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
     uni = pd.DataFrame({"patient_id": ["Hu_287"], "mutation_id": ["6:1:C:T"], "candidate_source": ["lossless_recovery"],
                         "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"],
                         "genuine_prime": [0.9], "epicurus": [0.5]})
-    monkeypatch.setattr(u, "build_universe", lambda v, h, t: (uni, [], False))
+    monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "NOT_ASSESSED"))
+    monkeypatch.setattr(u, "build_universe", lambda v, h, t, r: (uni, [], False))
     monkeypatch.setattr(u, "score_universe", lambda x: x)
     monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
     monkeypatch.setattr(u, "arm_selection", lambda uni, arm: pd.DataFrame(
@@ -147,12 +148,11 @@ def test_verify_frozen_hashes_detects_tamper(tmp_path):
 
 
 # ---- Fix 2: Epicurus el is NaN (NetMHCpan-EL unavailable; MixMHCpred is not a valid substitute) ------
-def test_score_universe_sets_el_nan(monkeypatch):
-    # stub PRIME so the test needs no binary; assert el is set to NaN (not mixmhcpred_rank)
+def test_score_universe_el_nan_and_presentation_from_mixmhcpred(monkeypatch):
+    # stub PRIME so the test needs no binary; el must be NaN, presentation must come from MixMHCpred rank
     class _Res:
         scored = pd.DataFrame({"peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"],
                                "prime_rank": [0.5], "mixmhcpred_rank": [0.3]})
-    monkeypatch.setattr(u, "score_universe", u.score_universe)  # keep ref
     import event_b.prime_adapter as pa
     import event_b.prime_transfer as pt
     monkeypatch.setattr(pa, "score_prime", lambda pairs, **k: _Res())
@@ -160,7 +160,105 @@ def test_score_universe_sets_el_nan(monkeypatch):
     uni = pd.DataFrame({"mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"], "expr": [5.0]})
     out = u.score_universe(uni)
     assert out["el"].isna().all()                       # el neutralized, NOT the MixMHCpred rank
-    assert "mixmhcpred_rank" in out.columns and out["mixmhcpred_rank"].iloc[0] == 0.3
+    # Fix 5: router presentation evidence wired from the real MixMHCpred %rank (not NetMHCpan-EL, not absent)
+    assert out["binding_percentile_rank"].iloc[0] == 0.3
+    assert "MixMHCpred" in out["binding_rank_provenance"].iloc[0]
+
+
+def test_class_i_length_filter_excludes_12_to_14mers():
+    uni = pd.DataFrame({"mutant_peptide": ["A" * n for n in (8, 9, 11, 12, 13, 14)],
+                        "mutation_id": ["m"] * 6, "candidate_source": ["lossless_recovery"] * 6})
+    filt, counts = u.filter_class_i_lengths(uni)
+    lens = sorted(filt["mutant_peptide"].str.len().unique())
+    assert lens == [8, 9, 11] and counts["post"] == 3 and counts["dropped_len_12_14"] == 3
+    assert (filt["mutant_peptide"].str.len() <= 11).all()   # 12-14mers never enter any arm
+
+
+def test_build_universe_true_gene_type_and_evidence(monkeypatch):
+    # stub VEP consequence + generator so no network is needed; assert schema fixes 6/7
+    monkeypatch.setattr(u, "classify_consequence", lambda c, ch, p, r, a: ("inframe", "inframe_deletion"))
+
+    class _Client:
+        def __init__(self, *a, **k):
+            pass
+
+    def _gen(variant, client, panel, **k):
+        cand = pd.DataFrame({"mutant_peptide": ["AAAAAAAAA"], "hla_allele": panel,
+                             "source_variant_type": ["SNV"]})      # generator mislabels non-frameshift SNV
+        return {"candidates": cand, "provenance": {"gene_symbol": "BRAF", "gene_id": "ENSG0.1"}, "windows": []}
+    import event_b.lossless_peptide_generation as lg
+    monkeypatch.setattr(lg, "EnsemblClient", _Client)
+    monkeypatch.setattr(lg, "generate_variant_candidates", _gen)
+    monkeypatch.setattr(u, "load_pvac_candidates", lambda: pd.DataFrame())
+    variants = pd.DataFrame({"key": ["7:1:A:ATG"], "chrom": ["7"], "pos": [1], "ref": ["A"], "alt": ["ATG"],
+                             "tumor_vaf": [0.4], "normal_vaf": [0.0], "tumor_dp": [50], "normal_dp": [40],
+                             "pass_filters": [True]})
+    rna = {"7:1:A:ATG": {"rna_alt_obs": 7, "rna_depth": 20, "rna_vaf": 0.35}}
+    uni, notes, has_pvac = u.build_universe(variants, ["HLA-A*02:01"], {"ENSG0": 12.3}, rna)
+    row = uni.iloc[0]
+    assert row["gene_symbol"] == "BRAF"                   # Fix 6: real gene, not blank
+    assert row["source_variant_type"] == "INFRAME"        # Fix 7: not mislabeled SNV
+    assert row["tumor_vaf"] == 0.4 and row["normal_dp"] == 40   # Fix 6: WES evidence propagated
+    assert row["rna_vaf"] == 0.35 and row["rna_alt_obs"] == 7   # RNA evidence attached
+    assert row["expr"] == 12.3 and not has_pvac
+
+
+def test_freeze_is_immutable_and_fails_closed(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    fd.mkdir()
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    # valid LOCK with matching derived hash -> ALREADY_FROZEN (never overwrite)
+    (fd / "variants.csv").write_text("k\n1\n")
+    man = {"LOCK": "FROZEN_NO_LABELS", "sha256": {"variants.csv": u.sha256_file(fd / "variants.csv")}, "arms": {}}
+    (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
+    assert u.freeze()["status"] == "ALREADY_FROZEN"
+    # corrupt lock -> fail closed, never overwrite
+    (fd / "FREEZE_MANIFEST.json").write_text("{not json")
+    assert u.freeze()["status"] == "FROZEN_CORRUPT"
+    # tampered derived file under a valid lock -> FROZEN_HASH_MISMATCH (not ALREADY_FROZEN, not overwrite)
+    (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
+    (fd / "variants.csv").write_text("k\n1\n2\n")
+    assert u.freeze()["status"] == "FROZEN_HASH_MISMATCH"
+
+
+def test_unseal_is_once_only(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    fd.mkdir()
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    (fd / "UNSEALED.json").write_text(json.dumps({"unsealed": True, "manifest_file_sha256": "abc"}))
+    # tripwire: if unseal reads LABELS after already-unsealed, fail
+    monkeypatch.setattr(u.pd, "read_csv",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("re-unseal read LABELS")))
+    out = u.unseal()
+    assert out["status"] == "ALREADY_UNSEALED"
+
+
+def test_verify_frozen_hashes_fails_closed_on_missing_file(tmp_path):
+    man = {"sha256": {"gone.csv": "deadbeef"}}                    # file does not exist
+    ok, bad = u.verify_frozen_hashes(man, tmp_path)
+    assert not ok and bad == "gone.csv"
+    assert u.verify_frozen_hashes({"sha256": "notadict"}, tmp_path)[0] is False   # malformed manifest
+
+
+def test_unseal_missing_frozen_file_is_hash_mismatch_no_label_read(monkeypatch, tmp_path):
+    fd = tmp_path / "freeze"
+    fd.mkdir()
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    # manifest references a derived file that is absent -> HASH_MISMATCH, and LABELS is never read
+    man = {"sha256": {"variants.csv": "deadbeef"}, "arms": {}, "input_sha256": {}}
+    (fd / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
+    monkeypatch.setattr(u.pd, "read_csv",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("unseal read LABELS on bad hash")))
+    out = u.unseal()
+    assert out["status"] == "HASH_MISMATCH" and out["file"] == "variants.csv"
+
+
+def test_rna_alt_snv_counts_indel_not_assessed(monkeypatch, tmp_path):
+    # no BAM -> NOT_ASSESSED status (never fabricated)
+    monkeypatch.setattr(u, "RNA_BAM", tmp_path / "absent.bam")
+    got, status = u.rna_alt_evidence(pd.DataFrame({"key": [], "chrom": [], "pos": [], "ref": [], "alt": [],
+                                                   "pass_filters": []}))
+    assert got == {} and "NOT_ASSESSED" in status
 
 
 def test_freeze_manifest_discloses_el_and_pvac(tmp_path, monkeypatch):

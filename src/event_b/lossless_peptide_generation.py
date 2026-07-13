@@ -432,6 +432,7 @@ def generate_variant_candidates(
         "hgvsc": selected["hgvsc"],
         "hgvsp": selected["hgvsp"],
         "gene_id": selected["gene_id"],
+        "gene_symbol": selected.get("gene_symbol", ""),   # exposed for downstream schema (additive)
         "ensembl": {"vep": {"url": vep["url"], "sha256": vep["sha256"]}},
     }
 

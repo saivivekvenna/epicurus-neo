@@ -79,10 +79,13 @@ FOUR_ARMS: list[ArmSpec] = [
 
 
 def arm_requirements(arm: ArmSpec) -> tuple[str, ...]:
-    """Input requirement keys for an arm. Missing any -> NOT_EVALUABLE."""
-    reqs = [REQ_LABELS, REQ_PVAC]
-    if arm.generation == "lossless_union":
-        reqs.append(REQ_LOSSLESS)
+    """Input requirement keys for an arm. Missing any -> NOT_EVALUABLE.
+
+    Every arm needs labels (only at evaluation). Generation dictates the source: the pVAC arm needs
+    genuine pVAC candidates; lossless-union arms need the lossless generation and must NOT require pVAC
+    (a missing genuine-pVAC run makes ONLY pvac_prime NOT_EVALUABLE, never the lossless arms)."""
+    reqs = [REQ_LABELS]
+    reqs.append(REQ_PVAC if arm.generation == "pvac" else REQ_LOSSLESS)
     reqs.append(REQ_PRIME if arm.scorer == "genuine_prime" else REQ_EPICURUS)
     if arm.selection == "route_aware":
         reqs.append(REQ_ROUTER)

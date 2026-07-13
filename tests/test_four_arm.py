@@ -70,6 +70,18 @@ def test_eligibility_requirements_and_not_evaluable():
     assert REQ_EPICURUS in arm_requirements(FOUR_ARMS[2])
 
 
+def test_no_pvac_run_only_disables_pvac_arm():
+    # harness bug fix: absence of a genuine pVAC run must NOT disable the lossless arms
+    assert REQ_PVAC not in arm_requirements(FOUR_ARMS[1])         # lossless_prime
+    assert REQ_PVAC not in arm_requirements(FOUR_ARMS[2])         # lossless_epicurus
+    assert REQ_PVAC not in arm_requirements(FOUR_ARMS[3])         # full_epicurus
+    assert REQ_PVAC in arm_requirements(FOUR_ARMS[0])             # only pvac_prime needs it
+    avail = {REQ_LABELS, REQ_LOSSLESS, REQ_PRIME, REQ_EPICURUS, REQ_ROUTER}   # no REQ_PVAC (no pVAC run)
+    elig = evaluate_eligibility(avail)
+    assert elig["pvac_prime"].evaluable is False and REQ_PVAC in elig["pvac_prime"].missing
+    assert elig["lossless_prime"].evaluable and elig["lossless_epicurus"].evaluable and elig["full_epicurus"].evaluable
+
+
 # ---- additive stage attribution ---------------------------------------------------------------------
 def test_stage_attribution_is_additive():
     def r(arm, hits):
