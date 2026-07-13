@@ -646,8 +646,10 @@ def main(argv=None) -> int:
         m = freeze()
         print("FREEZE:", m.get("LOCK", m.get("status")), "| universe rows", m.get("n_universe_rows"),
               "| pvac", m.get("genuine_pvac_lane"), "| arms",
-              {a: (v["n_selected"], v["evaluable"]) for a, v in m.get("arms", {}).items()})
-        return 0
+              {a: (v.get("n_selected"), v.get("evaluable")) for a, v in (m.get("arms") or {}).items()})
+        # exit 0 ONLY for a newly written lock or an already-frozen lock; every failure exits nonzero
+        ok = m.get("LOCK") == "FROZEN_NO_LABELS" or m.get("status") == "ALREADY_FROZEN"
+        return 0 if ok else 1
     if cmd == "unseal":
         o = unseal()
         if o.get("status"):

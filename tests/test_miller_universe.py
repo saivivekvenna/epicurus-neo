@@ -522,6 +522,21 @@ def test_freeze_refuses_on_empty_ensembl_used_no_manifest(monkeypatch, tmp_path)
     assert not (fd / "FREEZE_MANIFEST.json").exists()
 
 
+def test_main_freeze_exit_codes(monkeypatch, capsys):
+    # exit 0 only for a new valid LOCK or ALREADY_FROZEN; every failure exits nonzero (diagnostic preserved)
+    monkeypatch.setattr(u, "freeze", lambda: {"LOCK": "FROZEN_NO_LABELS", "n_universe_rows": 5, "arms": {}})
+    assert u.main(["freeze"]) == 0
+    monkeypatch.setattr(u, "freeze", lambda: {"status": "ALREADY_FROZEN", "arms": {}})
+    assert u.main(["freeze"]) == 0
+    for bad in ({"status": "NOT_EVALUABLE", "missing_inputs": ["x"]}, {"status": "FROZEN_CORRUPT"},
+                {"status": "FROZEN_HASH_MISMATCH"}, {"status": "FROZEN_INPUT_HASH_MISMATCH"},
+                {"status": "NOT_EVALUABLE", "tool_commit_issue": {}}, {"status": "NOT_EVALUABLE", "git_tracking_issue": {}},
+                {"status": "NOT_EVALUABLE", "frozen_module_issue": {}}, {"status": "NOT_EVALUABLE", "ensembl_used_issue": "x"}):
+        monkeypatch.setattr(u, "freeze", lambda bad=bad: bad)
+        assert u.main(["freeze"]) == 1
+    assert "FREEZE:" in capsys.readouterr().out            # diagnostic print preserved
+
+
 def test_unseal_is_once_only(monkeypatch, tmp_path):
     fd = tmp_path / "freeze"
     fd.mkdir()
