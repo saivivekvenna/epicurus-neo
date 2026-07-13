@@ -537,6 +537,9 @@ def freeze() -> dict:
     hla_panel = json.loads(HLA_JSON.read_text())["class_i_alleles"]
     norm_vcf = normalize_pass_vcf(PASS_VCF, REF, NORM_VCF)     # bcftools norm indels vs exact FASTA
     variants = load_filtered_variants(norm_vcf)
+    for col in ("pass_filters", "strict5_pass"):             # strict5_pass endpoint is REQUIRED (prereg §3.1)
+        if col not in variants.columns:                      # fail CLOSED, no manifest written
+            return {"status": "NOT_EVALUABLE", "missing_variant_column": col}
     rna_by_key, rna_status = rna_alt_evidence(variants)       # RNA BAM guaranteed present (source preflight)
     uni, notes, has_pvac, ensembl_used = build_universe(variants, hla_panel, gene_tpm_by_ensg(QUANT), rna_by_key)
     n_processed = int(variants["pass_filters"].sum())
@@ -577,7 +580,7 @@ def freeze() -> dict:
                 "indel_normalization": "bcftools norm -f GRCh38.fa -m-any (left-align+split) before enumeration",
                 "class_i_length_filter": length_counts, "rna_alt_evidence_status": rna_status,
                 "n_variants_pass": int(variants["pass_filters"].sum()), "n_universe_rows": int(len(uni)),
-                "n_variants_pass_strict5": int(variants["strict5_pass"].sum()) if "strict5_pass" in variants.columns else 0,  # prereg §3.1 legacy sensitivity view
+                "n_variants_pass_strict5": int(variants["strict5_pass"].sum()),   # prereg §3.1 legacy sensitivity view (column required above)
                 "base_filter_policy": "prereg §3.1 (2026-07-12): Mutect2 PASS + normal VAF<=0.05 + depth>=10 both "
                                       "+ tumor alt-reads>=3; tumor VAF = continuous annotation (NOT a gate)",
                 "not_enumerable": notes, "arms": arms_meta, "sha256": hashes,
@@ -631,16 +634,18 @@ def unseal() -> dict:
                                        require_nonempty=int(man.get("n_variants_pass", 0)) > 0)
     if not eok:                                          # recheck every recorded Ensembl response too
         return {"status": "ENSEMBL_USED_MISMATCH", "reason": ereason}
+    variants = pd.read_csv(FREEZE_DIR / "variants.csv")   # load + validate frozen universe BEFORE any label read
+    for col in ("key", "pass_filters", "strict5_pass"):   # strict5_pass is a PREREGISTERED endpoint -> required
+        if col not in variants.columns:                   # fail CLOSED (no label opened) if the column is absent
+            return {"status": "VARIANTS_COLUMN_MISSING", "column": col}
     labels = pd.read_csv(LABELS)                          # <-- the ONLY label read
     lab = labels[labels["patient_id"] == "Hu_287"].copy()
     lab["key"] = [variant_key(c, p, r, a) for c, p, r, a in zip(lab["chrom"], lab["pos"], lab["ref"], lab["alt"])]
     recognized = set(lab.loc[lab["label"] == "POSITIVE", "key"])
-    variants = pd.read_csv(FREEZE_DIR / "variants.csv")
     called = set(variants["key"])
     called_pass = set(variants.loc[variants["pass_filters"], "key"])
     # prereg §3.1 legacy strict-5% SENSITIVITY view — derived from the SAME frozen universe (annotation-based)
-    called_pass_strict5 = (set(variants.loc[variants["strict5_pass"], "key"])
-                           if "strict5_pass" in variants.columns else set())
+    called_pass_strict5 = set(variants.loc[variants["strict5_pass"], "key"])
     reach = {"n_recognized_mutations": len(recognized),
              "reachability_called": len(recognized & called),
              "reachability_called_and_passed": len(recognized & called_pass),

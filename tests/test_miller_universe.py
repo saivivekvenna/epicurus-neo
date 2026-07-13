@@ -68,7 +68,8 @@ def test_load_filtered_variants_membership_and_independent_strict5(monkeypatch):
         _Rec("6", 200, "A", "G", {"AD": (525, 16)}, (289, 0)),   # VAF .030, alt 16  -> PASS, NOT strict5 [new only]
         _Rec("6", 300, "T", "C", {"AD": (38, 2)}, (300, 0)),     # VAF .05,  alt 2   -> FAIL, strict5 TRUE [legacy only]
         _Rec("6", 400, "T", "C", {"AD": (40, 30)}, (10, 5)),     # normal VAF .333   -> FAIL both         [neither]
-        _Rec("6", 500, "G", "A", {"DP": 60, "AF": (0.4,)}, (300, 0)),  # AD absent -> gate fails closed   [neither]
+        _Rec("6", 500, "G", "A", {"DP": 60, "AF": (0.4,)}, (300, 0)),  # AD absent -> primary FAIL (closed),
+        #                                                                 legacy TRUE via AF/DP VAF .40   [legacy only]
     ]
 
     class _VF:
@@ -85,7 +86,7 @@ def test_load_filtered_variants_membership_and_independent_strict5(monkeypatch):
     assert list(df["pass_filters"]) == [True, True, False, False, False]   # membership; AD-absent fails closed
     assert list(df["strict5_pass"]) == [True, False, True, False, True]    # INDEPENDENT legacy predicate
     # divergence BOTH ways proves strict5 is not a subset of pass_filters (audit correction):
-    assert int((df["strict5_pass"] & ~df["pass_filters"]).sum()) == 2     # legacy-only rows (5%-VAF, low alt)
+    assert int((df["strict5_pass"] & ~df["pass_filters"]).sum()) == 2     # legacy-only: low-alt 5%-VAF + AD-absent
     assert int((df["pass_filters"] & ~df["strict5_pass"]).sum()) == 1     # new-only row (subclonal, well-supported)
 
 
@@ -149,7 +150,7 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
     monkeypatch.setattr(u, "ART", tmp_path / "art")
     monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: pv)
     monkeypatch.setattr(u, "load_filtered_variants",
-                        lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True]}))
+                        lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True], "strict5_pass": [True]}))
     uni = pd.DataFrame({"patient_id": ["Hu_287"], "mutation_id": ["6:1:C:T"], "candidate_source": ["lossless_recovery"],
                         "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"],
                         "genuine_prime": [0.9], "epicurus": [0.5]})
@@ -177,6 +178,30 @@ def test_freeze_never_reads_labels_on_success(monkeypatch, tmp_path):
     assert m["LOCK"] == "FROZEN_NO_LABELS" and m["labels_opened"] is False
 
 
+def test_freeze_not_evaluable_when_strict5_column_missing_no_manifest(monkeypatch, tmp_path):
+    # prereg §3.1: strict5_pass is a required preregistered endpoint; its absence fails CLOSED (no manifest)
+    for name in ("PASS_VCF", "QUANT", "HLA_JSON", "REF"):
+        p = tmp_path / name
+        p.write_text("x")
+        monkeypatch.setattr(u, name, p)
+    (tmp_path / "HLA_JSON").write_text(json.dumps({"class_i_alleles": ["HLA-A*02:01"]}))
+    fd = tmp_path / "freeze"
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    monkeypatch.setattr(u, "ART", tmp_path / "art")
+    sfile = tmp_path / "srcfile"
+    sfile.write_text("code")
+    monkeypatch.setattr(u, "_source_inputs", lambda: (sfile,))
+    monkeypatch.setattr(u, "verify_tool_commits", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_git_tracked_clean", lambda: (True, {}))
+    monkeypatch.setattr(u, "verify_frozen_module_integrity", lambda: (True, {}))
+    monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: pv)
+    monkeypatch.setattr(u, "load_filtered_variants",
+                        lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True]}))  # strict5_pass ABSENT
+    out = u.freeze()
+    assert out["status"] == "NOT_EVALUABLE" and out["missing_variant_column"] == "strict5_pass"
+    assert not (fd / "FREEZE_MANIFEST.json").exists()     # fail-closed: no manifest written
+
+
 # ---- Fix A: unseal reports null (not 0) for NOT_EVALUABLE arms ---------------------------------------
 def test_unseal_reports_null_for_non_evaluable_arm(monkeypatch, tmp_path):
     # craft a frozen dir with one evaluable + one non-evaluable arm + a tiny labels file
@@ -185,7 +210,7 @@ def test_unseal_reports_null_for_non_evaluable_arm(monkeypatch, tmp_path):
     monkeypatch.setattr(u, "FREEZE_DIR", fd)
     monkeypatch.setattr(u, "ART", tmp_path / "art")
     (tmp_path / "art").mkdir()
-    (fd / "variants.csv").write_text("key,pass_filters\n6:1:C:T,True\n")
+    (fd / "variants.csv").write_text("key,pass_filters,strict5_pass\n6:1:C:T,True,True\n")
     (fd / "select_lossless_prime.csv").write_text("mutation_id\n6:1:C:T\n")
     (fd / "select_pvac_prime.csv").write_text("mutation_id\n")
     data_files = ("variants.csv", "select_lossless_prime.csv", "select_pvac_prime.csv")
@@ -316,7 +341,7 @@ def test_freeze_not_evaluable_when_pvac_inputs_missing_no_manifest(monkeypatch, 
     # genuine_pvac_lane True but the pVAC CSV/provenance are absent -> _all_inputs includes them -> refuse
     monkeypatch.setattr(u, "_all_inputs", lambda has_pvac: (present, tmp_path / "pvac.csv") if has_pvac else (present,))
     monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: present)
-    monkeypatch.setattr(u, "load_filtered_variants", lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True]}))
+    monkeypatch.setattr(u, "load_filtered_variants", lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True], "strict5_pass": [True]}))
     monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
     uni = pd.DataFrame({"patient_id": ["Hu_287"], "mutation_id": ["6:1:C:T"], "candidate_source": ["pvac"],
                         "mutant_peptide": ["AAAAAAAAA"], "hla_allele": ["HLA-A*02:01"], "genuine_prime": [0.9], "epicurus": [0.5]})
@@ -569,7 +594,7 @@ def test_freeze_refuses_on_empty_ensembl_used_no_manifest(monkeypatch, tmp_path)
     (tmp_path / "hla.json").write_text(json.dumps({"class_i_alleles": ["HLA-A*02:01"]}))
     monkeypatch.setattr(u, "normalize_pass_vcf", lambda pv, ref, out: present)
     monkeypatch.setattr(u, "load_filtered_variants",
-                        lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True]}))   # 1 processed
+                        lambda p: pd.DataFrame({"key": ["6:1:C:T"], "pass_filters": [True], "strict5_pass": [True]}))   # 1 processed
     monkeypatch.setattr(u, "rna_alt_evidence", lambda v, rna_bam=None: ({}, "COMPUTED"))
     monkeypatch.setattr(u, "gene_tpm_by_ensg", lambda q: {})
     uni = pd.DataFrame({"mutation_id": ["6:1:C:T"], "candidate_source": ["lossless_recovery"],
@@ -659,6 +684,24 @@ def test_unseal_fails_closed_on_incomplete_input_hashes_no_label_read(monkeypatc
                         lambda *a, **k: (_ for _ in ()).throw(AssertionError("unseal read LABELS on incomplete inputs")))
     out = u.unseal()
     assert out["status"] == "INPUT_HASH_INCOMPLETE_OR_MISMATCH"    # derived hashes OK, input gate fails closed
+
+
+def test_unseal_fails_closed_when_strict5_column_missing_no_label_read(monkeypatch, tmp_path):
+    # prereg §3.1: unseal requires strict5_pass in the frozen variants.csv; absence fails closed WITHOUT opening LABELS
+    fd = tmp_path / "freeze"
+    fd.mkdir()
+    monkeypatch.setattr(u, "FREEZE_DIR", fd)
+    (fd / "variants.csv").write_text("key,pass_filters\n6:1:C:T,True\n")   # strict5_pass ABSENT
+    (fd / "FREEZE_MANIFEST.json").write_text(json.dumps({"sha256": {}, "arms": {}, "input_sha256": {}}))
+    monkeypatch.setattr(u, "verify_frozen_hashes", lambda man, freeze_dir=fd: (True, None))
+    monkeypatch.setattr(u, "verify_input_hashes", lambda man: (True, None, None))
+    monkeypatch.setattr(u, "verify_ensembl_used", lambda records, require_nonempty: (True, None))
+    real = u.pd.read_csv
+    monkeypatch.setattr(u.pd, "read_csv",
+                        lambda f, *a, **k: (_ for _ in ()).throw(AssertionError("unseal opened LABELS"))
+                        if str(f) == str(u.LABELS) else real(f, *a, **k))
+    out = u.unseal()
+    assert out["status"] == "VARIANTS_COLUMN_MISSING" and out["column"] == "strict5_pass"
 
 
 def test_rna_alt_snv_counts_indel_not_assessed(monkeypatch, tmp_path):
