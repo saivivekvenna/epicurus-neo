@@ -29,6 +29,8 @@ POLICY = ROOT / "configs/frozen/evidence_router_v1.json"
 HU_UNIVERSE = ROOT / "data/raw/miller_ipv/hu_287/freeze/universe.csv"
 HU_LABELS = ROOT / "data/raw/miller_ipv/miller_recognition_labels.csv"
 SID_UNIVERSE = ROOT / "artifacts/milestone_7_decision/sid_benchmark/scored_candidates.csv.gz"
+RUNNER_CODE = ROOT / "scripts/portfolio_generalization_benchmark.py"
+SELECTION_CODE = ROOT / "src/benchmark/portfolio_generalization.py"
 
 
 def _sha256(path: Path) -> str:
@@ -98,6 +100,10 @@ def main() -> int:
         "status": "FROZEN_BEFORE_LABEL_JOIN",
         "protocol": "PROTOCOL.md",
         "policy_sha256": _sha256(POLICY),
+        "code_sha256": {
+            str(RUNNER_CODE.relative_to(ROOT)): _sha256(RUNNER_CODE),
+            str(SELECTION_CODE.relative_to(ROOT)): _sha256(SELECTION_CODE),
+        },
         "inputs": {},
         "primary_k20_cap2": {},
         "k_sensitivity_cap2": {},
