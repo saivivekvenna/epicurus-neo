@@ -21,14 +21,22 @@ samtools view -b "$NBAM" "$REGION" 2>>"$LOG" \
 NPAIR=$(( $(wc -l < "$OUT/hla_1.fq") / 4 ))
 if [ "$NPAIR" -le 0 ]; then say "FAIL-CLOSED: 0 read pairs extracted from $REGION (aborting; not running OptiType)"; exit 1; fi
 say "OptiType (DNA) on $NPAIR read pairs"
+GLPK_VERSION="$("$MM" run -n hla glpsol --version | head -1)"
+"$ROOT/.venv/bin/python" - "$GLPK_VERSION" <<'PY'
+import re, sys
+m = re.search(r"(?:v|Solver )([0-9]+)\.([0-9]+)", sys.argv[1])
+if not m or (int(m.group(1)), int(m.group(2))) < (4, 58):
+    raise SystemExit(f"FAIL-CLOSED: OptiType requires GLPK >=4.58; found {sys.argv[1]!r}")
+PY
+say "GLPK solver: $GLPK_VERSION"
 rm -rf "$OUT/optitype"; mkdir -p "$OUT/optitype"
 "$MM" run -n hla OptiTypePipeline.py --dna -i "$OUT/hla_1.fq" "$OUT/hla_2.fq" \
      --outdir "$OUT/optitype" 2>>"$LOG"
 RES="$(find "$OUT/optitype" -name "*_result.tsv" | head -1)"
 say "OptiType result: $RES"
-"$ROOT/.venv/bin/python" - "$RES" "$PROV/HLA_PROVENANCE.json" <<'PY'
+"$ROOT/.venv/bin/python" - "$RES" "$PROV/HLA_PROVENANCE.json" "$GLPK_VERSION" <<'PY'
 import sys, json, csv
-res, out = sys.argv[1], sys.argv[2]
+res, out, glpk_version = sys.argv[1], sys.argv[2], sys.argv[3]
 row = list(csv.DictReader(open(res), delimiter="\t"))[0]
 def norm(a):
     a = str(a).strip()
@@ -36,6 +44,7 @@ def norm(a):
 alleles = sorted({x for x in (norm(row.get(k)) for k in ("A1","A2","B1","B2","C1","C2")) if x})
 json.dump({"patient_id": "Hu_287", "isolation": "LOCKED_TEST: no label read",
            "tool": "OptiType (bioconda osx-64 via micromamba/Rosetta)",
+           "solver": glpk_version,
            "source": "normal exome MHC-region reads -> razers3 -> OptiType",
            "class_i_alleles": alleles, "raw": row}, open(out, "w"), indent=2)
 print("HLA class-I:", alleles)
