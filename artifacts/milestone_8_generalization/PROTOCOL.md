@@ -93,3 +93,24 @@ Before final held-out labels are loaded, commit:
 Final verdict vocabulary: `GENERALIZES`, `TIES_PRIME`, `DOES_NOT_GENERALIZE`, or
 `NOT_EVALUABLE`. With only six final patients, all claims remain retrospective
 research evidence rather than clinical validation.
+
+## Executable label-isolation gate
+
+The protocol is enforced by `scripts/miller_generalization_eval.py`. Its two
+read-only preflight commands re-hash every frozen input, output, historical code
+blob, product selection, and ordered candidate list without reading outcomes.
+
+```text
+PYTHONPATH=src .venv/bin/python -m scripts.miller_generalization_eval preflight-calibration
+PYTHONPATH=src .venv/bin/python -m scripts.miller_generalization_eval calibrate
+PYTHONPATH=src .venv/bin/python -m scripts.miller_generalization_eval preflight-final
+PYTHONPATH=src .venv/bin/python -m scripts.miller_generalization_eval finalize
+```
+
+`calibrate` and `finalize` each create a durable exclusive unseal claim before
+their sole label-file read. If a process crashes after that boundary, rerunning
+fails closed instead of reopening labels. A selectable policy and genuine PRIME
+must both be evaluable on all six relevant patients; partial-cohort averages do
+not qualify. The calibration lock pins the exact split, evaluator/CLI bytes,
+arm registry, selection objective, per-patient freeze manifests, calibration
+result, and recomputed winning policy.
