@@ -1,0 +1,15 @@
+{
+  "patient_id": "Hu_159",
+  "label_columns_read": [],
+  "runs": {
+    "normal_exome": "SRR24836195",
+    "tumor_exome": "SRR24836187",
+    "tumor_rna": "SRR24836176"
+  },
+  "raw_dir": "/Users/saivivekvenna/conductor/repos/epicurus-neo/data/raw/miller_ipv/hu_159",
+  "artifact_dir": "/Users/saivivekvenna/conductor/repos/epicurus-neo/artifacts/milestone_8_generalization/patients/Hu_159",
+  "sample_names": {
+    "normal": "Hu_159_N",
+    "tumor": "Hu_159_T"
+  }
+}
