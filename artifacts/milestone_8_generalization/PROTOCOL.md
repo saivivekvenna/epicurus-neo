@@ -2,6 +2,13 @@
 
 **Locked before any additional Miller patient reconstruction or outcome join.**
 
+> **Protocol deviation (2026-07-13):** a broad metadata search accidentally
+> opened the recognition-label file and exposed calibration rows before all six
+> calibration freezes existed. See
+> `LABEL_ISOLATION_INCIDENT_2026-07-13.md`. Calibration is consequently
+> development evidence with an early-unseal deviation. The six final-held-out
+> IDs were not queried and remain the only clean generalization evaluation.
+
 ## Objective
 
 Build one patient-agnostic end-to-end Epicurus policy that generalizes across
