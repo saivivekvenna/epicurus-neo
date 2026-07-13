@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Miller Hu_287 — class-I HLA typing (OptiType) from the NORMAL exome (frozen prereg §2).
+# Miller patient — class-I HLA typing (OptiType) from the NORMAL exome (frozen prereg §2).
 # LOCKED_TEST: no recognition label read. Waits for the normal BAM, extracts MHC-region reads, runs OptiType.
 #
 # Usage:
@@ -10,9 +10,15 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"
 export MAMBA_ROOT_PREFIX="$ROOT/data/raw/tools/micromamba"
 MM="$ROOT/data/raw/tools/bin/micromamba"
-OUT="$ROOT/data/raw/miller_ipv/hu_287/hla"; mkdir -p "$OUT"
-PROV="$ROOT/artifacts/milestone_7_decision/external_validation/miller_ipv/hu_287_reconstruction"
-NBAM="$ROOT/data/raw/miller_ipv/hu_287/somatic/Hu_287_N.md.bam"
+PATIENT_ID="${PATIENT_ID:-Hu_287}"
+PATIENT_SLUG="$(printf '%s' "$PATIENT_ID" | tr '[:upper:]' '[:lower:]')"
+OUT="$ROOT/data/raw/miller_ipv/$PATIENT_SLUG/hla"; mkdir -p "$OUT"
+if [[ "$PATIENT_ID" = "Hu_287" ]]; then
+  PROV="$ROOT/artifacts/milestone_7_decision/external_validation/miller_ipv/hu_287_reconstruction"
+else
+  PROV="$ROOT/artifacts/milestone_8_generalization/patients/$PATIENT_ID"
+fi
+NBAM="$ROOT/data/raw/miller_ipv/$PATIENT_SLUG/somatic/${PATIENT_ID}_N.md.bam"
 HLA1="$OUT/hla_1.fq"; HLA2="$OUT/hla_2.fq"
 REGION="6:29800000-33600000"                     # GRCh38 (Ensembl contig '6') MHC region — HYPHEN (samtools)
 LOG="$OUT/run.log"
@@ -29,11 +35,11 @@ write_provenance(){
   GLPK_PKG="$("$MM" list -n hla 2>/dev/null | awk 'tolower($1)=="glpk"{print $2" "$3; exit}')"
   RAZERS_PKG="$("$MM" list -n hla 2>/dev/null | awk 'tolower($1)=="razers3"{print $2" "$3; exit}')"
   "$ROOT/.venv/bin/python" - "$RES" "$PROV/HLA_PROVENANCE.json" "$ROOT" "$REGION" \
-      "$NBAM" "$HLA1" "$HLA2" "$GLPK" "$MM_VERSION" "$OPTITYPE_PKG" "$GLPK_PKG" "$RAZERS_PKG" <<'PY'
+      "$NBAM" "$HLA1" "$HLA2" "$GLPK" "$MM_VERSION" "$OPTITYPE_PKG" "$GLPK_PKG" "$RAZERS_PKG" "$PATIENT_ID" <<'PY'
 import sys, json, csv, os, hashlib
 from pathlib import Path
 (res, out, root, region, nbam, hla1, hla2, glpk_solver,
- mm_version, optitype_pkg, glpk_pkg, razers_pkg) = sys.argv[1:13]
+ mm_version, optitype_pkg, glpk_pkg, razers_pkg, patient_id) = sys.argv[1:14]
 
 def sha256(p, chunk=1 << 20):
     h = hashlib.sha256()
@@ -61,7 +67,7 @@ files = {"normal_md_bam": rec(nbam), "normal_md_bam_index": rec(nbam + ".bai"),
          "hla_fastq_1": rec(hla1), "hla_fastq_2": rec(hla2), "optitype_result_tsv": rec(res)}
 
 doc = {
-    "patient_id": "Hu_287",
+    "patient_id": patient_id,
     "isolation": "LOCKED_TEST: no label read",
     "tool": "OptiType (bioconda osx-64 via micromamba/Rosetta)",
     "solver": glpk_solver,

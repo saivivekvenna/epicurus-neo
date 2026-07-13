@@ -174,13 +174,13 @@ def summarize_quant(sf_path) -> dict:
             "top10_genes_tpm": {str(k): round(float(v), 2) for k, v in g.head(10).items()}}
 
 
-def quant_rna(fqdir: Path, outdir: Path, threads: int = 4) -> dict:
+def quant_rna(fqdir: Path, outdir: Path, threads: int = 4, rna_run: str = RNA_RUN) -> dict:
     """salmon quant on the tumor-RNA FASTQ -> gene TPM. RUNNABLE input only (no labels, no variants)."""
     if shutil.which("salmon") is None:
         return {"status": "NOT_EVALUABLE", "reason": "salmon absent"}
     if not SALMON_INDEX.exists():
         return {"status": "NOT_EVALUABLE", "reason": f"salmon index missing at {SALMON_INDEX}"}
-    r1, r2 = fqdir / f"{RNA_RUN}_1.fastq", fqdir / f"{RNA_RUN}_2.fastq"
+    r1, r2 = fqdir / f"{rna_run}_1.fastq", fqdir / f"{rna_run}_2.fastq"
     if not (r1.exists() and r2.exists()):
         return {"status": "NOT_EVALUABLE", "reason": "RNA FASTQ missing (run convert first)"}
     outdir.mkdir(parents=True, exist_ok=True)
