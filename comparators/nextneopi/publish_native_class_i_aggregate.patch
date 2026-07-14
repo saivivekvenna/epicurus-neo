@@ -1,0 +1,37 @@
+diff --git a/nextNEOpi.nf b/nextNEOpi.nf
+index 9862c39..379ed85 100644
+--- a/nextNEOpi.nf
++++ b/nextNEOpi.nf
+@@ -5671,6 +5671,11 @@ process 'pVACseq' {
+ 
+     label 'pVACtools'
+ 
++    // Benchmark instrumentation only: publish pVACtools' native mutation-level
++    // aggregate without changing any nextNEOpi or pVACtools computation.
++    publishDir "$params.outputDir/comparator_native/${meta.sampleName}/", mode: publishDirMode,
++        pattern: "*.all_epitopes.aggregated.tsv"
++
+     input:
+     tuple(
+         val(meta),
+@@ -5698,6 +5703,11 @@ process 'pVACseq' {
+         path(pvacseq_class_II_out)
+     ) optional true into mhcII_out_f
+ 
++    tuple(
++        val(meta),
++        path(pvacseq_class_I_aggregate)
++    ) optional true into native_class_I_aggregate_f
++
+ 
+     script:
+     def hla_type = (hla_types - ~/\n/)
+@@ -5732,6 +5742,8 @@ process 'pVACseq' {
+ 
+     pvacseq_class_I_out = [ "MHC_Class_I/" + meta.sampleName + "_tumor_" + hla_type + ".filtered.tsv",
+                             "MHC_Class_I/" + meta.sampleName + "_tumor_" + hla_type + ".all_epitopes.tsv"]
++    pvacseq_class_I_aggregate = "MHC_Class_I/" + meta.sampleName +
++                                "_tumor.all_epitopes.aggregated.tsv"
+     pvacseq_class_II_out = [ "MHC_Class_II/" + meta.sampleName + "_tumor_" + hla_type + ".filtered.tsv",
+                              "MHC_Class_II/" + meta.sampleName + "_tumor_" + hla_type + ".all_epitopes.tsv"]
+ 
