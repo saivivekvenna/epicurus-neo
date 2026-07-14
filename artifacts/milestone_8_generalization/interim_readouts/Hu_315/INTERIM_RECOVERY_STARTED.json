@@ -1,0 +1,27 @@
+{
+  "CLAIM": "IMMUTABLE_CALIBRATION_INTERIM_RECOVERY_STARTED",
+  "patient_id": "Hu_315",
+  "labels_opened": false,
+  "policy_selection_allowed": false,
+  "first_claim_sha256": "3b634658d2cc20dd361c1013307efabf9f678cc5d58c1ae35597a86168afd53f",
+  "first_failure_sha256": "3b65a7504114d7bd7a2475d5ca34d42a27dc6d34c68d857e601c48f9babb4b89",
+  "recovery_addendum": {
+    "path": "artifacts/milestone_8_generalization/HU_315_INTERIM_RECOVERY_ADDENDUM_2026-07-13.md",
+    "sha256": "e5c4eb00792ca81087acd0a78e7875835f6f39c0d0b10c7af2a81a9656137ba0"
+  },
+  "corrected_evaluator": {
+    "path": "scripts/miller_interim_readout.py",
+    "sha256": "6d17f17a0cd71060b8206394ee1857dca9d34488975fc7983422b78800fc4c2f",
+    "git_commit": "e413914ae3db29f60881e9706ca7f1515586cec6"
+  },
+  "freeze_manifest_sha256": "09cfd024cfad633ffa9a36b12c506df36cd90568def7f48ef89d878cf6b3abf9",
+  "registered_arms": [
+    "shipped_epicurus_product",
+    "epicurus_plain",
+    "epicurus_mutation_cap1",
+    "prime_plain",
+    "prime_mutation_cap1",
+    "rank_fusion_cap1",
+    "evidence_lane_portfolio"
+  ]
+}
