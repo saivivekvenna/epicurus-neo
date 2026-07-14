@@ -15,10 +15,10 @@
   },
   "instrumentation_patch": {
     "path": "comparators/nextneopi/publish_native_class_i_aggregate.patch",
-    "sha256": "3a01cb41f7400f70e2319ac9dab4fc45443f6bdc928dba5e3ebed5246ebc4456",
+    "sha256": "c43b3fb9aa56b29a45ebbedca4b78e823898dba638621c04c9958e939ed187fa",
     "git_apply_check": true,
     "changes_computation": false,
-    "purpose": "publish the native pVACtools class-I mutation aggregate used for deterministic top-20 freezing"
+    "purpose": "publish the native pVACtools class-I mutation aggregate plus the exact pVACseq input VCF and index used for canonical mutation mapping"
   },
   "official_input_contract_confirmed": {
     "sample_types": ["tumor_DNA", "normal_DNA", "tumor_RNA"],

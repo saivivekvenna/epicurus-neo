@@ -44,12 +44,20 @@ def test_prepare_batch_hashes_three_raw_sample_types(tmp_path, monkeypatch):
         "bc55f844133084366db6f23584df55c9bdaaa6bc478fd160a825b54da65f8c66"
     )
     assert manifest["instrumentation_patch"]["sha256"] == (
-        "3a01cb41f7400f70e2319ac9dab4fc45443f6bdc928dba5e3ebed5246ebc4456"
+        "c43b3fb9aa56b29a45ebbedca4b78e823898dba638621c04c9958e939ed187fa"
     )
     with (tmp_path / "out" / "nextneopi_batch.csv").open() as handle:
         rows = list(csv.DictReader(handle))
     assert [row["sampleType"] for row in rows] == ["tumor_DNA", "normal_DNA", "tumor_RNA"]
     assert all(row["HLAfile"] == "" for row in rows)
+
+
+def test_instrumentation_publishes_native_aggregate_and_exact_pvac_input_vcf():
+    patch = Path("comparators/nextneopi/publish_native_class_i_aggregate.patch").read_text()
+    assert "*.all_epitopes.aggregated.tsv" in patch
+    assert "cp ${anno_vcf[0]} benchmark_pvac_input.vcf.gz" in patch
+    assert "cp ${anno_vcf[1]} benchmark_pvac_input.vcf.gz.tbi" in patch
+    assert "path(benchmark_pvac_input)" in patch
 
 
 def test_freeze_native_portfolio_preserves_first_twenty(tmp_path):

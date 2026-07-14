@@ -26,7 +26,11 @@
     "resume": true,
     "pvacseq_filter_set": "standard",
     "instrumentation_patch": "comparators/nextneopi/publish_native_class_i_aggregate.patch",
-    "instrumentation_patch_sha256": "3a01cb41f7400f70e2319ac9dab4fc45443f6bdc928dba5e3ebed5246ebc4456"
+    "instrumentation_patch_sha256": "c43b3fb9aa56b29a45ebbedca4b78e823898dba638621c04c9958e939ed187fa",
+    "published_native_artifacts": [
+      "Class-I all_epitopes.aggregated.tsv",
+      "exact pVACseq input VCF and index"
+    ]
   },
   "portfolio": {
     "source": "native pVACtools 5.3.0 Class-I all_epitopes.aggregated.tsv emitted inside nextNEOpi",

@@ -83,6 +83,15 @@ Before any final-held-out recognition label is opened, the benchmark must freeze
 6. timeout, retry, failure, and abstention policy;
 7. output hashes for every label-blind candidate universe and portfolio.
 
+For pVAC-derived outputs, the native aggregate ID is not itself an evaluation
+key. The benchmark instrumentation must also publish the exact VCF consumed by
+pVACseq. Before outcomes are opened, every aggregate row is joined one-to-one
+to that VCF and normalized with `bcftools norm -f <pinned GRCh38> -m-any`.
+Epicurus, nextNEOpi, pVACseq, Vaxrank, and the eventual outcome join use the
+resulting left-aligned `chrom:POS:REF:ALT` identity. Missing, ambiguous, or
+canonically duplicated mappings fail closed; gene or peptide fuzzy matching is
+never substituted.
+
 Default configurations are preferred. Any non-default configuration must be
 motivated without recognition outcomes and applied uniformly to every patient.
 No comparator-specific rescue is permitted after label access.

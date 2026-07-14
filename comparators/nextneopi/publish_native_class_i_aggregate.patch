@@ -1,37 +1,40 @@
 diff --git a/nextNEOpi.nf b/nextNEOpi.nf
-index 9862c39..379ed85 100644
 --- a/nextNEOpi.nf
 +++ b/nextNEOpi.nf
-@@ -5671,6 +5671,11 @@ process 'pVACseq' {
- 
+@@ -5668,6 +5668,11 @@ process 'pVACseq' {
+ process 'pVACseq' {
+-
+     tag "${meta.sampleName}"
+-
      label 'pVACtools'
- 
 +    // Benchmark instrumentation only: publish pVACtools' native mutation-level
-+    // aggregate without changing any nextNEOpi or pVACtools computation.
++    // aggregate and an exact copy of the VCF consumed by pVACseq. This changes
++    // no nextNEOpi or pVACtools computation.
 +    publishDir "$params.outputDir/comparator_native/${meta.sampleName}/", mode: publishDirMode,
 +        pattern: "*.all_epitopes.aggregated.tsv"
-+
-     input:
-     tuple(
-         val(meta),
-@@ -5698,6 +5703,11 @@ process 'pVACseq' {
-         path(pvacseq_class_II_out)
-     ) optional true into mhcII_out_f
++    publishDir "$params.outputDir/comparator_native/${meta.sampleName}/", mode: publishDirMode,
++        pattern: "benchmark_pvac_input.vcf.gz*"
  
+@@ -5699,2 +5704,10 @@ process 'pVACseq' {
+     ) optional true into mhcII_out_f
 +    tuple(
 +        val(meta),
 +        path(pvacseq_class_I_aggregate)
 +    ) optional true into native_class_I_aggregate_f
-+
++    tuple(
++        val(meta),
++        path(benchmark_pvac_input)
++    ) into native_pvac_input_vcf_f
  
-     script:
-     def hla_type = (hla_types - ~/\n/)
-@@ -5732,6 +5742,8 @@ process 'pVACseq' {
- 
-     pvacseq_class_I_out = [ "MHC_Class_I/" + meta.sampleName + "_tumor_" + hla_type + ".filtered.tsv",
+@@ -5734,2 +5747,6 @@ process 'pVACseq' {
                              "MHC_Class_I/" + meta.sampleName + "_tumor_" + hla_type + ".all_epitopes.tsv"]
 +    pvacseq_class_I_aggregate = "MHC_Class_I/" + meta.sampleName +
 +                                "_tumor.all_epitopes.aggregated.tsv"
++    benchmark_pvac_input = [ "benchmark_pvac_input.vcf.gz",
++                             "benchmark_pvac_input.vcf.gz.tbi" ]
      pvacseq_class_II_out = [ "MHC_Class_II/" + meta.sampleName + "_tumor_" + hla_type + ".filtered.tsv",
-                              "MHC_Class_II/" + meta.sampleName + "_tumor_" + hla_type + ".all_epitopes.tsv"]
- 
+@@ -5738,2 +5755,4 @@ process 'pVACseq' {
+     """
++    cp ${anno_vcf[0]} benchmark_pvac_input.vcf.gz
++    cp ${anno_vcf[1]} benchmark_pvac_input.vcf.gz.tbi
+     pvacseq run \\
