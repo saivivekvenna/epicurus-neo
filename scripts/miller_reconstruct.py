@@ -139,14 +139,14 @@ def _deps_md(m: dict) -> str:
     return "\n".join(L) + "\n"
 
 
-def convert_sra(sra: Path, outdir: Path) -> dict:
+def convert_sra(sra: Path, outdir: Path, threads: int = 4) -> dict:
     """fasterq-dump one .sra -> paired FASTQ; record read counts. Requires fasterq-dump on PATH."""
     if shutil.which("fasterq-dump") is None:
         return {"sra": str(sra), "status": "NOT_EVALUABLE", "reason": "fasterq-dump absent"}
     outdir.mkdir(parents=True, exist_ok=True)
     run = sra.stem
-    cmd = ["fasterq-dump", "--split-files", "--skip-technical", "-O", str(outdir), "-t", str(outdir),
-           str(sra)]
+    cmd = ["fasterq-dump", "--split-files", "--skip-technical", "-e", str(threads),
+           "-O", str(outdir), "-t", str(outdir), str(sra)]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
         return {"sra": str(sra), "status": "ERROR", "returncode": proc.returncode,

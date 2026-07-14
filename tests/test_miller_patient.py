@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import scripts.miller_patient_reconstruct as mpr
 from benchmark.miller_patient import load_patient
-from scripts.miller_patient_reconstruct import patient_manifest, script_env, script_for
+from scripts.miller_patient_reconstruct import default_threads, patient_manifest, script_env, script_for
 
 
 # ---------------------------------------------------------------------------
@@ -107,7 +107,7 @@ def test_driver_dispatches_stage_with_parameterized_env(monkeypatch, capsys):
     # the four label-blind parameters are threaded into the child environment
     for k, v in script_env(load_patient("Hu_287")).items():
         assert calls["env"][k] == v
-    assert calls["env"]["THREADS"] == "4"
+    assert calls["env"]["THREADS"] == str(default_threads())
     assert str(calls["cwd"]) == str(mpr.ROOT)
 
 
@@ -120,3 +120,14 @@ def test_driver_threads_are_forwarded_to_reconstruction_script(monkeypatch):
     monkeypatch.setattr(mpr.subprocess, "run", _fake_run)
     assert mpr.main(["Hu_315", "rna", "--threads", "3"]) == 0
     assert calls["env"]["THREADS"] == "3"
+
+
+def test_default_threads_uses_high_core_profile_with_headroom(monkeypatch):
+    monkeypatch.delenv("EPICURUS_THREADS", raising=False)
+    monkeypatch.setattr(mpr.os, "cpu_count", lambda: 15)
+    assert default_threads() == 12
+
+
+def test_default_threads_can_be_overridden(monkeypatch):
+    monkeypatch.setenv("EPICURUS_THREADS", "8")
+    assert default_threads() == 8
