@@ -1,0 +1,35 @@
+{
+  "policy_id": "epicurus-controlled-comparators-v1",
+  "track": "B_CONTROLLED_DOWNSTREAM",
+  "shared_evidence": [
+    "PASS matched-normal somatic VCF",
+    "tumor RNA coordinate-sorted BAM and index",
+    "patient class-I HLA calls",
+    "label-blind VEP/read-count/expression annotated pVAC VCF"
+  ],
+  "pvactools": {
+    "version": "5.3.0",
+    "commit": "942c86ca752ee511e8768320a7523f95ab50009a",
+    "class_i_lengths": [8, 9, 10, 11],
+    "prediction_algorithms": [
+      "NetMHCpan",
+      "NetMHCpanEL",
+      "MHCflurry",
+      "MHCflurryEL",
+      "MHCnuggetsI",
+      "BigMHC_IM",
+      "DeepImmuno"
+    ],
+    "filter_set": "nextNEOpi standard",
+    "portfolio": "first 20 rows of native all_epitopes.aggregated.tsv order"
+  },
+  "vaxrank": {
+    "repository": "https://github.com/openvax/vaxrank.git",
+    "commit": "d2c7515adfdd68a7a0acb6f4b85f282b9e4c4561",
+    "predictor": "mhcflurry",
+    "allow_dna_only_fallback": false,
+    "defaults": true,
+    "portfolio": "first 20 unique variant_rank values in ranked_vaccine_peptides.csv"
+  },
+  "labels_allowed": false
+}
