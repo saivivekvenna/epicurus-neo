@@ -958,6 +958,11 @@ def test_zero_positive_patient_retained_in_hits_but_excluded_from_recall(tmp_pat
     assert per_patient[pids[0]]["hits"] == 0
     assert arm_result["mean_duplicate_slot_burden"] == 0
     assert arm_result["worst_patient_duplicate_slot_burden"] == 0
+    assert arm_result["mean_tested_negative_mutations_at_20"] is not None
+    assert arm_result["mean_untested_mutations_at_20"] is not None
+    assert arm_result["mean_portfolio_size"] is not None
+    assert "tested_negative_selected" in per_patient[pids[0]]
+    assert "untested_selected" in per_patient[pids[0]]
     reachability = out["result"]["evaluation"]["reachability"][pids[1]]
     assert reachability["reachability_generated"] == 1
     assert reachability["reachability_valid"] == reachability["reachability_generated"]

@@ -721,6 +721,7 @@ def _arm_hits(
     arm_id: str,
     meta: dict,
     recognized: frozenset,
+    tested: frozenset,
 ) -> dict:
     """A verified empty portfolio is a valid zero-hit pipeline output. Genuine PRIME is the exception:
     its arms are not evaluable when the frozen scorer reports zero rows with genuine PRIME evidence."""
@@ -729,7 +730,8 @@ def _arm_hits(
         return {
             "evaluable": False, "missing": ["no_genuine_prime_rows"], "hits": None,
             "n_selected": meta["n_selected"], "n_unique_mutations": meta["n_unique_mutations"],
-            "duplicate_burden": None,
+            "duplicate_burden": None, "tested_negative_selected": None,
+            "untested_selected": None,
         }
     mutation_ids = selected["mutation_id"].astype(str).tolist() if len(selected) else []
     unique = set(mutation_ids)
@@ -739,17 +741,23 @@ def _arm_hits(
         "n_selected": len(mutation_ids),
         "n_unique_mutations": len(unique),
         "duplicate_burden": len(mutation_ids) - len(unique),
+        "tested_negative_selected": len((unique & tested) - recognized),
+        "untested_selected": len(unique - tested),
     }
 
 
 def _aggregate_arm(per_patient: dict[str, dict], recognized_by_patient: dict[str, frozenset]) -> dict:
     hits_list, p_at_least_one, recall_list, duplicate_list, missing_patients = [], [], [], [], []
+    tested_negative_list, untested_list, portfolio_size_list = [], [], []
     for pid, m in per_patient.items():
         if not m["evaluable"]:
             missing_patients.append(pid)
             continue
         hits_list.append(m["hits"])
         duplicate_list.append(m["duplicate_burden"])
+        tested_negative_list.append(m["tested_negative_selected"])
+        untested_list.append(m["untested_selected"])
+        portfolio_size_list.append(m["n_selected"])
         p_at_least_one.append(1 if m["hits"] >= 1 else 0)
         n_recognized = len(recognized_by_patient[pid])
         if n_recognized > 0:
@@ -763,6 +771,15 @@ def _aggregate_arm(per_patient: dict[str, dict], recognized_by_patient: dict[str
             sum(duplicate_list) / len(duplicate_list) if duplicate_list else None
         ),
         "worst_patient_duplicate_slot_burden": max(duplicate_list) if duplicate_list else None,
+        "mean_tested_negative_mutations_at_20": (
+            sum(tested_negative_list) / len(tested_negative_list) if tested_negative_list else None
+        ),
+        "mean_untested_mutations_at_20": (
+            sum(untested_list) / len(untested_list) if untested_list else None
+        ),
+        "mean_portfolio_size": (
+            sum(portfolio_size_list) / len(portfolio_size_list) if portfolio_size_list else None
+        ),
         "n_evaluable_patients": len(hits_list),
         "all_patients_evaluable": len(hits_list) == len(per_patient),
         "n_recall_eligible_patients": len(recall_list),
@@ -831,6 +848,7 @@ def evaluate_stage(
                 arm_id,
                 meta,
                 per_patient_labels[p.patient_id].recognized,
+                per_patient_labels[p.patient_id].tested,
             )
         per_arm_per_patient[arm_id] = per_patient_metrics
 
