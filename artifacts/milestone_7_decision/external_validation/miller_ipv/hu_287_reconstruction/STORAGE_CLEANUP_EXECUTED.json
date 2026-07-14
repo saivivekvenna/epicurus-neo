@@ -1,0 +1,817 @@
+{
+  "patient_id": "Hu_287",
+  "raw_dir": "data/raw/miller_ipv/hu_287",
+  "mode": "execute",
+  "frozen_verified": true,
+  "manifest_sha256": "022856e95ab6fe533031969ec33b00bf2333dab57360a05449586d30edb10e2a",
+  "verification": {
+    "freeze_dir": "data/raw/miller_ipv/hu_287/freeze",
+    "checks": {
+      "outputs_verified": 6,
+      "inputs_verified": 17,
+      "historical_provenance_blobs_verified": 9,
+      "frozen_module_intact": true
+    },
+    "manifest_sha256": "022856e95ab6fe533031969ec33b00bf2333dab57360a05449586d30edb10e2a",
+    "git_commit": "1a1e1fa94f97bbb24f3621539ef69f7a2930b6e8"
+  },
+  "labels_guard": "verification recomputes hashes of the freeze's declared repo-root inputs (code/config/reference); candidate discovery and deletion are confined to data/raw/miller_ipv/hu_287; the recognition-label table is never opened",
+  "summary": {
+    "PRESERVE": {
+      "n": 86,
+      "bytes": 16049754817
+    },
+    "REMOVE": {
+      "n": 8,
+      "bytes": 66648703884
+    },
+    "SKIP_SYMLINK": {
+      "n": 0,
+      "bytes": 0
+    },
+    "SKIP_ESCAPES": {
+      "n": 0,
+      "bytes": 0
+    }
+  },
+  "entries": [
+    {
+      "rel": "DOWNLOAD_MANIFEST.json",
+      "size_bytes": 5471,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "source manifest / provenance + hashes"
+    },
+    {
+      "rel": "SRR24836169.sra",
+      "size_bytes": 3404956280,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "SRA archive (the reclaimable FASTQ regenerate from this)"
+    },
+    {
+      "rel": "SRR24836183.sra",
+      "size_bytes": 2469815696,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "SRA archive (the reclaimable FASTQ regenerate from this)"
+    },
+    {
+      "rel": "SRR24836184.sra",
+      "size_bytes": 1632487104,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "SRA archive (the reclaimable FASTQ regenerate from this)"
+    },
+    {
+      "rel": "hla_stdout.log",
+      "size_bytes": 813,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "rna_stdout.log",
+      "size_bytes": 264,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "somatic_stdout.log",
+      "size_bytes": 826,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "ensembl_cache/0eb8c5f2b4a3aa47f3420742d0b6e52400d42eb25b5e03c9aebe5eef5828638f.json",
+      "size_bytes": 6417,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/1187ded2c0517366d49f9f398baf0126aad7330fb99bae530db321607b6ea99a.json",
+      "size_bytes": 16358,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/2367a9e04daf92f74cc62ba5c20095c6396b0b04fe4d26f193c3c165787a8f35.json",
+      "size_bytes": 6540,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/254637a3598d6cca3bf7afa29b4d45ad8e0b86e649342cac0ce514cff5f5a5cb.json",
+      "size_bytes": 27827,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/33dc9000b62cae4493342dac9373b4d22db2cb33228594226bd31bce034f2a88.json",
+      "size_bytes": 775,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/356a9a60f4abf23a320450d1b02b0b835165077ebf56730af780e26eed6c9db1.json",
+      "size_bytes": 23445,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/3df8b8175a4237baccfcbcc458cdf009e982322ecb843d8ca95d548b34a28acb.json",
+      "size_bytes": 11158,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/4a94b473203d2da931ffc43acc7f75d04ce1a6596d3451e58f3c211c1595e80c.json",
+      "size_bytes": 766,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/4bea2639bb4d1ddc8c39c6fe344ff7c0db6f3ddfb3b6b3dc6e5e03631d73ba88.json",
+      "size_bytes": 871,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/52c1fb6252d0c42a43b449c56b386089a056919d8a9f8c59f0b7c626617459d6.json",
+      "size_bytes": 583,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/6624db7f39e621c5d9d8500ad689f1f1b8811167924e62847ad8f1865a299b20.json",
+      "size_bytes": 1581,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/6f4acedb9a15f2b13df5066d4a888bc7c8578e0f170cda9df6cfb8261be3b1b3.json",
+      "size_bytes": 6034,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/750ff8ab6054660a4d8ee443e8534960e7980107d63a42a827e0106159ec4e18.json",
+      "size_bytes": 870,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/77e6f605242996cb5330a8cfc4a1eea7dfe15631beb79c97b391fd5e74ab5a7c.json",
+      "size_bytes": 480,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/7d1c24603ce75f08b5693bc945ad17c7fdbecf075396c29426147809ff4dcfe4.json",
+      "size_bytes": 16319,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/8a52017b3271b6851035ba70720c36463ed900bb119a8b8885cb17d22e7bf0c0.json",
+      "size_bytes": 365,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/953c0a0cb7a28a0779257691bf7e45e86634040f2aa2c312b10ece1b4b21b136.json",
+      "size_bytes": 1234,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/97f576448dc6dcb39ac63e62a2fdb568b73454337189b8e15839aa0f95b8c6ce.json",
+      "size_bytes": 4022,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/98c60c8c348e7c50948cffef5926f81c0b032788bc630144a3163724b92f5c62.json",
+      "size_bytes": 1384,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/99bbde5ec6da75fd75e47850d7ea1fdd617b67cb1f240fc089aa8edb9b236ed4.json",
+      "size_bytes": 3175,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/9cf3ac33951fedcbfca53948a6d37f04924762a5c7f1d79fb726ba6115b0e99a.json",
+      "size_bytes": 37815,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/a09ce661ba5d1cc0bf28c3fd684a1de4dad8a383d2f3d9f09247d30b57b5e4d0.json",
+      "size_bytes": 2618,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/a73f8fcbaef9c7b1af07b1e09c5c0fec1a7a2a8482077d173eb21441de5907c8.json",
+      "size_bytes": 497,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/a77014c2513b780ad02ce1b5232f30e17edcbd219f5201c9685819f71c7c3e83.json",
+      "size_bytes": 7959,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/b359bba802145491831efbd73129bfe8c9a747b1400381b04a717486545c1406.json",
+      "size_bytes": 7231,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/bae03b34587dc182d3a198e02c531f983a628a997bd9614e1be5ef52b374d1c8.json",
+      "size_bytes": 9242,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/bdc5d23e605cd740be78261c8445cc73254e134218aa6ce0dd10035dd3ebb6e0.json",
+      "size_bytes": 5568,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/c22fec297ea5876b63f43e9402ce2dc38514229fbe0d19b51a9560c523b4bb7c.json",
+      "size_bytes": 38525,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/ca18bb60697427c937ddc934bf8964f314dd70a0c22b3af3b5bf3a03a8f48737.json",
+      "size_bytes": 1375,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/d26d521acd02c3b978815914f027314a572077076d9ff6071b808c6a3038ec33.json",
+      "size_bytes": 11177,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/d4ddc10e1b12a943e6d6c10b766f1e6306aeac9c996177d4dfd56eefbb94bb7d.json",
+      "size_bytes": 2076,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/d85d66dd31aa1cd9b84ec578f2eb0dcf0536466d9192a1f6ab0e0b9e32a2a74c.json",
+      "size_bytes": 7769,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/dda9c3a5ffaddeae41ce5dd99574600cc77521368068eaefba867534633ab9de.json",
+      "size_bytes": 14720,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/eac2c63ab30420a699a13c52f67c5cbcf29f04b637668e2c1121fcce961e1d46.json",
+      "size_bytes": 33106,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/fcb442ff9db0e06b81e17b685dfa7f28a22feb921c6fae66812d7280b578c682.json",
+      "size_bytes": 13854,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/feb8226d760511ede9d68b184ac6689ff1c5b21ddfe2edea4ba946f1a2179c44.json",
+      "size_bytes": 1568,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "ensembl_cache/manifest.json",
+      "size_bytes": 9155,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "Ensembl generation cache (recorded in freeze provenance)"
+    },
+    {
+      "rel": "fastq/SRR24836169_1.fastq",
+      "size_bytes": 13950426868,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836169.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836169_2.fastq",
+      "size_bytes": 13951055248,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836169.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836183_1.fastq",
+      "size_bytes": 12567830534,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836183.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836183_2.fastq",
+      "size_bytes": 12560730444,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836183.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836184_1.fastq",
+      "size_bytes": 6641770270,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836184.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836184_2.fastq",
+      "size_bytes": 6642102090,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836184.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "freeze/FREEZE_MANIFEST.json",
+      "size_bytes": 18919,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "freeze/UNSEALED.json",
+      "size_bytes": 117,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "freeze/select_full_epicurus.csv",
+      "size_bytes": 1562,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "freeze/select_lossless_epicurus.csv",
+      "size_bytes": 1564,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "freeze/select_lossless_prime.csv",
+      "size_bytes": 1318,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "freeze/select_pvac_prime.csv",
+      "size_bytes": 372,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "freeze/universe.csv",
+      "size_bytes": 878465,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "freeze/variants.csv",
+      "size_bytes": 1688,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "immutable frozen universe/portfolios/provenance"
+    },
+    {
+      "rel": "hla/hla_1.fq",
+      "size_bytes": 167389307,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: re-extract the GRCh38 MHC region from the preserved normal alignment Hu_287_N.md.bam via the generic reconstruction HLA stage (scripts/miller_patient_reconstruct.py <PATIENT_ID> hla)"
+    },
+    {
+      "rel": "hla/hla_2.fq",
+      "size_bytes": 167399123,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: re-extract the GRCh38 MHC region from the preserved normal alignment Hu_287_N.md.bam via the generic reconstruction HLA stage (scripts/miller_patient_reconstruct.py <PATIENT_ID> hla)"
+    },
+    {
+      "rel": "hla/run.log",
+      "size_bytes": 1019,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "hla/optitype/2026_07_12_20_48_58/2026_07_12_20_48_58_coverage_plot.pdf",
+      "size_bytes": 1452173,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required HLA typing result"
+    },
+    {
+      "rel": "hla/optitype/2026_07_12_20_48_58/2026_07_12_20_48_58_result.tsv",
+      "size_bytes": 111,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required HLA typing result"
+    },
+    {
+      "rel": "rna/Hu_287_tumor_rna.sorted.bam",
+      "size_bytes": 3353944598,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required alignment artifact (BAM/index)"
+    },
+    {
+      "rel": "rna/Hu_287_tumor_rna.sorted.bam.bai",
+      "size_bytes": 3127888,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required alignment artifact (BAM/index)"
+    },
+    {
+      "rel": "rna/run.log",
+      "size_bytes": 55563,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "salmon_quant/cmd_info.json",
+      "size_bytes": 566,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/lib_format_counts.json",
+      "size_bytes": 538,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/quant.sf",
+      "size_bytes": 36362760,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/aux_info/ambig_info.tsv",
+      "size_bytes": 1347936,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/aux_info/expected_bias.gz",
+      "size_bytes": 25,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/aux_info/fld.gz",
+      "size_bytes": 320,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/aux_info/meta_info.json",
+      "size_bytes": 2025,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/aux_info/observed_bias.gz",
+      "size_bytes": 24,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/aux_info/observed_bias_3p.gz",
+      "size_bytes": 24,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/libParams/flenDist.txt",
+      "size_bytes": 21353,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "salmon_quant/logs/salmon_quant.log",
+      "size_bytes": 291,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required RNA quantification"
+    },
+    {
+      "rel": "somatic/Hu_287.mutect2.filtered.vcf.gz",
+      "size_bytes": 47195,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287.mutect2.filtered.vcf.gz.filteringStats.tsv",
+      "size_bytes": 1763,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "somatic/Hu_287.mutect2.filtered.vcf.gz.tbi",
+      "size_bytes": 11903,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287.mutect2.vcf.gz",
+      "size_bytes": 42971,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287.mutect2.vcf.gz.stats",
+      "size_bytes": 35,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "somatic/Hu_287.mutect2.vcf.gz.tbi",
+      "size_bytes": 11853,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287.somatic.pass.norm.vcf.gz",
+      "size_bytes": 8614,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287.somatic.pass.norm.vcf.gz.tbi",
+      "size_bytes": 2329,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287.somatic.pass.vcf.gz",
+      "size_bytes": 8572,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287.somatic.pass.vcf.gz.tbi",
+      "size_bytes": 2336,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required somatic VCF"
+    },
+    {
+      "rel": "somatic/Hu_287_N.dupmetrics.txt",
+      "size_bytes": 3910,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "somatic/Hu_287_N.md.bam",
+      "size_bytes": 1764525537,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required alignment artifact (BAM/index)"
+    },
+    {
+      "rel": "somatic/Hu_287_N.md.bam.bai",
+      "size_bytes": 4602064,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required alignment artifact (BAM/index)"
+    },
+    {
+      "rel": "somatic/Hu_287_T.dupmetrics.txt",
+      "size_bytes": 4242,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    },
+    {
+      "rel": "somatic/Hu_287_T.md.bam",
+      "size_bytes": 3370561742,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required alignment artifact (BAM/index)"
+    },
+    {
+      "rel": "somatic/Hu_287_T.md.bam.bai",
+      "size_bytes": 4900016,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "final required alignment artifact (BAM/index)"
+    },
+    {
+      "rel": "somatic/run.log",
+      "size_bytes": 197603,
+      "is_symlink": false,
+      "category": "PRESERVE",
+      "reason": "unclassified \u2014 preserved by fail-closed default"
+    }
+  ],
+  "reclaimable": [
+    {
+      "rel": "fastq/SRR24836169_1.fastq",
+      "size_bytes": 13950426868,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836169.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836169_2.fastq",
+      "size_bytes": 13951055248,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836169.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836183_1.fastq",
+      "size_bytes": 12567830534,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836183.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836183_2.fastq",
+      "size_bytes": 12560730444,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836183.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836184_1.fastq",
+      "size_bytes": 6641770270,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836184.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836184_2.fastq",
+      "size_bytes": 6642102090,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: fasterq-dump SRR24836184.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "hla/hla_1.fq",
+      "size_bytes": 167389307,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: re-extract the GRCh38 MHC region from the preserved normal alignment Hu_287_N.md.bam via the generic reconstruction HLA stage (scripts/miller_patient_reconstruct.py <PATIENT_ID> hla)"
+    },
+    {
+      "rel": "hla/hla_2.fq",
+      "size_bytes": 167399123,
+      "is_symlink": false,
+      "category": "REMOVE",
+      "reason": "documented regenerable intermediate",
+      "regeneration": "regenerate: re-extract the GRCh38 MHC region from the preserved normal alignment Hu_287_N.md.bam via the generic reconstruction HLA stage (scripts/miller_patient_reconstruct.py <PATIENT_ID> hla)"
+    }
+  ],
+  "reclaimable_bytes": 66648703884,
+  "withheld_pending_freeze": [],
+  "status": "EXECUTED",
+  "deleted": [
+    {
+      "rel": "fastq/SRR24836169_1.fastq",
+      "size_bytes": 13950426868,
+      "regeneration": "regenerate: fasterq-dump SRR24836169.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836169_2.fastq",
+      "size_bytes": 13951055248,
+      "regeneration": "regenerate: fasterq-dump SRR24836169.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836183_1.fastq",
+      "size_bytes": 12567830534,
+      "regeneration": "regenerate: fasterq-dump SRR24836183.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836183_2.fastq",
+      "size_bytes": 12560730444,
+      "regeneration": "regenerate: fasterq-dump SRR24836183.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836184_1.fastq",
+      "size_bytes": 6641770270,
+      "regeneration": "regenerate: fasterq-dump SRR24836184.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "fastq/SRR24836184_2.fastq",
+      "size_bytes": 6642102090,
+      "regeneration": "regenerate: fasterq-dump SRR24836184.sra (preserved SRA archive)"
+    },
+    {
+      "rel": "hla/hla_1.fq",
+      "size_bytes": 167389307,
+      "regeneration": "regenerate: re-extract the GRCh38 MHC region from the preserved normal alignment Hu_287_N.md.bam via the generic reconstruction HLA stage (scripts/miller_patient_reconstruct.py <PATIENT_ID> hla)"
+    },
+    {
+      "rel": "hla/hla_2.fq",
+      "size_bytes": 167399123,
+      "regeneration": "regenerate: re-extract the GRCh38 MHC region from the preserved normal alignment Hu_287_N.md.bam via the generic reconstruction HLA stage (scripts/miller_patient_reconstruct.py <PATIENT_ID> hla)"
+    }
+  ],
+  "deleted_bytes": 66648703884
+}
