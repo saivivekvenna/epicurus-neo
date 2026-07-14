@@ -28,6 +28,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Callable, Iterable
@@ -111,9 +113,35 @@ class CacheMiss(RuntimeError):
 
 
 def _default_fetcher(url: str) -> bytes:
+    """Fetch an Ensembl response, retrying only transient transport/server failures.
+
+    The retry policy cannot alter a successful response and every accepted response is still
+    content-addressed by :class:`EnsemblClient`. Permanent client errors fail closed immediately.
+    """
     request = urllib.request.Request(url, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(request, timeout=60) as response:  # noqa: S310 (fixed https host)
-        return response.read()
+    max_attempts = 6
+    for attempt in range(max_attempts):
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:  # noqa: S310
+                return response.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code != 429 and not 500 <= exc.code < 600:
+                raise
+            error: BaseException = exc
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+        except (TimeoutError, urllib.error.URLError) as exc:
+            error = exc
+            retry_after = None
+
+        if attempt == max_attempts - 1:
+            raise error
+        try:
+            server_delay = float(retry_after) if retry_after is not None else 0.0
+        except ValueError:
+            server_delay = 0.0
+        time.sleep(min(60.0, max(server_delay, float(2 ** (attempt + 1)))))
+
+    raise RuntimeError("unreachable Ensembl retry state")
 
 
 class EnsemblClient:

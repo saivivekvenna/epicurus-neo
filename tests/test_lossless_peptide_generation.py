@@ -13,10 +13,12 @@ generator itself is asserted to reference no such input (import/input hygiene te
 from __future__ import annotations
 
 import json
+import urllib.error
 from pathlib import Path
 
 import pandas as pd
 import pytest
+import event_b.lossless_peptide_generation as lossless
 
 from event_b.lossless_peptide_generation import (
     CacheMiss,
@@ -245,6 +247,35 @@ def test_translate_to_stop_excludes_stop_and_trailing_partial_codon():
 # ---------------------------------------------------------------------------
 # 7. Ensembl client — offline cache with URL/SHA, fail-closed when uncached
 # ---------------------------------------------------------------------------
+def test_default_fetcher_retries_transient_ensembl_failure(monkeypatch):
+    calls = 0
+    sleeps: list[float] = []
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def read(self):
+            return b'{"ok": true}'
+
+    def urlopen(_request, timeout):
+        nonlocal calls
+        calls += 1
+        assert timeout == 60
+        if calls == 1:
+            raise urllib.error.HTTPError("https://rest.ensembl.org", 500, "server", {}, None)
+        return Response()
+
+    monkeypatch.setattr(lossless.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(lossless.time, "sleep", sleeps.append)
+    assert lossless._default_fetcher("https://rest.ensembl.org/test") == b'{"ok": true}'
+    assert calls == 2
+    assert sleeps == [2.0]
+
+
 def test_ensembl_client_caches_online_then_serves_offline(tmp_path):
     calls: list[str] = []
 
