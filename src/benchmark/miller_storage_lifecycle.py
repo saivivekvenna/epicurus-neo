@@ -15,8 +15,8 @@ Hard invariants (all enforced here, all tested):
   * **Reclaim, only:** explicitly regenerable FASTQ and documented disposable intermediates, each carrying
     a concrete regeneration recipe. Nothing else is ever proposed for deletion.
   * **Candidate discovery and deletion are confined to the patient's own raw dir.** Verification
-    intentionally reads repo-root code/config/reference inputs (to recompute the freeze's declared input
-    hashes and provenance), but the set of files that can ever be classified, proposed, or deleted is drawn
+    intentionally reads repo-root data/reference inputs and the freeze commit's historical Git blobs (to
+    recompute the declared hashes and provenance), but the set of files that can ever be classified, proposed, or deleted is drawn
     only from a symlink-free walk of ``raw_dir``. The cohort recognition-label CSV is a sibling of that dir,
     is never opened, and a defensive guard additionally refuses any candidate whose real path escapes the
     patient dir or is the label table.
@@ -88,6 +88,19 @@ def _commit_exists(sha: str, root: Path) -> bool:
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
 
 
+def _git_blob_sha256(commit: str, rel: str, root: Path) -> str | None:
+    """Hash the tracked file exactly as it existed at the freeze commit, never the evolved worktree."""
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(root), "cat-file", "-p", f"{commit}:{rel}"],
+            check=True,
+            capture_output=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return hashlib.sha256(proc.stdout).hexdigest()
+
+
 def _git_status(rel: str, root: Path) -> str:
     """CLEAN only if ``rel`` is git-tracked and byte-identical to HEAD (no staged/unstaged diff)."""
     def rc(*args) -> int:
@@ -126,16 +139,17 @@ class PatientPaths:
 # Independent freeze verification (the destructive-mode gate)
 # ---------------------------------------------------------------------------
 def verify_frozen_no_labels(freeze_dir: Path, root: Path = ROOT, *, git_status=_git_status,
-                            commit_exists=_commit_exists) -> tuple[bool, dict]:
+                            commit_exists=_commit_exists,
+                            git_blob_sha256=_git_blob_sha256) -> tuple[bool, dict]:
     """Re-derive, from scratch, that ``freeze_dir`` holds a valid FROZEN_NO_LABELS lock. Fail-closed on the
     first problem; ``ok`` is True only if EVERY check passes:
 
       * LOCK == FROZEN_NO_LABELS and labels_opened is exactly False;
       * every declared OUTPUT hash key is a safe member of freeze_dir and recompute-matches;
-      * every declared INPUT hash key is a safe member of repo root and recompute-matches;
+      * every declared data/reference INPUT hash recompute-matches on disk;
       * code_files is nonempty and every entry appears in BOTH git_tracked_clean and input_sha256;
-      * every git_tracked_clean value recorded as CLEAN AND is currently git-clean on disk;
-      * frozen_module_integrity is a complete {module, module_sha256}, contained, non-symlink, hash-matching;
+      * every tracked code/config input was CLEAN at freeze time and its blob at ``git_commit`` hash-matches;
+      * frozen_module_integrity is complete and hash-matches its historical blob (or current data file);
       * git_commit is a full 40-hex sha that resolves to an existing commit object.
 
     Records the manifest's own sha256 in the returned detail."""
@@ -161,6 +175,19 @@ def verify_frozen_no_labels(freeze_dir: Path, root: Path = ROOT, *, git_status=_
         detail["reason"] = f"labels_opened is {man.get('labels_opened')!r}, expected False"
         return False, detail
 
+    commit = man.get("git_commit")
+    if not (isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit)):
+        detail["reason"] = f"git_commit is not a full 40-hex sha: {commit!r}"
+        return False, detail
+    if not commit_exists(commit, root):
+        detail["reason"] = f"git_commit does not resolve to an existing commit object: {commit}"
+        return False, detail
+
+    tracked = man.get("git_tracked_clean")
+    if not isinstance(tracked, dict) or not tracked:
+        detail["reason"] = "git_tracked_clean provenance missing/empty/malformed"
+        return False, detail
+
     # (1) declared OUTPUT hashes: keys must be safe members of freeze_dir and recompute-match.
     outputs = man.get("sha256")
     if not isinstance(outputs, dict) or not outputs:
@@ -179,7 +206,9 @@ def verify_frozen_no_labels(freeze_dir: Path, root: Path = ROOT, *, git_status=_
             return False, detail
     detail["checks"]["outputs_verified"] = len(outputs)
 
-    # (2) declared INPUT hashes: keys must be safe members of the repo root and recompute-match.
+    # (2) Declared inputs: raw/reference data match current disk; tracked code/config match the immutable
+    # blob at the manifest's own commit. This keeps a valid old freeze verifiable after intentional code
+    # evolution without weakening any raw-data or output hash.
     inputs = man.get("input_sha256")
     if not isinstance(inputs, dict) or not inputs:
         detail["reason"] = "input_sha256 missing/empty/malformed"
@@ -192,19 +221,18 @@ def verify_frozen_no_labels(freeze_dir: Path, root: Path = ROOT, *, git_status=_
         if not _is_hex(want):
             detail["reason"] = f"input hash for {rel} is not a valid sha256"
             return False, detail
-        if not target.is_file() or _sha256(target) != want:
+        actual = git_blob_sha256(commit, rel, root) if rel in tracked else (
+            _sha256(target) if target.is_file() else None
+        )
+        if actual != want:
             detail["reason"] = f"input hash mismatch or file absent: {rel}"
             return False, detail
     detail["checks"]["inputs_verified"] = len(inputs)
 
     # (3) code_files: nonempty, and every entry provenance-pinned in BOTH git_tracked_clean and input_sha256.
     code_files = man.get("code_files")
-    tracked = man.get("git_tracked_clean")
     if not isinstance(code_files, list) or not code_files:
         detail["reason"] = "code_files missing/empty"
-        return False, detail
-    if not isinstance(tracked, dict) or not tracked:
-        detail["reason"] = "git_tracked_clean provenance missing/empty/malformed"
         return False, detail
     missing_tracked = [c for c in code_files if c not in tracked]
     missing_input = [c for c in code_files if c not in inputs]
@@ -213,17 +241,12 @@ def verify_frozen_no_labels(freeze_dir: Path, root: Path = ROOT, *, git_status=_
                             f"from input_sha256={missing_input}")
         return False, detail
 
-    # (4) pinned code/config provenance: every recorded value must be CLEAN AND still git-clean on disk now.
+    # (4) Every tracked input was recorded CLEAN. Its historical blob hash was already verified above.
     recorded_bad = {rel: st for rel, st in tracked.items() if st != "CLEAN"}
     if recorded_bad:
         detail["reason"] = f"git_tracked_clean recorded non-CLEAN statuses: {recorded_bad}"
         return False, detail
-    live_bad = {rel: git_status(rel, root) for rel in tracked}
-    live_bad = {rel: st for rel, st in live_bad.items() if st != "CLEAN"}
-    if live_bad:
-        detail["reason"] = f"pinned code/config not clean on disk: {live_bad}"
-        return False, detail
-    detail["checks"]["provenance_files_clean"] = len(tracked)
+    detail["checks"]["historical_provenance_blobs_verified"] = len(tracked)
 
     # (5) frozen scoring module: mandatory, complete, contained, non-symlink, hash-matching.
     integ = man.get("frozen_module_integrity")
@@ -237,19 +260,14 @@ def verify_frozen_no_labels(freeze_dir: Path, root: Path = ROOT, *, git_status=_
     if mod is None:
         detail["reason"] = f"unsafe frozen module path: {integ['module']!r}"
         return False, detail
-    if not mod.is_file() or _sha256(mod) != integ["module_sha256"]:
-        detail["reason"] = f"frozen module changed on disk or absent: {integ['module']}"
+    module_actual = git_blob_sha256(commit, integ["module"], root) if integ["module"] in tracked else (
+        _sha256(mod) if mod.is_file() else None
+    )
+    if module_actual != integ["module_sha256"]:
+        detail["reason"] = f"frozen module hash mismatch or absent: {integ['module']}"
         return False, detail
     detail["checks"]["frozen_module_intact"] = True
 
-    # (6) git commit: full 40-hex sha resolving to an existing commit object.
-    commit = man.get("git_commit")
-    if not (isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit)):
-        detail["reason"] = f"git_commit is not a full 40-hex sha: {commit!r}"
-        return False, detail
-    if not commit_exists(commit, root):
-        detail["reason"] = f"git_commit does not resolve to an existing commit object: {commit}"
-        return False, detail
     detail["git_commit"] = commit
     return True, detail
 
@@ -390,11 +408,13 @@ def _summary(entries: list[dict]) -> dict:
 # ---------------------------------------------------------------------------
 # Plan (dry-run) and Execute (fail-closed)
 # ---------------------------------------------------------------------------
-def plan_cleanup(paths: PatientPaths, *, git_status=_git_status, commit_exists=_commit_exists) -> dict:
+def plan_cleanup(paths: PatientPaths, *, git_status=_git_status, commit_exists=_commit_exists,
+                 git_blob_sha256=_git_blob_sha256) -> dict:
     """Dry-run plan. NEVER mutates the filesystem. Reclamation is *eligible* only when the freeze
     independently re-verifies; otherwise every reclaim candidate is withheld pending freeze."""
     frozen_ok, verification = verify_frozen_no_labels(paths.freeze_dir, paths.root, git_status=git_status,
-                                                      commit_exists=commit_exists)
+                                                      commit_exists=commit_exists,
+                                                      git_blob_sha256=git_blob_sha256)
     entries = classify_entries(paths)
     reclaimable = [e for e in entries if e["category"] == "REMOVE"]
     report = {
@@ -423,12 +443,13 @@ def plan_cleanup(paths: PatientPaths, *, git_status=_git_status, commit_exists=_
 
 
 def execute_cleanup(paths: PatientPaths, *, confirm: bool = False, git_status=_git_status,
-                    commit_exists=_commit_exists) -> dict:
+                    commit_exists=_commit_exists, git_blob_sha256=_git_blob_sha256) -> dict:
     """Destructive reclamation — REFUSES unless the freeze independently re-verifies AND confirm=True.
 
     Even when permitted, each deletion re-checks (exists, regular file, not a symlink, contained in the
     patient dir) immediately before unlinking. Only REMOVE-classified files are ever touched."""
-    report = plan_cleanup(paths, git_status=git_status, commit_exists=commit_exists)
+    report = plan_cleanup(paths, git_status=git_status, commit_exists=commit_exists,
+                          git_blob_sha256=git_blob_sha256)
     report["mode"] = "execute"
     if not report["frozen_verified"]:
         report["status"] = "REFUSED_UNVERIFIED_FREEZE"

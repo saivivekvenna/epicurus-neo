@@ -20,6 +20,11 @@ def COMMIT_OK(sha, root):                     # inject: the recorded commit reso
     return True
 
 
+def BLOB(sha, rel, root):                     # inject: fixture's tracked file is its historical blob
+    path = root / rel
+    return life._sha256(path) if path.is_file() else None
+
+
 def _snapshot(root: Path) -> set[str]:
     return {os.path.relpath(os.path.join(d, f), root)
             for d, _, fs in os.walk(root) for f in fs}
@@ -77,7 +82,10 @@ def _fixture(tmp_path: Path, *, valid_manifest: bool = True, mutate=None) -> Pat
 
 
 def _verify(paths):
-    return life.verify_frozen_no_labels(paths.freeze_dir, paths.root, git_status=CLEAN, commit_exists=COMMIT_OK)
+    return life.verify_frozen_no_labels(
+        paths.freeze_dir, paths.root, git_status=CLEAN, commit_exists=COMMIT_OK,
+        git_blob_sha256=BLOB,
+    )
 
 
 # ---- classification ---------------------------------------------------------------------------------
@@ -105,7 +113,7 @@ def test_unclassified_file_is_preserved_fail_closed(tmp_path):
 def test_plan_is_dry_run_and_never_mutates(tmp_path):
     paths = _fixture(tmp_path)
     before = _snapshot(tmp_path)
-    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK, git_blob_sha256=BLOB)
     assert report["mode"] == "dry_run"
     assert _snapshot(tmp_path) == before
 
@@ -113,7 +121,7 @@ def test_plan_is_dry_run_and_never_mutates(tmp_path):
 def test_reclaim_withheld_until_freeze_verifies(tmp_path):
     paths = _fixture(tmp_path)
     (paths.freeze_dir / "FREEZE_MANIFEST.json").unlink()
-    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK, git_blob_sha256=BLOB)
     assert report["frozen_verified"] is False
     assert report["reclaimable"] == [] and report["reclaimable_bytes"] == 0
     assert {e["rel"] for e in report["withheld_pending_freeze"]} >= {"fastq/SRR1_1.fastq", "hla/hla_1.fq"}
@@ -122,7 +130,7 @@ def test_reclaim_withheld_until_freeze_verifies(tmp_path):
 # ---- successful planning against the fixture --------------------------------------------------------
 def test_successful_planning_lists_reclaimable_with_bytes_and_reasons(tmp_path):
     paths = _fixture(tmp_path)
-    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK, git_blob_sha256=BLOB)
     assert report["frozen_verified"] is True
     v = report["verification"]["checks"]
     assert v["outputs_verified"] == 2 and v["inputs_verified"] == 2 and v["frozen_module_intact"] is True
@@ -160,16 +168,22 @@ def test_verify_fails_on_tampered_output_or_input(tmp_path):
     assert ok2 is False and "input hash mismatch" in d2["reason"]
 
 
-def test_verify_fails_on_dirty_provenance_recorded_or_live(tmp_path):
+def test_verify_fails_on_dirty_provenance_recorded_but_uses_historical_blob_not_live_tree(tmp_path):
     # recorded non-CLEAN in the manifest
     paths = _fixture(tmp_path, mutate=lambda m, *a: m["git_tracked_clean"].__setitem__("code/mod.py", "UNSTAGED_MODIFIED"))
     ok, d = _verify(paths)
     assert ok is False and "recorded non-CLEAN" in d["reason"]
-    # recorded CLEAN but live git says dirty
+    # Recorded CLEAN and historical blob intact: later worktree evolution must not invalidate the freeze.
     paths2 = _fixture(tmp_path / "b")
+    historical = {
+        rel: life._sha256(paths2.root / rel) for rel in ("code/mod.py", "code/fmod.py")
+    }
+    (paths2.root / "code/mod.py").write_bytes(b"# evolved after freeze\n")
     ok2, d2 = life.verify_frozen_no_labels(paths2.freeze_dir, paths2.root,
-                                           git_status=lambda rel, root: "STAGED_MODIFIED", commit_exists=COMMIT_OK)
-    assert ok2 is False and "not clean on disk" in d2["reason"]
+                                           git_status=lambda rel, root: "STAGED_MODIFIED",
+                                           commit_exists=COMMIT_OK,
+                                           git_blob_sha256=lambda sha, rel, root: historical.get(rel))
+    assert ok2 is True, d2
 
 
 # ---- adversarial path safety (traversal / symlink / absolute) --------------------------------------
@@ -241,7 +255,7 @@ def test_missing_sra_withholds_fastq_fail_closed(tmp_path):
     by = {e["rel"]: e for e in classify_entries(paths)}
     for rel in ("fastq/SRR1_1.fastq", "fastq/SRR1_2.fastq"):
         assert by[rel]["category"] == "PRESERVE" and "regeneration source" in by[rel]["reason"]
-    rep = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK)
+    rep = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK, git_blob_sha256=BLOB)
     assert not any(e["rel"].startswith("fastq/") for e in rep["reclaimable"])
 
 
@@ -281,7 +295,7 @@ def test_verify_requires_complete_matching_frozen_module(tmp_path):
     assert "frozen_module_integrity missing/incomplete" in _verify(p_missing)[1]["reason"]
     p_bad = _fixture(tmp_path / "b",
                      mutate=lambda m, *a: m["frozen_module_integrity"].__setitem__("module_sha256", "d" * 64))
-    assert "frozen module changed on disk" in _verify(p_bad)[1]["reason"]
+    assert "frozen module hash mismatch" in _verify(p_bad)[1]["reason"]
     p_trav = _fixture(tmp_path / "c",
                       mutate=lambda m, *a: m["frozen_module_integrity"].__setitem__("module", "../fmod.py"))
     assert "unsafe frozen module path" in _verify(p_trav)[1]["reason"]
@@ -292,7 +306,8 @@ def test_verify_requires_valid_existing_commit(tmp_path):
     assert "not a full 40-hex sha" in _verify(p_short)[1]["reason"]
     paths = _fixture(tmp_path / "b")
     ok, d = life.verify_frozen_no_labels(paths.freeze_dir, paths.root, git_status=CLEAN,
-                                         commit_exists=lambda sha, root: False)
+                                         commit_exists=lambda sha, root: False,
+                                         git_blob_sha256=BLOB)
     assert ok is False and "does not resolve to an existing commit" in d["reason"]
 
 
@@ -300,7 +315,8 @@ def test_verify_requires_valid_existing_commit(tmp_path):
 def test_execute_refuses_without_confirm_even_when_verified(tmp_path):
     paths = _fixture(tmp_path)
     before = _snapshot(tmp_path)
-    report = execute_cleanup(paths, confirm=False, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = execute_cleanup(paths, confirm=False, git_status=CLEAN, commit_exists=COMMIT_OK,
+                             git_blob_sha256=BLOB)
     assert report["status"] == "REFUSED_NO_CONFIRM" and report["deleted"] == []
     assert _snapshot(tmp_path) == before
 
@@ -309,14 +325,16 @@ def test_execute_refuses_when_freeze_unverified(tmp_path):
     paths = _fixture(tmp_path)
     (paths.freeze_dir / "universe.csv").write_bytes(b"TAMPERED")
     before = _snapshot(tmp_path)
-    report = execute_cleanup(paths, confirm=True, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = execute_cleanup(paths, confirm=True, git_status=CLEAN, commit_exists=COMMIT_OK,
+                             git_blob_sha256=BLOB)
     assert report["status"] == "REFUSED_UNVERIFIED_FREEZE" and report["deleted"] == []
     assert _snapshot(tmp_path) == before
 
 
 def test_execute_deletes_only_regenerable_when_verified_and_confirmed(tmp_path):
     paths = _fixture(tmp_path)
-    report = execute_cleanup(paths, confirm=True, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = execute_cleanup(paths, confirm=True, git_status=CLEAN, commit_exists=COMMIT_OK,
+                             git_blob_sha256=BLOB)
     assert report["status"] == "EXECUTED"
     survivors = _snapshot(tmp_path)
     raw = "data/raw/miller_ipv/hu_test"
@@ -340,7 +358,8 @@ def test_symlinks_are_skipped_and_labels_are_never_touched(tmp_path, monkeypatch
     link.symlink_to(fake_labels)
     entries = {e["rel"]: e for e in classify_entries(paths)}
     assert entries["fastq/SRR1_3.fastq"]["category"] == "SKIP_SYMLINK"
-    report = execute_cleanup(paths, confirm=True, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = execute_cleanup(paths, confirm=True, git_status=CLEAN, commit_exists=COMMIT_OK,
+                             git_blob_sha256=BLOB)
     assert report["status"] == "EXECUTED"
     assert link.is_symlink()                                  # symlink untouched
     assert fake_labels.exists() and fake_labels.read_bytes() == b"peptide,recognized\nX,1\n"  # target untouched
@@ -351,5 +370,5 @@ def test_missing_raw_dir_yields_empty_classification(tmp_path):
     paths = PatientPaths(patient_id="Hu_absent", raw_dir=tmp_path / "nope",
                          freeze_dir=tmp_path / "nope/freeze", root=tmp_path)
     assert classify_entries(paths) == []
-    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK)
+    report = plan_cleanup(paths, git_status=CLEAN, commit_exists=COMMIT_OK, git_blob_sha256=BLOB)
     assert report["frozen_verified"] is False and report["reclaimable"] == []
