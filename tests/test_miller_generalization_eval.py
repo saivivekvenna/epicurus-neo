@@ -4,6 +4,7 @@ fixtures only. No real cohort files, real labels, or real calibration/final CLI 
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import replace
 from pathlib import Path
 
@@ -278,6 +279,38 @@ def _rehash_frozen_output(manifest: dict, freeze_dir: Path, filename: str) -> No
         manifest["product_portfolios"]["sha256"][filename] = digest
 
 
+def _rewrite_as_product_v1_raw_universe(freeze_dir: Path) -> None:
+    """Mirror the real product-v1 freeze: raw universe has no derived candidate_id."""
+    manifest_path = freeze_dir / "FREEZE_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text())
+    universe_path = freeze_dir / "universe.csv"
+    raw = pd.read_csv(universe_path)
+    old_ids = raw["candidate_id"].astype(str).tolist()
+    alphabet = "ACDEFGHIKLMNPQRSTVWY"
+
+    def peptide(value: str) -> str:
+        digest = hashlib.sha256(value.encode()).digest()
+        return "".join(alphabet[byte % len(alphabet)] for byte in digest[:9])
+
+    raw["patient_id"] = manifest["patient_id"]
+    raw["mutant_peptide"] = [peptide(value) for value in old_ids]
+    raw["hla_allele"] = "HLA-A*02:01"
+    adapted = mg._universe_with_candidate_ids(raw.drop(columns="candidate_id"))
+    replacements = dict(zip(old_ids, adapted["candidate_id"].astype(str)))
+    raw.drop(columns="candidate_id").to_csv(universe_path, index=False)
+    _rehash_frozen_output(manifest, freeze_dir, "universe.csv")
+
+    for arm_id, meta in manifest["product_portfolios"]["arms"].items():
+        selection_path = freeze_dir / meta["selection_file"]
+        selected = pd.read_csv(selection_path)
+        selected["candidate_id"] = selected["candidate_id"].astype(str).map(replacements)
+        assert selected["candidate_id"].notna().all(), arm_id
+        selected.to_csv(selection_path, index=False)
+        meta["ordered_candidate_ids"] = selected["candidate_id"].astype(str).tolist()
+        _rehash_frozen_output(manifest, freeze_dir, meta["selection_file"])
+    manifest_path.write_text(json.dumps(manifest))
+
+
 # ---------------------------------------------------------------------------
 # Preflight: exact ID / hash / arm / order checks
 # ---------------------------------------------------------------------------
@@ -292,6 +325,17 @@ def test_preflight_stage_passes_for_six_valid_patients(tmp_path):
     assert set(out["patients"]) == set(pids)
     for detail in out["patients"].values():
         assert detail["manifest_sha256"]
+
+
+def test_preflight_accepts_product_v1_raw_universe_and_rederives_candidate_ids(tmp_path):
+    refs, meta, blob, _ = _make_stage(
+        tmp_path, label="rawv1", n_patients=6,
+        hits_by_patient=[_default_hits_pattern() for _ in range(6)],
+    )
+    _rewrite_as_product_v1_raw_universe(refs[0].freeze_dir)
+    config = _config(meta["root"], refs, refs, meta["root"] / "labels.csv", blob)
+    out = preflight_stage(config, "calibration")
+    assert out["ok"] is True, out["patients"][refs[0].patient_id]
 
 
 def test_fixture_uses_exact_production_product_arm_schema(tmp_path):

@@ -41,7 +41,11 @@ from typing import Callable
 import pandas as pd
 
 from benchmark import miller_storage_lifecycle as life
-from benchmark.miller_product_freeze import ARM_IDS, POLICY_ID as PRODUCT_POLICY_ID
+from benchmark.miller_product_freeze import (
+    ARM_IDS,
+    POLICY_ID as PRODUCT_POLICY_ID,
+    adapt_universe,
+)
 
 # Reused pure helpers/constants — see [[miller_universe_core.py]] for the same reuse pattern. Importing
 # this frozen script does NOT mutate its bytes (its own provenance is untouched).
@@ -97,6 +101,33 @@ _EXPECTED_TOOL_HEADS = {
     "PRIME": "7b18d4e11042141e7102f7c69be2b0e03d138dab",
     "MixMHCpred": "0a7f9b9e20d1cf02236f4a0a90d16735be879b38",
 }
+
+
+def _universe_with_candidate_ids(universe: pd.DataFrame) -> pd.DataFrame:
+    """Return the frozen universe with the product's deterministic candidate IDs attached.
+
+    Product-v1 freezes wrote the raw lossless universe before ``normalize_product_candidates``
+    attached ``candidate_id``; the ordered product-selection files correctly contain those IDs.
+    Requiring the raw CSV to contain a derived column therefore makes a valid immutable freeze
+    impossible to preflight.  Recompute the IDs through the exact same label-free adapter used by
+    ``freeze_product_selections``.  A universe that already carries IDs is left untouched, and a
+    malformed legacy universe fails closed instead of receiving guessed identities.
+    """
+    if "candidate_id" in universe.columns:
+        return universe
+    required = {"patient_id", "mutation_id", "mutant_peptide", "hla_allele", "prime_rank"}
+    missing = sorted(required.difference(universe.columns))
+    if missing:
+        raise ValueError(
+            "universe.csv lacks candidate_id and cannot deterministically derive it; "
+            f"missing raw identity columns: {missing}"
+        )
+    adapted = adapt_universe(universe)
+    if len(adapted) != len(universe) or "candidate_id" not in adapted.columns:
+        raise ValueError("product adapter did not preserve universe rows while deriving candidate_id")
+    result = universe.copy()
+    result["candidate_id"] = adapted["candidate_id"].astype(str).to_numpy()
+    return result
 
 
 def _default_git_blob_sha256(commit: str, rel: str, root: Path) -> str | None:
@@ -428,8 +459,13 @@ def preflight_patient(config: EvalConfig, expected_patient_id: str, freeze_dir: 
         detail["reason"] = f"universe.csv unreadable: {exc}"
         return False, detail
     if len(universe):
+        try:
+            universe = _universe_with_candidate_ids(universe)
+        except (AssertionError, KeyError, TypeError, ValueError) as exc:
+            detail["reason"] = f"universe candidate identity invalid: {exc}"
+            return False, detail
         if not {"candidate_id", "mutation_id", "prime_rank"}.issubset(universe.columns):
-            detail["reason"] = "universe.csv missing candidate_id/mutation_id/prime_rank"
+            detail["reason"] = "universe.csv missing candidate_id/mutation_id/prime_rank after adaptation"
             return False, detail
         if universe[["candidate_id", "mutation_id"]].isna().any().any():
             detail["reason"] = "universe.csv contains null candidate or mutation IDs"
