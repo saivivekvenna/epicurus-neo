@@ -30,6 +30,7 @@ from event_b.lossless_peptide_generation import (
     frameshift_windows,
     genomic_hgvs,
     missense_windows,
+    substitution_windows,
     read_hla_panel,
     select_transcript,
     translate_to_stop,
@@ -54,6 +55,10 @@ def test_genomic_hgvs_map2_left_anchored_deletion():
     # ref GGCTA...(29) alt G: delete the 28 nt after the shared anchor, 1-based inclusive.
     hgvs = genomic_hgvs("chr2", 209694772, "GGCTACTGTGTGTTCAATAAGTACACAGT", "G")
     assert hgvs == "2:g.209694773_209694800del"
+
+
+def test_genomic_hgvs_mnv_preserves_atomic_haplotype_as_delins():
+    assert genomic_hgvs("chr1", 46935078, "GG", "CA") == "1:g.46935078_46935079delinsCA"
 
 
 def test_genomic_hgvs_unsupported_class_fails_closed():
@@ -150,6 +155,22 @@ def test_missense_windows_fail_closed_on_wrong_reference_residue():
     pos_in_slice = aspm["mutant_protein_pos"] - aspm["protein_slice_start_1based"] + 1
     with pytest.raises((ValueError, AssertionError)):
         missense_windows(aspm["protein_slice"], pos_in_slice, "A", aspm["mut_aa"])  # slice has G
+
+
+def test_substitution_windows_replaces_mnv_block_atomically_and_targets_only_changed_residues():
+    protein = "AAAAAHQCCCCCCCC"
+    windows = substitution_windows(protein, 6, "HQ", "HE")
+    mutated = "AAAAAHECCCCCCCC"
+    expected = enumerate_windows_covering(mutated, {7})
+    assert windows == expected
+    assert windows
+
+
+def test_substitution_windows_fails_closed_on_reference_or_length_mismatch():
+    with pytest.raises(ValueError, match="reference segment mismatch"):
+        substitution_windows("AAAAAHQCCCCCCCC", 6, "HR", "HE")
+    with pytest.raises(ValueError, match="equal-length"):
+        substitution_windows("AAAAAHQCCCCCCCC", 6, "HQ", "E")
 
 
 # ---------------------------------------------------------------------------

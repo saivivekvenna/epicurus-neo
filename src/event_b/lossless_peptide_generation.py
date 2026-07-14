@@ -68,8 +68,9 @@ CODON_TABLE = {
 def genomic_hgvs(chrom: object, pos: int, ref: str, alt: str) -> str:
     """Convert a raw ``(chrom, pos, ref, alt)`` GRCh38 allele to a genomic HGVS ``g.`` string.
 
-    Supports the two variant classes present in this recovery (SNV and a simple left-anchored
-    deletion). Any other class fails closed — this generator never guesses insertion / delins HGVS.
+    Supports SNVs, equal-length multi-nucleotide substitutions, and simple left-anchored
+    deletions. Other classes fail closed — this generator never guesses insertion or complex-indel
+    HGVS.
     """
     contig = str(chrom).strip()
     if contig.lower().startswith("chr"):
@@ -80,6 +81,13 @@ def genomic_hgvs(chrom: object, pos: int, ref: str, alt: str) -> str:
 
     if len(ref) == 1 and len(alt) == 1:
         return f"{contig}:g.{pos}{ref}>{alt}"
+
+    # Equal-length block substitution (MNV). HGVS represents this as a genomic delins; keeping
+    # the block intact is essential because atomizing it into independent SNVs can invent peptides
+    # that do not exist on the observed haplotype.
+    if len(ref) == len(alt) and len(ref) > 1:
+        end = pos + len(ref) - 1
+        return f"{contig}:g.{pos}_{end}delins{alt}"
 
     # Left-anchored deletion: alt is the shared prefix of ref (VCF convention).
     if len(ref) > len(alt) and ref.startswith(alt) and len(alt) >= 1:
@@ -289,6 +297,49 @@ def missense_windows(protein_seq: str, protein_pos_1based: int, wt_aa: str, mut_
     return enumerate_windows_covering(mutated, {protein_pos_1based})
 
 
+def substitution_windows(
+    protein_seq: str,
+    protein_start_1based: int,
+    wt_segment: str,
+    mutant_segment: str,
+) -> list[str]:
+    """All windows spanning changed residues in an equal-length protein substitution.
+
+    VEP can represent one genomic MNV as a multi-residue ``amino_acids`` block (for example
+    ``HQ/HE``). The complete reference block is verified, the block is replaced atomically, and
+    only positions whose amino acid actually changes anchor emitted windows. This preserves the
+    observed haplotype and avoids treating adjacent bases as independent variants.
+    """
+    protein_seq = protein_seq.upper()
+    wt_segment = wt_segment.upper()
+    mutant_segment = mutant_segment.upper()
+    if not wt_segment or len(wt_segment) != len(mutant_segment):
+        raise ValueError("protein substitution requires non-empty equal-length WT and mutant segments")
+    if not (set(wt_segment) | set(mutant_segment)).issubset(STD_AA):
+        raise ValueError("protein substitution contains a non-standard amino acid")
+    start = protein_start_1based - 1
+    if not (0 <= start and start + len(wt_segment) <= len(protein_seq)):
+        raise ValueError(
+            f"protein substitution {protein_start_1based}+{len(wt_segment)} exceeds "
+            f"reference length {len(protein_seq)}"
+        )
+    observed = protein_seq[start : start + len(wt_segment)]
+    if observed != wt_segment:
+        raise ValueError(
+            f"reference segment mismatch at protein position {protein_start_1based}: "
+            f"expected {wt_segment!r}, Ensembl protein has {observed!r} (aborting)"
+        )
+    changed = {
+        protein_start_1based + offset
+        for offset, (wt, mutant) in enumerate(zip(wt_segment, mutant_segment, strict=True))
+        if wt != mutant
+    }
+    if not changed:
+        raise ValueError("protein substitution has no changed amino-acid positions")
+    mutated = protein_seq[:start] + mutant_segment + protein_seq[start + len(wt_segment) :]
+    return enumerate_windows_covering(mutated, changed)
+
+
 def inframe_windows(protein_seq: str, protein_start_1based: int, wt_seg: str, mut_seg: str) -> list[str]:
     """All windows spanning an IN-FRAME deletion/insertion/delins junction. VEP ``amino_acids`` is
     ``WT/MUT`` (``MUT`` == ``-`` or empty for a pure deletion). The reference segment is verified against
@@ -465,7 +516,12 @@ def generate_variant_candidates(
     else:
         protein = client.sequence(selected["transcript_id"], "protein")
         wt_aa, mut_aa = selected["amino_acids"].split("/")
-        windows = missense_windows(protein["seq"], selected["protein_start"], wt_aa, mut_aa)
+        if len(wt_aa) == len(mut_aa) == 1:
+            windows = missense_windows(protein["seq"], selected["protein_start"], wt_aa, mut_aa)
+        else:
+            windows = substitution_windows(
+                protein["seq"], selected["protein_start"], wt_aa, mut_aa
+            )
         provenance["ensembl"]["protein"] = {"url": protein["url"], "sha256": protein["sha256"]}
 
     provenance["n_windows"] = len(windows)

@@ -97,8 +97,9 @@ def test_freeze_refuses_hu287_and_writes_nothing(tmp_path):
 # Fail-closed: missing reconstructed inputs -> NOT_EVALUABLE, no manifest
 # ---------------------------------------------------------------------------
 def test_freeze_not_evaluable_when_inputs_missing_no_manifest(tmp_path):
-    # real Hu_315 config: none of its reconstructed inputs exist on disk yet
-    c = _tmp_config(tmp_path)
+    # Point one mandatory input at an explicitly absent temporary path. Do not depend on whether a
+    # developer workstation has since completed the real Hu_315 reconstruction.
+    c = _tmp_config(tmp_path, pass_vcf=tmp_path / "hu_315" / "missing.pass.vcf.gz")
     out = core.freeze(c)
     assert out["status"] == "NOT_EVALUABLE"
     assert any("hu_315" in m for m in out["missing_inputs"])
