@@ -26,6 +26,12 @@ def test_prepare_batch_hashes_three_raw_sample_types(tmp_path, monkeypatch):
     assert list(manifest["raw_fastqs"]) == ["tumor_DNA", "normal_DNA", "tumor_RNA"]
     assert manifest["labels_opened"] is False
     assert manifest["hla_file_supplied"] is False
+    assert manifest["upstream"]["nextneopi_nf_sha256"] == (
+        "bc55f844133084366db6f23584df55c9bdaaa6bc478fd160a825b54da65f8c66"
+    )
+    assert manifest["instrumentation_patch"]["sha256"] == (
+        "3a01cb41f7400f70e2319ac9dab4fc45443f6bdc928dba5e3ebed5246ebc4456"
+    )
     with (tmp_path / "out" / "nextneopi_batch.csv").open() as handle:
         rows = list(csv.DictReader(handle))
     assert [row["sampleType"] for row in rows] == ["tumor_DNA", "normal_DNA", "tumor_RNA"]

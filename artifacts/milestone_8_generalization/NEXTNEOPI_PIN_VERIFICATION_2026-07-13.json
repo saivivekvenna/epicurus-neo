@@ -1,0 +1,30 @@
+{
+  "status": "VERIFIED",
+  "labels_opened": false,
+  "repository": "https://github.com/icbi-lab/nextNEOpi.git",
+  "commit": "9f34698b7fc6a0060f672e65e84d5dbc837c7ead",
+  "downloaded_files": {
+    "nextNEOpi.nf": {
+      "url": "https://raw.githubusercontent.com/icbi-lab/nextNEOpi/9f34698b7fc6a0060f672e65e84d5dbc837c7ead/nextNEOpi.nf",
+      "sha256": "bc55f844133084366db6f23584df55c9bdaaa6bc478fd160a825b54da65f8c66"
+    },
+    "README.md": {
+      "url": "https://raw.githubusercontent.com/icbi-lab/nextNEOpi/9f34698b7fc6a0060f672e65e84d5dbc837c7ead/README.md",
+      "sha256": "dc8a0fa4d31bd84b3228f46ef949f1c0459cac74a51de8d6651e9bbdafbe9db1"
+    }
+  },
+  "instrumentation_patch": {
+    "path": "comparators/nextneopi/publish_native_class_i_aggregate.patch",
+    "sha256": "3a01cb41f7400f70e2319ac9dab4fc45443f6bdc928dba5e3ebed5246ebc4456",
+    "git_apply_check": true,
+    "changes_computation": false,
+    "purpose": "publish the native pVACtools class-I mutation aggregate used for deterministic top-20 freezing"
+  },
+  "official_input_contract_confirmed": {
+    "sample_types": ["tumor_DNA", "normal_DNA", "tumor_RNA"],
+    "wes_default": true,
+    "hla_file_optional": true,
+    "pvacseq_filter_set_standard_supported": true,
+    "nextflow_version_command": "NXF_VER=22.10.8"
+  }
+}

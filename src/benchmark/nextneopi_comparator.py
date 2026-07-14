@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 CONFIG = Path("configs/frozen/nextneopi_track_a_v1.json")
+INSTRUMENTATION_PATCH = Path("comparators/nextneopi/publish_native_class_i_aggregate.patch")
 REQUIRED_SAMPLE_TYPES = ("tumor_DNA", "normal_DNA", "tumor_RNA")
 AGGREGATE_REQUIRED = ("ID", "Best Peptide", "Allele", "Tier")
 
@@ -78,12 +79,26 @@ def prepare_batch(
     config = CONFIG.resolve()
     if not config.is_file():
         raise FileNotFoundError(config)
+    instrumentation = INSTRUMENTATION_PATCH.resolve()
+    if not instrumentation.is_file():
+        raise FileNotFoundError(instrumentation)
+    frozen_config = json.loads(config.read_text())
+    expected_patch_hash = frozen_config["runtime"]["instrumentation_patch_sha256"]
+    actual_patch_hash = sha256_file(instrumentation)
+    if actual_patch_hash != expected_patch_hash:
+        raise ValueError("nextNEOpi instrumentation patch hash differs from frozen config")
     manifest = {
         "policy_id": "nextneopi-track-a-native-aggregate-v1",
         "patient_id": patient_id,
         "labels_opened": False,
         "batch_csv": {"path": str(batch.resolve()), "sha256": sha256_file(batch)},
         "config": {"path": str(config), "sha256": sha256_file(config)},
+        "upstream": frozen_config["upstream"],
+        "instrumentation_patch": {
+            "path": str(instrumentation),
+            "sha256": actual_patch_hash,
+            "application": "must pass git apply --check against pinned nextNEOpi.nf before execution",
+        },
         "raw_fastqs": {
             sample_type: [
                 {"path": str(path), "size": path.stat().st_size, "sha256": sha256_file(path)}

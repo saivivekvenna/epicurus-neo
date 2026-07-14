@@ -3,6 +3,8 @@
   "upstream": {
     "repository": "https://github.com/icbi-lab/nextNEOpi.git",
     "commit": "9f34698b7fc6a0060f672e65e84d5dbc837c7ead",
+    "nextneopi_nf_sha256": "bc55f844133084366db6f23584df55c9bdaaa6bc478fd160a825b54da65f8c66",
+    "readme_sha256": "dc8a0fa4d31bd84b3228f46ef949f1c0459cac74a51de8d6651e9bbdafbe9db1",
     "pipeline_version": "1.0",
     "nextflow_version": "22.10.8",
     "pvactools_version": "5.3.0",
@@ -23,7 +25,8 @@
     "profile": "singularity",
     "resume": true,
     "pvacseq_filter_set": "standard",
-    "instrumentation_patch": "comparators/nextneopi/publish_native_class_i_aggregate.patch"
+    "instrumentation_patch": "comparators/nextneopi/publish_native_class_i_aggregate.patch",
+    "instrumentation_patch_sha256": "3a01cb41f7400f70e2319ac9dab4fc45443f6bdc928dba5e3ebed5246ebc4456"
   },
   "portfolio": {
     "source": "native pVACtools 5.3.0 Class-I all_epitopes.aggregated.tsv emitted inside nextNEOpi",
