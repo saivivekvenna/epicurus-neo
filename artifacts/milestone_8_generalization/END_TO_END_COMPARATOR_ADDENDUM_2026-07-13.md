@@ -39,6 +39,11 @@ patient split, label-isolation rules, or final-held-out seal.
   ranking.
 - No artifact from Epicurus may silently replace a failed or missing competitor
   stage.
+- Before local lifecycle cleanup, every FASTQ consumed by Epicurus is pinned by
+  byte size, read count, and SHA-256 in `CONVERT_PROVENANCE.json`. The preserved
+  public SRA may be converted again on the nextNEOpi host, but the comparator
+  bundle must reject every regenerated FASTQ whose basename, size, or SHA-256
+  differs. Matching read counts alone do not establish identical raw input.
 - A pipeline failure, unreachable measured target, or absent top-20 portfolio is
   reported as such rather than repaired after labels are opened.
 

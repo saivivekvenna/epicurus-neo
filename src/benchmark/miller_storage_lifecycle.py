@@ -123,11 +123,13 @@ class PatientPaths:
     raw_dir: Path
     freeze_dir: Path
     root: Path = ROOT
+    artifact_dir: Path | None = None
 
     @classmethod
     def for_patient(cls, patient) -> "PatientPaths":
         return cls(patient_id=patient.patient_id, raw_dir=patient.raw_dir,
-                   freeze_dir=patient.raw_dir / "freeze", root=ROOT)
+                   freeze_dir=patient.raw_dir / "freeze", root=ROOT,
+                   artifact_dir=patient.artifact_dir)
 
     @classmethod
     def from_patient_id(cls, patient_id: str) -> "PatientPaths":
@@ -320,7 +322,37 @@ def _regular_contained(p: Path, base: Path) -> bool:
         return False
 
 
-def _reclaim_status(rel: str, raw_dir: Path) -> tuple[str | None, str | None]:
+def _fastq_attestations(paths: PatientPaths) -> dict[str, dict]:
+    """Load byte identity attestations without opening any candidate outcome source."""
+    candidates = []
+    if paths.artifact_dir is not None:
+        candidates.append(paths.artifact_dir / "CONVERT_PROVENANCE.json")
+    candidates.append(paths.raw_dir / "CONVERT_PROVENANCE.json")  # legacy/fixture fallback
+    provenance = next((path for path in candidates if path.is_file() and not path.is_symlink()), None)
+    if provenance is None:
+        return {}
+    try:
+        rows = json.loads(provenance.read_text())
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(rows, list):
+        return {}
+    result: dict[str, dict] = {}
+    for row in rows:
+        if row.get("status") != "OK" or row.get("raw_input_identity_ready") is not True:
+            continue
+        for name, digest in (row.get("sha256_per_file") or {}).items():
+            size = (row.get("bytes_per_file") or {}).get(name)
+            if isinstance(digest, str) and _is_hex(digest) and isinstance(size, int) and size > 0:
+                result[name] = {"sha256": digest, "size_bytes": size}
+    return result
+
+
+def _reclaim_status(
+    rel: str,
+    raw_dir: Path,
+    fastq_attestations: dict[str, dict] | None = None,
+) -> tuple[str | None, str | None]:
     """Classify a documented disposable intermediate. Returns (recipe, blocked_reason):
       * (recipe, None)  -> reclaimable; the preserved regeneration SOURCE was proven to exist;
       * (None, reason)  -> withheld: it *looks* regenerable but its source is missing → preserve fail-closed;
@@ -330,6 +362,12 @@ def _reclaim_status(rel: str, raw_dir: Path) -> tuple[str | None, str | None]:
     top, name = parts[0], parts[-1]
     if top == "fastq" and name.endswith(FASTQ_SUFFIXES):
         run = name.split("_")[0].split(".")[0]
+        attestation = (fastq_attestations or {}).get(name)
+        current = raw_dir / rel
+        if attestation is None:
+            return None, "withheld: exact FASTQ byte identity was not attested before cleanup"
+        if not current.is_file() or current.stat().st_size != attestation["size_bytes"]:
+            return None, "withheld: FASTQ size differs from its recorded byte-identity attestation"
         if _regular_contained(raw_dir / f"{run}.sra", raw_dir):
             return f"regenerate: fasterq-dump {run}.sra (preserved SRA archive)", None
         return None, f"withheld: regeneration source {run}.sra is missing or not a regular contained file"
@@ -353,6 +391,7 @@ def classify_entries(paths: PatientPaths) -> list[dict]:
     raw = paths.raw_dir
     raw_real = raw.resolve()
     entries: list[dict] = []
+    fastq_attestations = _fastq_attestations(paths)
     if not raw.is_dir():
         return entries
     for dirpath, dirnames, filenames in os.walk(raw, followlinks=False):
@@ -385,7 +424,7 @@ def classify_entries(paths: PatientPaths) -> list[dict]:
                 entries.append(rec)
                 continue
             preserve = _preserve_reason(rel)
-            recipe, blocked = _reclaim_status(rel, raw)
+            recipe, blocked = _reclaim_status(rel, raw, fastq_attestations)
             if preserve is None and recipe is not None:
                 rec.update(category="REMOVE", reason="documented regenerable intermediate", regeneration=recipe)
             elif preserve is None and blocked is not None:

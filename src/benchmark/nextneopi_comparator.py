@@ -40,6 +40,7 @@ def prepare_batch(
     normal_r2: str | Path,
     rna_r1: str | Path,
     rna_r2: str | Path,
+    conversion_provenance: str | Path,
     output_dir: str | Path,
     sex: str = "NA",
 ) -> dict:
@@ -54,6 +55,31 @@ def prepare_batch(
         "normal_DNA": (_checked_fastq(normal_r1), _checked_fastq(normal_r2)),
         "tumor_RNA": (_checked_fastq(rna_r1), _checked_fastq(rna_r2)),
     }
+    provenance_path = Path(conversion_provenance).expanduser().resolve()
+    if not provenance_path.is_file() or provenance_path.is_symlink():
+        raise FileNotFoundError(provenance_path)
+    try:
+        conversion = json.loads(provenance_path.read_text())
+    except (OSError, ValueError) as exc:
+        raise ValueError("conversion provenance is unreadable") from exc
+    if not isinstance(conversion, list):
+        raise ValueError("conversion provenance must be a list")
+    attested = {}
+    for run in conversion:
+        if run.get("status") != "OK" or run.get("raw_input_identity_ready") is not True:
+            raise ValueError("conversion provenance lacks a complete raw-input attestation")
+        for name, digest in (run.get("sha256_per_file") or {}).items():
+            attested[name] = {
+                "sha256": digest,
+                "size": (run.get("bytes_per_file") or {}).get(name),
+            }
+    supplied = [path for pair in inputs.values() for path in pair]
+    if set(attested) != {path.name for path in supplied}:
+        raise ValueError("conversion provenance FASTQ set differs from supplied comparator FASTQs")
+    for path in supplied:
+        expected = attested[path.name]
+        if path.stat().st_size != expected["size"] or sha256_file(path) != expected["sha256"]:
+            raise ValueError(f"comparator FASTQ differs from Epicurus input attestation: {path.name}")
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     batch = destination / "nextneopi_batch.csv"
@@ -105,6 +131,11 @@ def prepare_batch(
                 for path in inputs[sample_type]
             ]
             for sample_type in REQUIRED_SAMPLE_TYPES
+        },
+        "epicurus_conversion_provenance": {
+            "path": str(provenance_path),
+            "sha256": sha256_file(provenance_path),
+            "identity_match": True,
         },
         "hla_file_supplied": False,
         "command": (

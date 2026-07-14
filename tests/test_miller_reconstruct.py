@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib
+import pytest
 from pathlib import Path
+import hashlib
 
 from benchmark import miller_download as md
 
@@ -64,6 +66,26 @@ def test_summarize_quant_aggregates_transcript_tpm_to_gene(tmp_path):
     assert s["status"] == "OK" and s["n_transcripts"] == 3 and s["n_genes"] == 2
     assert s["top10_genes_tpm"]["G1"] == 100.0 and s["top10_genes_tpm"]["G2"] == 100.0
     assert s["sum_tpm"] == 200.0
+
+
+def test_fastq_attestation_pins_bytes_and_read_count(tmp_path):
+    fastq = tmp_path / "SRR1_1.fastq"
+    payload = b"@r1\nAC\n+\n!!\n@r2\nGT\n+\n!!\n"
+    fastq.write_bytes(payload)
+    result = mr.attest_fastq(fastq)
+    assert result == {
+        "size_bytes": len(payload),
+        "reads": 2,
+        "sha256": hashlib.sha256(payload).hexdigest(),
+    }
+
+
+def test_run_fastq_attestation_requires_exact_pair(tmp_path):
+    sra = tmp_path / "SRR1.sra"
+    sra.write_bytes(b"sra")
+    (tmp_path / "SRR1_1.fastq").write_bytes(b"@r\nAC\n+\n!!\n")
+    with pytest.raises(ValueError, match="exactly two"):
+        mr.attest_run_fastqs(sra, tmp_path)
 
 
 def test_somatic_driver_is_interruption_safe_and_validates_skip_artifacts():

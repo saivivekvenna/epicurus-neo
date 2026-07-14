@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from benchmark.miller_download import download_patient
 from benchmark.miller_ingest import SRA_RUNINFO_FIXTURE
 from benchmark.miller_patient import load_patient
-from scripts.miller_reconstruct import convert_sra, quant_rna
+from scripts.miller_reconstruct import attest_run_fastqs, convert_sra, quant_rna
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -84,7 +84,10 @@ def default_threads() -> int:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("patient_id")
-    parser.add_argument("command", choices=("metadata", "download", "convert", "quant", "wes", "hla", "rna"))
+    parser.add_argument(
+        "command",
+        choices=("metadata", "download", "convert", "attest-fastq", "quant", "wes", "hla", "rna"),
+    )
     parser.add_argument("--threads", type=int, default=None)
     args = parser.parse_args(argv)
     threads = default_threads() if args.threads is None else args.threads
@@ -102,6 +105,12 @@ def main(argv=None) -> int:
         fqdir = p.raw_dir / "fastq"
         expected = (p.normal_exome_run, p.tumor_exome_run, p.tumor_rna_run)
         result = [convert_sra(p.raw_dir / f"{run}.sra", fqdir, threads=threads) for run in expected]
+        (p.artifact_dir / "CONVERT_PROVENANCE.json").write_text(json.dumps(result, indent=2) + "\n")
+    elif args.command == "attest-fastq":
+        expected = (p.normal_exome_run, p.tumor_exome_run, p.tumor_rna_run)
+        result = [
+            attest_run_fastqs(p.raw_dir / f"{run}.sra", p.raw_dir / "fastq") for run in expected
+        ]
         (p.artifact_dir / "CONVERT_PROVENANCE.json").write_text(json.dumps(result, indent=2) + "\n")
     elif args.command == "quant":
         result = quant_rna(

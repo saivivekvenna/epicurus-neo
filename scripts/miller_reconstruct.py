@@ -18,6 +18,7 @@ input reachable now once its reference index is built.
 from __future__ import annotations
 
 import json
+import hashlib
 import shutil
 import subprocess
 import sys
@@ -151,12 +152,45 @@ def convert_sra(sra: Path, outdir: Path, threads: int = 4) -> dict:
     if proc.returncode != 0:
         return {"sra": str(sra), "status": "ERROR", "returncode": proc.returncode,
                 "stderr": proc.stderr[-2000:]}
-    fastqs = sorted(str(p.name) for p in outdir.glob(f"{run}*.fastq"))
-    reads = {}
-    for fq in fastqs:
-        n = sum(1 for _ in open(outdir / fq)) // 4
-        reads[fq] = n
-    return {"sra": str(sra), "run": run, "status": "OK", "fastqs": fastqs, "reads_per_file": reads}
+    return attest_run_fastqs(sra, outdir)
+
+
+def attest_fastq(path: Path) -> dict:
+    """One-pass size/read-count/SHA-256 attestation for a fasterq-dump FASTQ."""
+    if not path.is_file() or path.is_symlink() or path.stat().st_size == 0:
+        raise ValueError(f"missing/empty/unsafe FASTQ: {path}")
+    digest = hashlib.sha256()
+    line_count = 0
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(8 * 1024 * 1024), b""):
+            digest.update(chunk)
+            line_count += chunk.count(b"\n")
+    if line_count == 0 or line_count % 4:
+        raise ValueError(f"FASTQ line count is not positive and divisible by four: {path}")
+    return {
+        "size_bytes": path.stat().st_size,
+        "reads": line_count // 4,
+        "sha256": digest.hexdigest(),
+    }
+
+
+def attest_run_fastqs(sra: Path, outdir: Path) -> dict:
+    """Attest the exact paired FASTQ bytes derived from one preserved SRA."""
+    run = sra.stem
+    fastq_paths = sorted(outdir.glob(f"{run}_*.fastq"))
+    if [path.name for path in fastq_paths] != [f"{run}_1.fastq", f"{run}_2.fastq"]:
+        raise ValueError(f"expected exactly two paired FASTQs for {run}")
+    attestations = {path.name: attest_fastq(path) for path in fastq_paths}
+    return {
+        "sra": str(sra),
+        "run": run,
+        "status": "OK",
+        "fastqs": list(attestations),
+        "reads_per_file": {name: row["reads"] for name, row in attestations.items()},
+        "bytes_per_file": {name: row["size_bytes"] for name, row in attestations.items()},
+        "sha256_per_file": {name: row["sha256"] for name, row in attestations.items()},
+        "raw_input_identity_ready": True,
+    }
 
 
 RNA_RUN = "SRR24836183"

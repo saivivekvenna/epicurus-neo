@@ -16,6 +16,7 @@ def main() -> int:
     prepare.add_argument("patient_id")
     for name in ("tumor_r1", "tumor_r2", "normal_r1", "normal_r2", "rna_r1", "rna_r2"):
         prepare.add_argument(f"--{name.replace('_', '-')}", required=True)
+    prepare.add_argument("--conversion-provenance", required=True)
     prepare.add_argument("--output-dir", required=True)
     prepare.add_argument("--sex", choices=("female", "male", "NA"), default="NA")
     freeze = sub.add_parser("freeze-portfolio")
@@ -32,6 +33,7 @@ def main() -> int:
             normal_r2=args.normal_r2,
             rna_r1=args.rna_r1,
             rna_r2=args.rna_r2,
+            conversion_provenance=args.conversion_provenance,
             output_dir=args.output_dir,
             sex=args.sex,
         )

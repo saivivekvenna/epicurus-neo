@@ -70,6 +70,7 @@ def test_pipeline_mandates_dry_run_and_executes_cleanup_only_when_explicit(tmp_p
     assert result["labels_opened"] is False and result["status"] == "COMPLETE"
     cleanup = [c for c in commands if "scripts.miller_storage_cleanup" in c]
     assert len(cleanup) == 1 and "--execute" not in cleanup[0]
+    assert any("attest-fastq" in c for c in commands)
 
     commands.clear()
     args.execute_cleanup = True

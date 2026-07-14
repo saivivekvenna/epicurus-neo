@@ -47,7 +47,7 @@ def atomic_json(path: Path, payload: dict) -> None:
 
 def stage_command(patient_id: str, stage: str, threads: int) -> list[str]:
     python = sys.executable
-    if stage in {"metadata", "download", "convert", "quant", "wes", "hla", "rna"}:
+    if stage in {"metadata", "download", "convert", "attest-fastq", "quant", "wes", "hla", "rna"}:
         return [
             python,
             "-m",
@@ -128,6 +128,13 @@ def run_pipeline(args: argparse.Namespace) -> dict:
     # A dry run is mandatory after a verified freeze.  Execution is optional and
     # remains guarded again inside the lifecycle CLI by typed patient confirmation.
     if args.through_stage == "verify":
+        # Before reclaiming FASTQs, pin the exact raw bytes Epicurus consumed.
+        # The nextNEOpi Track-A bundle later rejects regenerated FASTQs unless
+        # they match this attestation, preserving identical-input semantics.
+        attest = stage_command(patient.patient_id, "attest-fastq", args.threads)
+        subprocess.run(attest, cwd=ROOT, check=True)
+        state["raw_input_attestation"] = str(patient.artifact_dir / "CONVERT_PROVENANCE.json")
+        atomic_json(state_path, state)
         dry_report = patient.artifact_dir / "STORAGE_CLEANUP_DRY_RUN.json"
         dry = [
             sys.executable,

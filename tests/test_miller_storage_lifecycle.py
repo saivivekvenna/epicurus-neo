@@ -78,7 +78,18 @@ def _fixture(tmp_path: Path, *, valid_manifest: bool = True, mutate=None) -> Pat
     if mutate is not None:
         mutate(man, raw, freeze, tmp_path)
     (freeze / "FREEZE_MANIFEST.json").write_text(json.dumps(man))
-    return PatientPaths(patient_id="Hu_test", raw_dir=raw, freeze_dir=freeze, root=tmp_path)
+    fastq_rows = []
+    for name in ("SRR1_1.fastq", "SRR1_2.fastq"):
+        path = raw / "fastq" / name
+        fastq_rows.append({
+            "status": "OK",
+            "raw_input_identity_ready": True,
+            "sha256_per_file": {name: life._sha256(path)},
+            "bytes_per_file": {name: path.stat().st_size},
+        })
+    (raw / "CONVERT_PROVENANCE.json").write_text(json.dumps(fastq_rows))
+    return PatientPaths(patient_id="Hu_test", raw_dir=raw, freeze_dir=freeze, root=tmp_path,
+                        artifact_dir=raw)
 
 
 def _verify(paths):
@@ -107,6 +118,14 @@ def test_unclassified_file_is_preserved_fail_closed(tmp_path):
     (paths.raw_dir / "mystery.dat").write_bytes(b"???")
     e = {x["rel"]: x for x in classify_entries(paths)}["mystery.dat"]
     assert e["category"] == "PRESERVE" and "fail-closed" in e["reason"]
+
+
+def test_fastq_cleanup_is_withheld_without_byte_identity_attestation(tmp_path):
+    paths = _fixture(tmp_path)
+    (paths.raw_dir / "CONVERT_PROVENANCE.json").write_text("{}")
+    by_rel = {e["rel"]: e for e in classify_entries(paths)}
+    assert by_rel["fastq/SRR1_1.fastq"]["category"] == "PRESERVE"
+    assert "not attested" in by_rel["fastq/SRR1_1.fastq"]["reason"]
 
 
 # ---- dry-run is the default and never mutates -------------------------------------------------------
