@@ -1,0 +1,9 @@
+{
+  "status": "LABELS_INVALID_PRE_EVALUATION",
+  "patient_id": "Hu_315",
+  "metrics_persisted": false,
+  "result_file_created": false,
+  "first_claim_sha256": "3b634658d2cc20dd361c1013307efabf9f678cc5d58c1ae35597a86168afd53f",
+  "reason": "shared label table contains repeated patient+mutation assay rows with both POSITIVE and TESTED_NEGATIVE labels; the pre-existing reader rejected them before evaluate_stage",
+  "resolution_registered_before_recovery": "mutation-level any-positive collapse; otherwise TESTED_NEGATIVE"
+}

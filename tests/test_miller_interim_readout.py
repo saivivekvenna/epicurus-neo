@@ -27,6 +27,18 @@ def test_existing_claim_without_result_fails_closed(tmp_path, monkeypatch):
     assert out["status"] == "INTERIM_UNSEAL_INCOMPLETE"
 
 
+def test_recovery_claim_without_result_fails_closed(tmp_path, monkeypatch):
+    monkeypatch.setattr(interim, "OUTPUT_ROOT", tmp_path)
+    monkeypatch.setattr(interim, "RECOVERY_ADDENDUM", Path(__file__))
+    result_dir = tmp_path / "Hu_315"
+    result_dir.mkdir()
+    (result_dir / "INTERIM_UNSEAL_STARTED.json").write_text("{}")
+    (result_dir / "INTERIM_FIRST_ATTEMPT_FAILURE.json").write_text("{}")
+    (result_dir / "INTERIM_RECOVERY_STARTED.json").write_text("{}")
+    out = interim.run_interim("Hu_315")
+    assert out["status"] == "INTERIM_RECOVERY_INCOMPLETE"
+
+
 def test_final_patient_is_refused_before_outcome_access(tmp_path, monkeypatch):
     monkeypatch.setattr(interim, "OUTPUT_ROOT", tmp_path)
     monkeypatch.setattr(interim, "ADDENDUM", Path(__file__))

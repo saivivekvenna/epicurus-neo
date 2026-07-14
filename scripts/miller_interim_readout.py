@@ -33,6 +33,7 @@ from benchmark.miller_generalization_eval import (
 
 ROOT = Path(__file__).resolve().parents[1]
 ADDENDUM = ROOT / "artifacts/milestone_8_generalization/HU_315_INTERIM_READOUT_ADDENDUM_2026-07-13.md"
+RECOVERY_ADDENDUM = ROOT / "artifacts/milestone_8_generalization/HU_315_INTERIM_RECOVERY_ADDENDUM_2026-07-13.md"
 OUTPUT_ROOT = ROOT / "artifacts/milestone_8_generalization/interim_readouts"
 
 
@@ -60,13 +61,22 @@ def run_interim(patient_id: str) -> dict:
     output_dir = OUTPUT_ROOT / patient_id
     result_path = output_dir / "INTERIM_RESULT.json"
     claim_path = output_dir / "INTERIM_UNSEAL_STARTED.json"
+    failure_path = output_dir / "INTERIM_FIRST_ATTEMPT_FAILURE.json"
+    recovery_claim_path = output_dir / "INTERIM_RECOVERY_STARTED.json"
     if result_path.is_file():
         return json.loads(result_path.read_text())
-    if claim_path.exists():
+    recovery = claim_path.exists() and failure_path.is_file() and RECOVERY_ADDENDUM.is_file()
+    if claim_path.exists() and not recovery:
         return {
             "status": "INTERIM_UNSEAL_INCOMPLETE",
             "patient_id": patient_id,
             "reason": "a prior attempt crossed the one-time outcome boundary; outcomes will not be reopened",
+        }
+    if recovery_claim_path.exists():
+        return {
+            "status": "INTERIM_RECOVERY_INCOMPLETE",
+            "patient_id": patient_id,
+            "reason": "the sole registered recovery attempt crossed its boundary; outcomes will not be reopened",
         }
     if not ADDENDUM.is_file():
         return {"status": "MISSING_PREREGISTERED_ADDENDUM", "patient_id": patient_id}
@@ -110,13 +120,42 @@ def run_interim(patient_id: str) -> dict:
             "git_commit": runtime_commit,
         },
     }
-    if not _exclusive_claim(claim_path, claim):
+    active_claim = claim
+    if recovery:
+        active_claim = {
+            "CLAIM": "IMMUTABLE_CALIBRATION_INTERIM_RECOVERY_STARTED",
+            "patient_id": patient_id,
+            "labels_opened": False,
+            "policy_selection_allowed": False,
+            "first_claim_sha256": sha256_file(claim_path),
+            "first_failure_sha256": sha256_file(failure_path),
+            "recovery_addendum": {
+                "path": str(RECOVERY_ADDENDUM.relative_to(ROOT)),
+                "sha256": sha256_file(RECOVERY_ADDENDUM),
+            },
+            "corrected_evaluator": claim["evaluator"],
+            "freeze_manifest_sha256": manifest_hash,
+            "registered_arms": list(REGISTERED_ARMS),
+        }
+        if not _exclusive_claim(recovery_claim_path, active_claim):
+            return {"status": "INTERIM_RECOVERY_INCOMPLETE", "patient_id": patient_id}
+    elif not _exclusive_claim(claim_path, claim):
         return {"status": "INTERIM_UNSEAL_INCOMPLETE", "patient_id": patient_id}
 
     try:
         labels = _read_labels_once(config.labels_path)  # sole audited outcome read
         _validate_phase_label_support(labels, (patient,))
     except (OSError, ValueError) as exc:
+        if not failure_path.exists():
+            _atomic_write_json(
+                failure_path,
+                {
+                    "status": "LABELS_INVALID_PRE_EVALUATION",
+                    "patient_id": patient_id,
+                    "metrics_persisted": False,
+                    "reason": str(exc),
+                },
+            )
         return {"status": "LABELS_INVALID", "patient_id": patient_id, "reason": str(exc)}
 
     evaluation = evaluate_stage(
@@ -139,7 +178,7 @@ def run_interim(patient_id: str) -> dict:
         "freeze_manifest_sha256": manifest_hash,
         "registered_arms": list(REGISTERED_ARMS),
         "evaluation": evaluation,
-        "provenance": claim,
+        "provenance": active_claim,
     }
     _atomic_write_json(result_path, result)
     return result

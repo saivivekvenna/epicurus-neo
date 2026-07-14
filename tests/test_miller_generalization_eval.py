@@ -272,6 +272,22 @@ def _read_labels_spy(monkeypatch):
     return calls
 
 
+def test_repeated_assays_collapse_to_mutation_level_any_positive(tmp_path):
+    labels = tmp_path / "labels.csv"
+    labels.write_text(
+        "patient_id,chrom,pos,ref,alt,label\n"
+        "Hu_X,1,100,A,T,TESTED_NEGATIVE\n"
+        "Hu_X,1,100,A,T,POSITIVE\n"
+        "Hu_X,1,200,G,C,TESTED_NEGATIVE\n"
+        "Hu_X,1,200,G,C,TESTED_NEGATIVE\n"
+    )
+    result = mg._read_labels_once(labels).sort_values("pos").reset_index(drop=True)
+    assert result[["pos", "label"]].to_dict("records") == [
+        {"pos": 100, "label": "POSITIVE"},
+        {"pos": 200, "label": "TESTED_NEGATIVE"},
+    ]
+
+
 def _rehash_frozen_output(manifest: dict, freeze_dir: Path, filename: str) -> None:
     digest = life._sha256(freeze_dir / filename)
     manifest["sha256"][filename] = digest

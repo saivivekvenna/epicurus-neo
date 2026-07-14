@@ -572,11 +572,18 @@ def _read_labels_once(labels_path: Path) -> pd.DataFrame:
         u.variant_key(c, p, r, a)
         for c, p, r, a in zip(clean["chrom"], clean["pos"], clean["ref"], clean["alt"])
     ]
-    conflicts = clean.groupby(["patient_id", "_key"])["label"].nunique()
-    if (conflicts > 1).any():
-        bad = [f"{pid}:{key}" for pid, key in conflicts[conflicts > 1].index[:5]]
-        raise ValueError(f"labels file contains conflicting duplicate labels: {bad}")
-    return clean.drop_duplicates(["patient_id", "_key", "label"]).drop(columns="_key").reset_index(drop=True)
+    # One genomic mutation may have multiple tested peptide constructs/assays. A
+    # negative construct does not contradict a positive construct: at the locked
+    # mutation-level endpoint, ANY positive assay makes the mutation recognized;
+    # it is TESTED_NEGATIVE only when every recorded assay is negative. Collapse
+    # here so every downstream phase sees exactly that deterministic semantic.
+    identity = ["patient_id", "chrom", "pos", "ref", "alt"]
+    clean["_positive"] = clean["label"].eq("POSITIVE")
+    collapsed = clean.groupby(identity, as_index=False, dropna=False)["_positive"].max()
+    collapsed["label"] = collapsed.pop("_positive").map(
+        {True: "POSITIVE", False: "TESTED_NEGATIVE"}
+    )
+    return collapsed.reset_index(drop=True)
 
 
 def _validate_phase_label_support(labels: pd.DataFrame, patients: tuple[PatientRef, ...]) -> None:
