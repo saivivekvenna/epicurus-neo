@@ -58,6 +58,35 @@ def cmd_metrics(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_dynamic_gate(args: argparse.Namespace) -> int:
+    """Apply the frozen dynamic upstream gate to a candidate table (patient_id, mutant_peptide, prime,
+    el, expr [, label]). Emits gate columns + a summary. Label, if present, is used ONLY for the summary,
+    never for the gating decision."""
+    import json as _json
+
+    from event_b.dynamic_gate import GateConfig, apply_gate, gate_retention_stats
+
+    frame = _load_table(Path(args.table))
+    spec = _json.loads(Path(args.config).read_text())
+    config = GateConfig.from_json(spec.get("config", spec))
+    gated = apply_gate(frame, config)
+    if args.output:
+        out = Path(args.output)
+        (gated.to_csv(out, index=False) if out.suffix.lower() == ".csv"
+         else gated.to_csv(out, sep="\t", index=False))
+    summary = {
+        "config_version": config.version, "t": config.t,
+        "n_input": int(len(gated)), "n_kept": int(gated["dyn_gate_keep"].sum()),
+        "kept_fraction": round(float(gated["dyn_gate_keep"].mean()), 4),
+        "removed_reason_counts": {str(k): int(v) for k, v in
+                                  gated.loc[~gated["dyn_gate_keep"], "dyn_gate_reason"].value_counts().items()},
+    }
+    if "label" in gated:
+        summary["retention"] = gate_retention_stats(gated)
+    print(json.dumps(summary, indent=2, default=str))
+    return 0
+
+
 def cmd_score_report(args: argparse.Namespace) -> int:
     frame = _load_table(Path(args.table))
     baseline_col = args.baseline_col or args.score_col[0]
@@ -275,6 +304,46 @@ def cmd_select_portfolio(args: argparse.Namespace) -> int:
     )
     selected.to_csv(args.output, index=False)
     return 0
+
+
+def cmd_run_patient(args: argparse.Namespace) -> int:
+    from epicurus_neo.product import InferenceConfig, run_product_inference
+
+    outputs = run_product_inference(
+        args.input,
+        args.output_dir,
+        patient_id=args.patient_id,
+        rna_evidence_path=args.rna_evidence,
+        config=InferenceConfig(
+            k=args.k,
+            max_per_mutation=args.max_per_mutation,
+            max_per_gene=args.max_per_gene,
+            max_per_hla=args.max_per_hla,
+            core_threshold=args.core_threshold,
+            supporting_threshold=args.supporting_threshold,
+            apply_validity_gate=not args.disable_validity_gate,
+        ),
+    )
+    print(json.dumps(outputs, indent=2))
+    return 0
+
+
+def cmd_validate_product_input(args: argparse.Namespace) -> int:
+    from epicurus_neo.contracts import validate_candidate_contract
+    from epicurus_neo.product import load_product_candidates
+
+    try:
+        candidates = load_product_candidates(
+            args.input,
+            patient_id=args.patient_id,
+            rna_evidence_path=args.rna_evidence,
+        )
+    except (ValueError, TypeError) as exc:
+        print(json.dumps({"ok": False, "error": str(exc)}, indent=2))
+        return 1
+    report = validate_candidate_contract(candidates)
+    print(json.dumps(report.__dict__ | {"ok": report.ok}, indent=2))
+    return 0 if report.ok else 1
 
 
 def cmd_group_cv(args: argparse.Namespace) -> int:
@@ -629,6 +698,35 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("table")
     validate.set_defaults(func=cmd_validate)
 
+    validate_product = sub.add_parser("validate-patient-input")
+    validate_product.add_argument("--input", required=True)
+    validate_product.add_argument("--patient-id")
+    validate_product.add_argument("--rna-evidence")
+    validate_product.set_defaults(func=cmd_validate_product_input)
+
+    run_patient = sub.add_parser("run-patient")
+    run_patient.add_argument("--input", required=True)
+    run_patient.add_argument("--patient-id")
+    run_patient.add_argument("--rna-evidence")
+    run_patient.add_argument("--output-dir", required=True)
+    run_patient.add_argument("-k", type=int, default=20)
+    run_patient.add_argument(
+        "--max-per-mutation",
+        type=int,
+        default=1,
+        help="Maximum selected peptide-HLA routes per mutation (default: 1).",
+    )
+    run_patient.add_argument("--max-per-gene", type=int, default=4)
+    run_patient.add_argument("--max-per-hla", type=int)
+    run_patient.add_argument("--core-threshold", type=float, default=0.55)
+    run_patient.add_argument("--supporting-threshold", type=float, default=0.35)
+    run_patient.add_argument(
+        "--disable-validity-gate",
+        action="store_true",
+        help="Disable the default deterministic biological-validity gate for an audit comparison.",
+    )
+    run_patient.set_defaults(func=cmd_run_patient)
+
     metrics = sub.add_parser("metrics")
     metrics.add_argument("table")
     metrics.add_argument("--group-col", default="patient_id")
@@ -636,6 +734,15 @@ def build_parser() -> argparse.ArgumentParser:
     metrics.add_argument("--baseline-col")
     metrics.add_argument("-k", type=int, default=20)
     metrics.set_defaults(func=cmd_metrics)
+
+    dynamic_gate = sub.add_parser(
+        "dynamic-gate",
+        help="Apply the frozen dynamic upstream gate (safe-rejection) to a candidate table.",
+    )
+    dynamic_gate.add_argument("table")
+    dynamic_gate.add_argument("--config", default="configs/frozen/dynamic_gate_v1.json")
+    dynamic_gate.add_argument("--output", help="Optional path to write the gated table (csv/tsv).")
+    dynamic_gate.set_defaults(func=cmd_dynamic_gate)
 
     score_report = sub.add_parser("score-report")
     score_report.add_argument("table")

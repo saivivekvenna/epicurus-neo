@@ -34,6 +34,16 @@ def test_normalize_derives_standard_prime_mixmhcpred_and_tumor_vaf_evidence():
     assert out.loc[0, "recognition_score"] == pytest.approx(0.80)
 
 
+def test_product_default_selects_at_most_one_route_per_mutation():
+    assert InferenceConfig().max_per_mutation == 1
+
+    candidates = normalize_product_candidates(_pvac_fixture(), patient_id="demo")
+    selected = score_product_candidates(candidates)
+    selected = selected[selected["selected"]]
+
+    assert selected.groupby("mutation_id").size().max() == 1
+
+
 def _pvac_fixture() -> pd.DataFrame:
     return pd.DataFrame(
         {

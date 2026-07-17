@@ -101,7 +101,7 @@ _NUMERIC_COLUMNS = {
 @dataclass(frozen=True)
 class InferenceConfig:
     k: int = 20
-    max_per_mutation: int = 2
+    max_per_mutation: int = 1
     max_per_gene: int = 4
     max_per_hla: int | None = None
     core_threshold: float = 0.55
