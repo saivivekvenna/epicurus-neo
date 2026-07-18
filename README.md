@@ -48,7 +48,8 @@ Neoantigen calling from raw reads is heavyweight; these requirements are inheren
 
 - **OS:** Linux, or any host via the provided container.
 - **Reference data:** GRCh38 + GATK resource bundle + VEP cache + Salmon index — a one-time
-  download (tens–hundreds of GB) via `epicurus fetch-references`.
+  download (tens–hundreds of GB). Scaffold the bundle and get exact sources with
+  `epicurus references --dest ~/.epicurus/references/GRCh38`.
 - **Compute:** a 30× tumor/normal WES pair takes hours of CPU.
 
 Check your machine is ready before a run:

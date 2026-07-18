@@ -12,7 +12,9 @@ from epicurus_neo.pipeline import (
     load_pipeline_config,
     parse_pipeline_config,
     readiness_report,
+    references_manifest,
     run_pipeline,
+    scaffold_references,
 )
 from epicurus_neo.pipeline.provenance import hash_file
 from epicurus_neo.pipeline.stages import STAGE_ORDER, PipelineContext
@@ -238,3 +240,14 @@ def test_readiness_report_ready_when_tools_and_refs_present(tmp_path: Path, monk
     assert report["tools_ready"] is True
     assert report["references_ready"] is True
     assert report["ready"] is True
+
+
+def test_scaffold_references_writes_instructions(tmp_path: Path):
+    dest = tmp_path / "GRCh38"
+    result = scaffold_references(dest)
+    readme = dest / "REFERENCES.md"
+    assert readme.exists()
+    assert "genome.fa" in readme.read_text()
+    names = {item["name"] for item in references_manifest()}
+    assert names == {"genome.fa", "gatk/", "vep/", "salmon_index/"}
+    assert result["bundle_dir"] == str(dest)

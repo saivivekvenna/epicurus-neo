@@ -1,0 +1,27 @@
+# Bioconda environment with the external tools Epicurus orchestrates, plus the
+# package itself. Linux is the supported platform for the full pipeline.
+#   conda env create -f environment.yml && conda activate epicurus && pip install -e .
+name: epicurus
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.10,<3.13
+  - pip
+  # external pipeline tools
+  - bwa-mem2
+  - samtools
+  - gatk4
+  - ensembl-vep
+  - salmon
+  - optitype
+  - pvactools
+  - mhcflurry
+  # python deps (also declared in pyproject)
+  - numpy>=1.26
+  - pandas>=2.2
+  - scikit-learn>=1.4
+  - pyyaml>=6.0
+  - pyarrow>=15.0
+  - jsonschema>=4.21
+  - openpyxl>=3.1

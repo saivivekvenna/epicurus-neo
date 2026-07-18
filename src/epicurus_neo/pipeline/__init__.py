@@ -15,6 +15,7 @@ from epicurus_neo.pipeline.config import (
     parse_pipeline_config,
 )
 from epicurus_neo.pipeline.doctor import readiness_report
+from epicurus_neo.pipeline.references import references_manifest, scaffold_references
 from epicurus_neo.pipeline.runner import PipelineResult, build_stages, run_pipeline
 from epicurus_neo.pipeline.stages import STAGE_ORDER, PipelineContext, StageResult
 
@@ -29,5 +30,7 @@ __all__ = [
     "load_pipeline_config",
     "parse_pipeline_config",
     "readiness_report",
+    "references_manifest",
     "run_pipeline",
+    "scaffold_references",
 ]

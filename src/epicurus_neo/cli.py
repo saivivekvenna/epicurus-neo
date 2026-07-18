@@ -104,6 +104,14 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0 if report["ready"] else 1
 
 
+def cmd_references(args: argparse.Namespace) -> int:
+    from epicurus_neo.pipeline import scaffold_references
+
+    result = scaffold_references(args.dest)
+    print(json.dumps(result, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="epicurus",
@@ -132,6 +140,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     doctor.add_argument("--bundle-dir", help="Reference bundle directory to check.")
     doctor.set_defaults(func=cmd_doctor)
+
+    references = sub.add_parser(
+        "references",
+        help="Scaffold the reference-bundle directory and write install instructions.",
+    )
+    references.add_argument("--dest", required=True, help="Directory to create the bundle in.")
+    references.set_defaults(func=cmd_references)
 
     validate = sub.add_parser("validate-schema")
     validate.add_argument("table")
