@@ -1,95 +1,125 @@
 # Epicurus Neo
 
-Epicurus prioritizes at most 20 neoantigen candidates for a personalized cancer vaccine. The product
-target is vaccine-inducible response (Event B), not pre-existing T-cell reactivity. Candidate
-generation remains the responsibility of pVACtools; Epicurus owns gating, calibrated ranking,
-portfolio selection, and patient-level abstention.
+**Prioritize personalized cancer-vaccine neoantigens from raw sequencing — end to end.**
 
-Milestone 1 instrumentation is frozen in git. The next focused work is the candidate-reachability
-funnel: identify whether validated positives are lost at mutation calling, transcript selection,
-peptide generation, gating, HLA inclusion, presentation, ranking, or top-k selection. It trains no
-recognition model and does not touch the external TESLA, 2025 multimer, or Sijbrandij sets early.
-
-## Registered evaluation contract
-
-- Primary: patient-level mean `hits@20`, including zero-positive patients as zero.
-- Co-primary: capture fraction, excluding zero-positive patients as unevaluable.
-- Clinical gate and eventual headline: `P(≥1 hit in top 20)`.
-- Diagnostics: `precision@20`, MRR, unreachable patients, candidate-list random expectation, and
-  reranking headroom.
-- Every result carries a 20,000-resample paired bootstrap interval against a named baseline.
-- Ties always break on `md5(mutant_peptide|hla_allele)`; source row order never decides membership.
-- Labels have three states: `POSITIVE`, `TESTED_NEGATIVE`, and `UNTESTED`.
-- A hand-reasoned or LLM-derived rule cannot ship unless it beats PRIME on the same rows with a paired
-  confidence interval excluding zero.
-
-`benchmark.scorecard.scorecard()` is the reporting path. It emits all five metrics, paired deltas,
-retained sample sizes, the candidate-universe fingerprint and random baseline, unreachable-patient
-count, current-n MDE, and a computed `ACCEPT`, `CONSISTENT_WITH_NO_EFFECT`, or `REJECT` verdict.
-
-## Reproduce Milestone 1
-
-The official IMPROVE repository contains both required archives. A normal clone is sufficient:
+Epicurus takes a patient's tumor/normal whole-exome sequencing and tumor RNA-seq and produces a
+ranked, at-most-20-candidate neoantigen portfolio for a personalized cancer vaccine. It runs as a
+single command on your own machine:
 
 ```bash
-git clone https://github.com/SRHgroup/IMPROVE_paper.git /tmp/IMPROVE_paper
-python scripts/milestone_1.py /tmp/IMPROVE_paper verify
-pytest -q
+epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
 ```
 
-Generate the ten blind masking-ablation question sets with:
+```
+tumor WES + normal WES + tumor RNA  ──▶  ranked top-20 vaccine neoantigen portfolio
+```
+
+## What Epicurus is (and is not)
+
+Epicurus **orchestrates a complete pipeline** and owns the final prioritization. It does **not**
+reimplement variant callers or peptide generators — those are established, validated tools that
+Epicurus drives:
+
+| Stage | Tool | Does |
+|-------|------|------|
+| align | BWA-MEM2 + MarkDuplicates | FASTQ → tumor/normal BAM |
+| call | GATK Mutect2 + FilterMutectCalls | BAMs → filtered somatic VCF |
+| annotate | Ensembl VEP | annotate variants |
+| express | Salmon | RNA transcript TPM |
+| hla | OptiType / arcasHLA | class-I HLA typing |
+| generate | pVACtools + MHCflurry | candidate neoantigen table |
+| **prioritize** | **Epicurus** | validity gate → calibrated ranking → ≤20 portfolio |
+| report | Epicurus | portfolio CSV + JSON summary + provenance |
+
+**What Epicurus itself contributes** is the `prioritize` stage: a deterministic biological-validity
+gate (lost-HLA routes and unexpressed genes cannot take a top-20 slot), a transparent evidence
+score combining translation / presentation / recognition / expression evidence, and a
+diversity-constrained portfolio selection with patient-level abstention.
+
+**Honest positioning.** In head-to-head evaluation Epicurus's *ranking* is at parity with strong
+published rerankers (e.g. PRIME); its measured advantage comes from **portfolio diversification and
+full-evidence routing**, not from a novel immunogenicity model. The scores are transparent
+evidence-prioritization scores — **not** validated response probabilities. Neoantigen recognition
+remains an open scientific problem, and this tool does not claim to have solved it.
+
+## Requirements
+
+Neoantigen calling from raw reads is heavyweight; these requirements are inherent, not incidental:
+
+- **OS:** Linux, or any host via the provided container.
+- **Reference data:** GRCh38 + GATK resource bundle + VEP cache + Salmon index — a one-time
+  download (tens–hundreds of GB) via `epicurus fetch-references`.
+- **Compute:** a 30× tumor/normal WES pair takes hours of CPU.
+
+Check your machine is ready before a run:
 
 ```bash
-python scripts/milestone_1.py /tmp/IMPROVE_paper generate-ablation \
-  artifacts/milestone_1/masking_ablation
+epicurus doctor --bundle-dir ~/.epicurus/references/GRCh38
 ```
 
-The frozen-score results are in
-[`docs/milestone_1_reaudit.md`](docs/milestone_1_reaudit.md). Historical research iterations remain
-in [`docs/benchmark_iterations.md`](docs/benchmark_iterations.md); they are a record, not the current
-evaluation contract.
+## Install
 
-The next-stage evidence contract is in
-[`docs/milestone_3_funnel_spec.md`](docs/milestone_3_funnel_spec.md). Once complete stage exports are
-available, `epicurus funnel-report ledger.csv` reports per-stage candidate recall with confidence
-intervals and explicit bounds for missing evidence.
+```bash
+# Container (recommended — brings every external tool):
+docker run --rm -v "$PWD":/work epicurus run-pipeline --config /work/patient.yaml --output-dir /work/out
 
-The Event-B corpus substrate is documented in
-[`docs/milestone_4_event_b_corpus.md`](docs/milestone_4_event_b_corpus.md). It keeps vaccine-induced
-response separate from pre-existing reactivity, clinical outcome, and presentation; preserves
-field-level provenance and review state; emits pending LLM extraction tasks when no endpoint exists;
-and generates leakage-safe splits, deterministic Parquet exports, and corpus audits. The Milestone 4
-[audit](artifacts/milestone_4/corpus_audit.md)
-finds zero available Event-B patients in IMPROVE, because IMPROVE measures Event A.
+# Or a local bioconda environment on Linux:
+conda env create -f environment.yml
+pip install -e .
+```
 
-Milestone 5a ingests the first real Event-B study — the open-access Braun 2025 RCC NeoVax trial
-(NCT02950766) — end to end, recomputing per-peptide immunogenicity from raw ELISpot replicates with
-the paper's own positivity rule and reconciling to its reported 61 immunogenic / 68 tested-negative
-peptides across 9 patients. The combined audit moves from zero to nine Event-B patients with the
-conservative verdict `EVENT_B_VERTICAL_SLICE_VALIDATED_NOT_YET_SUFFICIENT_FOR_GENERAL_MODEL`. See
-[`docs/milestone_5a_braun_vertical_slice.md`](docs/milestone_5a_braun_vertical_slice.md); reproduce
-with `python scripts/event_b_corpus.py import-braun-rcc`.
+## Run a patient (full pipeline)
 
-Milestone 5b.1 adds the second independent Event-B study — the Hu 2021 melanoma NeoVax follow-up
-(NCT01970358) — from its consolidated per-peptide CD8 (class-I minimal epitope) and CD4 (class-II
-assay peptide) ELISpot calls, reconciling patients 1–6 to Ott 2017's published totals (CD8 15/97
-exactly). Epitope spreading to non-vaccine neoantigens is kept strictly separate
-(`EPITOPE_SPREADING`, never a vaccine-candidate label), and distinct recognition channels carry
-distinct reliability metadata rather than one flattened strength. The combined IMPROVE + Braun + Hu
-audit reaches two Event-B studies and seventeen patients, tipping the verdict to
-`EVENT_B_MULTI_STUDY_CORPUS_VALIDATED_INSUFFICIENT_PATIENTS_FOR_GENERAL_MODEL`. See
-[`docs/milestone_5b1_hu_vertical_slice.md`](docs/milestone_5b1_hu_vertical_slice.md); the ~2.2 GB
-source is placed manually (`data/raw/MANUAL_SOURCES.md`), then `python scripts/event_b_corpus.py
-import-hu-neovax`.
+`patient.yaml`:
 
-## Benchmark roles
+```yaml
+patient_id: PATIENT-001
+inputs:
+  tumor_wes:  [tumor_R1.fastq.gz, tumor_R2.fastq.gz]
+  normal_wes: [normal_R1.fastq.gz, normal_R2.fastq.gz]
+  tumor_rna:  [rna_R1.fastq.gz, rna_R2.fastq.gz]
+references:
+  bundle_dir: ~/.epicurus/references/GRCh38
+prioritize:
+  k: 20
+  max_per_mutation: 1
+  max_per_gene: 4
+```
 
-- IMPROVE official five-fold patient CV: primary Event-A component/ranking regression.
-- BigMHC `im_test`: HLA-grouped component regression only.
-- Gartner/NCI Nmers: frozen TIL-reactivity component regression.
-- TESLA and the 2025 multimer screen: external domain-shift sets, opened once per later milestone.
-- Curated vaccine trials: Event-B validation target.
-- Sijbrandij: end-to-end acceptance test only; never fitted and never treated as a patient benchmark.
+```bash
+epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
+```
 
-See [`docs/system_architecture.md`](docs/system_architecture.md) for the product boundary and
-[`docs/data_workflow.md`](docs/data_workflow.md) for the legacy ingestion commands.
+Every stage is resumable: re-running reuses valid cached artifacts. Use `--start`/`--stop` to run a
+subrange and `--force` to recompute.
+
+## Already have candidates? Start at the ranking stage
+
+If you have already run pVACseq, skip the front-end and prioritize directly:
+
+```bash
+epicurus run-patient \
+  --input examples/demo_patient/pvacseq_all_epitopes.tsv \
+  --patient-id DEMO-001 \
+  --output-dir out/demo_patient
+```
+
+This writes a full candidate CSV, a machine-readable JSON summary, and a human-readable portfolio
+report. See [`docs/product_vertical_slice.md`](docs/product_vertical_slice.md) for the input
+contract, RNA merging, abstention, and the upstream integration boundary.
+
+## Status
+
+- The **prioritize stage** and **pipeline orchestration** (config, stage contracts, provenance,
+  resume, `doctor`) are implemented and unit-tested; `pytest` runs green on any machine.
+- The reads-level stages wrap external tools and are validated end-to-end on a Linux host with the
+  reference bundle installed — that run is the release-acceptance gate, not a laptop claim.
+
+## Design
+
+The full architecture and scope decisions are documented in
+[`docs/superpowers/specs/2026-07-17-epicurus-v0-full-pipeline-design.md`](docs/superpowers/specs/2026-07-17-epicurus-v0-full-pipeline-design.md).
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

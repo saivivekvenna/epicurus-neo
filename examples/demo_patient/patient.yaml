@@ -1,0 +1,25 @@
+# Template config for the full pipeline: epicurus run-pipeline --config patient.yaml --output-dir OUT
+# Point these paths at real files on a machine with the external tools + reference bundle installed.
+patient_id: DEMO-001
+
+inputs:
+  tumor_wes:  [/path/to/tumor_R1.fastq.gz, /path/to/tumor_R2.fastq.gz]
+  normal_wes: [/path/to/normal_R1.fastq.gz, /path/to/normal_R2.fastq.gz]
+  tumor_rna:  [/path/to/rna_R1.fastq.gz, /path/to/rna_R2.fastq.gz]
+  hla_alleles: null          # optional override; if null, typed in the `hla` stage
+
+references:
+  bundle_dir: ~/.epicurus/references/GRCh38
+
+generate:
+  predictors: [MHCflurry]     # add NetMHCpan if licensed and installed
+  epitope_lengths: [8, 9, 10, 11]
+
+prioritize:
+  k: 20
+  max_per_mutation: 1
+  max_per_gene: 4
+  max_per_hla: null
+
+resources:
+  threads: 8

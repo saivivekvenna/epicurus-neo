@@ -17,3 +17,8 @@ artifacts/milestone_7_decision/rttp_sr24/
 
 # pool-size sensitivity: raw per-candidate snapshots embed genuine PRIME %rank (non-redistributable)
 artifacts/milestone_7_decision/pool_size_sensitivity/base_*.csv
+
+# osteosarc_audit / osteosarc_product on disk are MISLABELED RTTP data (DUA-controlled
+# patient neoantigen lists). Never commit.
+artifacts/osteosarc_audit/
+artifacts/milestone_7_decision/osteosarc_product/
