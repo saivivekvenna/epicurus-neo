@@ -1,9 +1,0 @@
-dataset: IMPROVE_official_CV
-negative_provenance: >-
-  response=0 denotes a screened candidate reported non-reactive by the source
-  dataset. UNTESTED remains a permitted schema state and must never be recoded
-  to response=0 by a loader.
-label_states:
-  - POSITIVE
-  - TESTED_NEGATIVE
-  - UNTESTED
