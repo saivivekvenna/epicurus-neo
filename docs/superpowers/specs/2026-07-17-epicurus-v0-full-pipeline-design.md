@@ -1,6 +1,8 @@
 # Epicurus V0 — full WES/RNA → neoantigen-portfolio pipeline
 
-_Design spec. Date: 2026-07-17. Status: DRAFT for review._
+_Design spec. Date: 2026-07-17. Status: IMPLEMENTED — orchestration + all eight stages
+built and unit-tested on the dev machine (external tools mocked); real FASTQ→portfolio
+execution remains the Linux acceptance gate (§5, §7 step 7)._
 
 ## 1. Goal
 
@@ -120,7 +122,7 @@ resources:
 - `epicurus run-patient ...` — **retained** shortcut: start at stage 7 from an existing
   pVACseq candidate table (the honest A3→Z entry; useful when a user already has candidates).
 - `epicurus validate-patient-input`, `validate-schema`, `select-portfolio` — retained utilities.
-- `epicurus fetch-references --bundle GRCh38 --dest DIR` — reference bootstrap.
+- `epicurus references --dest DIR` — scaffold the reference bundle + write install docs.
 - `epicurus doctor` — checks each external tool + reference presence, prints a readiness table.
 
 ### 4.5 Distribution
