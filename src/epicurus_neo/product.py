@@ -371,20 +371,20 @@ def score_product_candidates(frame: pd.DataFrame, config: InferenceConfig = Infe
         weight * np.log(out[f"{name}_evidence_score"].clip(lower=1e-6))
         for name, weight in weights.items()
     )
-    out["epicurus_evidence_score"] = np.exp(log_score)
+    out["epicurus_neo_evidence_score"] = np.exp(log_score)
     out["evidence_completeness"] = out[available_columns].mean(axis=1)
     out["evidence_uncertainty"] = 1.0 - out["evidence_completeness"]
-    out["epicurus_lower_evidence_score"] = out["epicurus_evidence_score"] * (
+    out["epicurus_neo_lower_evidence_score"] = out["epicurus_neo_evidence_score"] * (
         1.0 - 0.35 * out["evidence_uncertainty"]
     )
     out["exclusion_reason"] = out.apply(_exclusion_reason, axis=1)
     out["eligible"] = out["exclusion_reason"].eq("")
 
     core = (
-        (out["epicurus_lower_evidence_score"] >= config.core_threshold)
+        (out["epicurus_neo_lower_evidence_score"] >= config.core_threshold)
         & (out["evidence_uncertainty"] <= config.max_core_uncertainty)
     )
-    supporting = out["epicurus_lower_evidence_score"] >= config.supporting_threshold
+    supporting = out["epicurus_neo_lower_evidence_score"] >= config.supporting_threshold
     out["evidence_tier"] = np.select(
         [~out["eligible"], core, supporting],
         ["EXCLUDED", "CORE", "SUPPORTING"],
@@ -426,7 +426,7 @@ def _select_patient_portfolios(frame: pd.DataFrame, config: InferenceConfig) -> 
         ordered = patient_rows.assign(
             _tier=patient_rows["evidence_tier"].map(tier_order),
         ).sort_values(
-            ["_tier", "epicurus_lower_evidence_score", "deterministic_tie_key"],
+            ["_tier", "epicurus_neo_lower_evidence_score", "deterministic_tie_key"],
             ascending=[True, False, True],
             kind="mergesort",
         )
@@ -454,7 +454,7 @@ def _select_patient_portfolios(frame: pd.DataFrame, config: InferenceConfig) -> 
     if not final_report.ok:
         raise AssertionError(f"ranked output violates product contract: {final_report}")
     return out.sort_values(
-        ["patient_id", "selected", "rank", "epicurus_lower_evidence_score"],
+        ["patient_id", "selected", "rank", "epicurus_neo_lower_evidence_score"],
         ascending=[True, False, True, False],
         kind="mergesort",
     ).reset_index(drop=True)
@@ -543,8 +543,8 @@ def write_product_report(scored: pd.DataFrame, output_dir: str | Path) -> dict[s
                     mutation=row.get("mutation_id", ""),
                     peptide=row["mutant_peptide"],
                     hla=row.get("hla_allele", ""),
-                    score=row["epicurus_evidence_score"],
-                    lower=row["epicurus_lower_evidence_score"],
+                    score=row["epicurus_neo_evidence_score"],
+                    lower=row["epicurus_neo_lower_evidence_score"],
                     reason=row["selection_reason"],
                 )
             )

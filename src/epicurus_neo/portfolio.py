@@ -26,7 +26,7 @@ def _under_limit(selected: list[pd.Series], candidate: pd.Series, column: str, l
 def select_portfolio(
     frame: pd.DataFrame,
     *,
-    score_col: str = "epicurus_score",
+    score_col: str = "epicurus_neo_score",
     constraints: PortfolioConstraints = PortfolioConstraints(),
     hla_col: str = "hla_allele",
     gene_col: str = "gene_symbol",

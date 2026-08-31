@@ -1,7 +1,7 @@
 """Reference-bundle manifest and scaffold.
 
 The pipeline needs a one-time GRCh38 reference bundle (tens-hundreds of GB). Rather
-than ship an unverified multi-hundred-GB downloader, Epicurus documents exactly what
+than ship an unverified multi-hundred-GB downloader, Epicurus Neo documents exactly what
 the bundle must contain and where each item comes from, and scaffolds the directory
 with a REFERENCES.md the user follows on their machine.
 """
@@ -57,7 +57,7 @@ def references_manifest() -> list[dict]:
 
 def _references_markdown() -> str:
     lines = [
-        "# Epicurus reference bundle (GRCh38)",
+        "# Epicurus Neo reference bundle (GRCh38)",
         "",
         "The pipeline expects the following items inside this directory. Each is a one-time",
         "download; sizes range from ~3 GB (genome) to tens of GB (VEP cache, Salmon index).",
@@ -75,7 +75,7 @@ def _references_markdown() -> str:
         "After populating this directory, verify readiness with:",
         "",
         "```bash",
-        "epicurus doctor --bundle-dir <this directory>",
+        "epicurus-neo doctor --bundle-dir <this directory>",
         "```",
         "",
     ]

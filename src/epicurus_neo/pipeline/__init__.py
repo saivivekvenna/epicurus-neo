@@ -1,8 +1,8 @@
-"""Epicurus full pipeline: raw WES/RNA -> ranked <=20 neoantigen portfolio.
+"""Epicurus Neo full pipeline: raw WES/RNA -> ranked <=20 neoantigen portfolio.
 
 The pipeline orchestrates established external tools (BWA-MEM2, GATK, VEP, Salmon,
 OptiType, pVACtools, MHCflurry) for read alignment through candidate generation,
-and applies the in-repo Epicurus prioritize stage (validity gate -> calibrated
+and applies the in-repo Epicurus Neo prioritize stage (validity gate -> calibrated
 ranking -> portfolio) as the final step.
 """
 

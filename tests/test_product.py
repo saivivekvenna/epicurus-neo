@@ -118,7 +118,7 @@ def test_missing_recognition_is_visible_and_increases_uncertainty():
     row = scored.iloc[0]
     assert not bool(row["recognized_evidence_available"])
     assert "MISSING=RECOGNIZED" in row["selection_reason"]
-    assert row["epicurus_lower_evidence_score"] < row["epicurus_evidence_score"]
+    assert row["epicurus_neo_lower_evidence_score"] < row["epicurus_neo_evidence_score"]
 
 
 def test_run_product_inference_writes_three_reports(tmp_path: Path):

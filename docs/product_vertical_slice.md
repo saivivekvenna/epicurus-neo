@@ -7,7 +7,7 @@ optional RNA-evidence table and emits a deterministic, evidence-backed portfolio
 somatic calling, HLA typing, VEP annotation, and peptide generation remain replaceable upstream
 adapters.
 
-This boundary is deliberate: Epicurus owns evidence normalization, transparent stage scoring,
+This boundary is deliberate: Epicurus Neo owns evidence normalization, transparent stage scoring,
 portfolio selection, abstention, and reporting. It does not duplicate mature genomics tools.
 
 ## Contracts
@@ -24,11 +24,11 @@ The machine-readable contracts live in `configs/schemas/`. A patient run never r
 ## Run the demonstration
 
 ```bash
-epicurus validate-patient-input \
+epicurus-neo validate-patient-input \
   --input examples/demo_patient/pvacseq_all_epitopes.tsv \
   --patient-id DEMO-001
 
-epicurus run-patient \
+epicurus-neo run-patient \
   --input examples/demo_patient/pvacseq_all_epitopes.tsv \
   --patient-id DEMO-001 \
   --output-dir outputs/demo_patient
@@ -55,7 +55,7 @@ candidate routes while retaining every rejected row and its reason in the output
   when the metadata required to establish that condition is present.
 
 These are eligibility rules, not recognition predictions. Vendor binary calls are preserved as
-provenance; Epicurus does not silently recreate their thresholds from TPM. The gate is default-on
+provenance; Epicurus Neo does not silently recreate their thresholds from TPM. The gate is default-on
 and may be disabled with `--disable-validity-gate` solely for before/after audits.
 
 The v1 policy exposes four mechanistic components:
@@ -92,7 +92,7 @@ nf-core/sarek (tumor/normal WES)
   + HLA caller
   -> VEP-annotated somatic VCF + quantified RNA evidence
   -> pVACseq
-  -> epicurus run-patient
+  -> epicurus-neo run-patient
 ```
 
 Copy number, purity, HLA loss, and reconstructed bulk-RNA TCR evidence should be added as optional

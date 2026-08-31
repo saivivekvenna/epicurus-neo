@@ -89,7 +89,7 @@ def apply_deterministic_gate(frame: pd.DataFrame) -> pd.DataFrame:
 
     out["deterministic_gate_reason"] = reason
     out["deterministic_gate_pass"] = reason == ""
-    out["deterministic_gate_policy"] = "epicurus-validity-gate-1.0.0"
+    out["deterministic_gate_policy"] = "epicurus-neo-validity-gate-1.0.0"
     return out
 
 

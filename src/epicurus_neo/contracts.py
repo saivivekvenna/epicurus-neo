@@ -6,8 +6,8 @@ from typing import Iterable
 import pandas as pd
 
 
-CANDIDATE_SCHEMA_VERSION = "epicurus-candidate-1.0.0"
-RANKED_SCHEMA_VERSION = "epicurus-ranked-1.0.0"
+CANDIDATE_SCHEMA_VERSION = "epicurus-neo-candidate-1.0.0"
+RANKED_SCHEMA_VERSION = "epicurus-neo-ranked-1.0.0"
 
 CANDIDATE_REQUIRED_COLUMNS = {
     "candidate_id",
@@ -16,8 +16,8 @@ CANDIDATE_REQUIRED_COLUMNS = {
 }
 
 RANKED_REQUIRED_COLUMNS = CANDIDATE_REQUIRED_COLUMNS | {
-    "epicurus_evidence_score",
-    "epicurus_lower_evidence_score",
+    "epicurus_neo_evidence_score",
+    "epicurus_neo_lower_evidence_score",
     "evidence_tier",
     "selected",
     "rank",

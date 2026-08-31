@@ -1,4 +1,4 @@
-# Template config for the full pipeline: epicurus run-pipeline --config patient.yaml --output-dir OUT
+# Template config for the full pipeline: epicurus-neo run-pipeline --config patient.yaml --output-dir OUT
 # Point these paths at real files on a machine with the external tools + reference bundle installed.
 patient_id: DEMO-001
 
@@ -9,7 +9,7 @@ inputs:
   hla_alleles: null          # optional override; if null, typed in the `hla` stage
 
 references:
-  bundle_dir: ~/.epicurus/references/GRCh38
+  bundle_dir: ~/.epicurus-neo/references/GRCh38
 
 generate:
   predictors: [MHCflurry]     # add NetMHCpan if licensed and installed

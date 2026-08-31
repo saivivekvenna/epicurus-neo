@@ -1,4 +1,4 @@
-"""Prioritize stage: the Epicurus differentiator (gate -> rank -> portfolio)."""
+"""Prioritize stage: the Epicurus Neo differentiator (gate -> rank -> portfolio)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from epicurus_neo.product import InferenceConfig, run_product_inference
 class PrioritizeStage(Stage):
     """Run the deterministic validity gate, calibrated ranking, and portfolio selection.
 
-    This is the only stage Epicurus implements itself; it consumes the generated
+    This is the only stage Epicurus Neo implements itself; it consumes the generated
     candidate table and writes the ranked candidate list plus a report.
     """
 

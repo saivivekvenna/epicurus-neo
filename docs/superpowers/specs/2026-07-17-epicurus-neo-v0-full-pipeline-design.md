@@ -1,4 +1,4 @@
-# Epicurus V0 — full WES/RNA → neoantigen-portfolio pipeline
+# Epicurus Neo V0 — full WES/RNA → neoantigen-portfolio pipeline
 
 _Design spec. Date: 2026-07-17. Status: IMPLEMENTED — orchestration + all eight stages
 built and unit-tested on the dev machine (external tools mocked); real FASTQ→portfolio
@@ -18,7 +18,7 @@ tumor WES FASTQ + normal WES FASTQ + tumor RNA FASTQ
 One command:
 
 ```bash
-epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
+epicurus-neo run-pipeline --config patient.yaml --output-dir out/PATIENT-001
 ```
 
 ## 2. Scope and honest non-goals
@@ -26,7 +26,7 @@ epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
 **In scope (what V0 owns and ships):**
 - A single orchestrator that drives every stage from raw reads to final portfolio.
 - Contracted, resumable stages with explicit artifact hand-offs and provenance.
-- The **Epicurus prioritize stage** (validity gate → calibrated evidence ranking →
+- The **Epicurus Neo prioritize stage** (validity gate → calibrated evidence ranking →
   diversity-constrained portfolio → patient-level abstention) — our own, unit-tested code.
 - A reproducible environment (container recipe + pinned conda env) so a user obtains all
   external tools, and a reference-data bootstrap step.
@@ -39,12 +39,12 @@ epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
   (BWA-MEM2, GATK/Mutect2, VEP, Salmon, an HLA typer, pVACtools + MHCflurry/NetMHCpan).
   Rebuilding these would be reckless for a clinical-adjacent tool and adds no value.
 - **We do not claim a recognition breakthrough.** The research record (M6–M8) is explicit:
-  Epicurus's *ranking* sits at parity with genuine PRIME; its demonstrated edge is
+  Epicurus Neo's *ranking* sits at parity with genuine PRIME; its demonstrated edge is
   portfolio diversification + full-evidence routing, not a superior immunogenicity model.
   Docs state this plainly. The pipeline's value is being *complete, reproducible, honest,
   and locally runnable*, with a principled final prioritizer.
 - **Not required to run on the developer Mac.** It targets the end user's machine
-  (Linux workstation/server, or Docker on any host). Orchestration + the Epicurus stage
+  (Linux workstation/server, or Docker on any host). Orchestration + the Epicurus Neo stage
   are unit-tested on the dev Mac with fixtures/mocked tool calls; the first true
   FASTQ→portfolio run is validated on a real Linux host.
 
@@ -52,7 +52,7 @@ epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
 
 - **OS:** Linux, or any host via the provided container (Docker/Apptainer).
 - **Reference data:** GRCh38 genome + GATK resource bundle + VEP cache + Salmon index —
-  a one-time download of tens–hundreds of GB via a `epicurus fetch-references` helper.
+  a one-time download of tens–hundreds of GB via a `epicurus-neo fetch-references` helper.
 - **Compute:** a 30× tumor/normal WES pair is hours of CPU; documented, not hidden.
 - These are intrinsic to somatic neoantigen calling, not artifacts of our design.
 
@@ -74,13 +74,13 @@ reused unless `--force`.
 | 4 | `express` | Salmon | RNA FASTQ → transcript TPM |
 | 5 | `hla` | OptiType (class I) / arcasHLA | normal BAM/FASTQ → HLA alleles |
 | 6 | `generate` | pVACtools (pVACseq) + MHCflurry (NetMHCpan optional) | annotated VCF + HLA + TPM → candidate table |
-| 7 | `prioritize` | **Epicurus (in-repo)** | candidate table → scored + gated + ≤20 portfolio |
+| 7 | `prioritize` | **Epicurus Neo (in-repo)** | candidate table → scored + gated + ≤20 portfolio |
 | 8 | `report` | in-repo | portfolio CSV + JSON summary + human report + provenance manifest |
 
 Stages 3/4/5 are independent and may run in any order (or in parallel) once stage 2 (and
 raw RNA) exist; stage 6 joins them.
 
-### 4.2 The Epicurus prioritize stage (existing, tested)
+### 4.2 The Epicurus Neo prioritize stage (existing, tested)
 
 `epicurus_neo.product` already implements this and stays the differentiator:
 - `normalize_product_candidates` — canonicalize a pVACseq-style table to the product schema.
@@ -104,7 +104,7 @@ inputs:
   tumor_rna:  [rna_R1.fastq.gz, rna_R2.fastq.gz]
   hla_alleles: null          # optional override; else typed in stage 5
 references:
-  bundle_dir: ~/.epicurus/references/GRCh38
+  bundle_dir: ~/.epicurus-neo/references/GRCh38
 generate:
   predictors: [MHCflurry]     # NetMHCpan added if licensed+installed
   epitope_lengths: [8,9,10,11]
@@ -118,26 +118,26 @@ resources:
 
 ### 4.4 CLI surface (product)
 
-- `epicurus run-pipeline --config patient.yaml --output-dir DIR [--from STAGE] [--to STAGE] [--force]`
-- `epicurus run-patient ...` — **retained** shortcut: start at stage 7 from an existing
+- `epicurus-neo run-pipeline --config patient.yaml --output-dir DIR [--from STAGE] [--to STAGE] [--force]`
+- `epicurus-neo run-patient ...` — **retained** shortcut: start at stage 7 from an existing
   pVACseq candidate table (the honest A3→Z entry; useful when a user already has candidates).
-- `epicurus validate-patient-input`, `validate-schema`, `select-portfolio` — retained utilities.
-- `epicurus references --dest DIR` — scaffold the reference bundle + write install docs.
-- `epicurus doctor` — checks each external tool + reference presence, prints a readiness table.
+- `epicurus-neo validate-patient-input`, `validate-schema`, `select-portfolio` — retained utilities.
+- `epicurus-neo references --dest DIR` — scaffold the reference bundle + write install docs.
+- `epicurus-neo doctor` — checks each external tool + reference presence, prints a readiness table.
 
 ### 4.5 Distribution
 
 - `Dockerfile` (or Apptainer def) that installs all external tools at pinned versions +
-  the `epicurus` package. `docker run epicurus run-pipeline ...` runs anywhere.
+  the `epicurus-neo` package. `docker run epicurus-neo run-pipeline ...` runs anywhere.
 - `environment.yml` (bioconda) as the non-container path for Linux users.
-- `epicurus doctor` gives a clear, actionable readiness report before a long run.
+- `epicurus-neo doctor` gives a clear, actionable readiness report before a long run.
 
 ## 5. Testing strategy
 
 - **Unit (dev Mac, CI):** stage contract logic, config parsing/validation, artifact
   hand-off + resume, provenance manifest, tool-missing failure paths (external tools
   **mocked** — assert on the constructed command, not real execution), and the full
-  Epicurus prioritize stage on small fixtures. This is the bulk of the safety net and runs
+  Epicurus Neo prioritize stage on small fixtures. This is the bulk of the safety net and runs
   green on the Mac.
 - **Stage smoke (dev Mac):** any stage whose tool is pip/bioconda-installable and CPU-cheap
   (MHCflurry, Salmon on a tiny index) exercised on a miniature fixture where feasible.

@@ -1,7 +1,7 @@
-# Bioconda environment with the external tools Epicurus orchestrates, plus the
+# Bioconda environment with the external tools Epicurus Neo orchestrates, plus the
 # package itself. Linux is the supported platform for the full pipeline.
-#   conda env create -f environment.yml && conda activate epicurus && pip install -e .
-name: epicurus
+#   conda env create -f environment.yml && conda activate epicurus-neo && pip install -e .
+name: epicurus-neo
 channels:
   - conda-forge
   - bioconda

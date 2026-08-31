@@ -53,7 +53,7 @@ def test_select_portfolio_respects_diversity_limits():
             "candidate_id": ["a", "b", "c", "d"],
             "hla_allele": ["HLA-A*02:01", "HLA-A*02:01", "HLA-B*07:02", "HLA-B*07:02"],
             "gene_symbol": ["KRAS", "KRAS", "TP53", "EGFR"],
-            "epicurus_score": [0.9, 0.8, 0.7, 0.6],
+            "epicurus_neo_score": [0.9, 0.8, 0.7, 0.6],
         }
     )
     selected = select_portfolio(

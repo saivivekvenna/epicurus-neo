@@ -1,6 +1,6 @@
 """External-tool specifications and availability checks.
 
-Epicurus orchestrates established, validated bioinformatics tools; it does not
+Epicurus Neo orchestrates established, validated bioinformatics tools; it does not
 reimplement them. Each tool is described by a :class:`ToolSpec` so the pipeline
 can (a) check the tool is installed before a long run and (b) record which tool
 and version produced each artifact.

@@ -114,7 +114,7 @@ def cmd_references(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="epicurus",
+        prog="epicurus-neo",
         description="Prioritize personalized cancer-vaccine neoantigens from WES/RNA-seq.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
@@ -186,7 +186,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     portfolio = sub.add_parser("select-portfolio")
     portfolio.add_argument("table")
-    portfolio.add_argument("--score-col", default="epicurus_score")
+    portfolio.add_argument("--score-col", default="epicurus_neo_score")
     portfolio.add_argument("-k", type=int, default=20)
     portfolio.add_argument("--max-per-hla", type=int)
     portfolio.add_argument("--max-per-gene", type=int)
