@@ -4,6 +4,8 @@ __pycache__/
 .ruff_cache/
 *.pyc
 *.egg-info/
+build/
+.gstack/
 data/raw/*
 !data/raw/MANUAL_SOURCES.md
 data/interim/
@@ -11,14 +13,6 @@ data/processed/
 outputs/
 models/
 
-# RTTP is DUA-controlled patient data — keep patient-specific results (peptides, HLA, expression,
-# ranked neoantigen lists) OUT of version control. Only code + a scrubbed provenance manifest are tracked.
-artifacts/milestone_7_decision/rttp_sr24/
-
-# pool-size sensitivity: raw per-candidate snapshots embed genuine PRIME %rank (non-redistributable)
-artifacts/milestone_7_decision/pool_size_sensitivity/base_*.csv
-
-# osteosarc_audit / osteosarc_product on disk are MISLABELED RTTP data (DUA-controlled
-# patient neoantigen lists). Never commit.
-artifacts/osteosarc_audit/
-artifacts/milestone_7_decision/osteosarc_product/
+# Generated benchmark and patient-level outputs. These may contain restricted clinical data;
+# keep the entire local artifact tree out of the public repository.
+artifacts/

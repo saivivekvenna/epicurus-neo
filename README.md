@@ -1,10 +1,12 @@
 # Epicurus Neo
 
-**Prioritize personalized cancer-vaccine neoantigens from raw sequencing — end to end.**
+**Turn tumor/normal WES and tumor RNA-seq into a defensible, patient-specific cancer-vaccine
+portfolio—not just another peptide score.**
 
-Epicurus takes a patient's tumor/normal whole-exome sequencing and tumor RNA-seq and produces a
-ranked, at-most-20-candidate neoantigen portfolio for a personalized cancer vaccine. It runs as a
-single command on your own machine:
+Epicurus is an open-source, end-to-end neoantigen prioritization pipeline. It orchestrates the
+established genomics stack, then applies its own biological-validity gates, evidence ranking, and
+diversity-aware portfolio selection to produce at most 20 vaccine candidates. One command takes a
+patient from raw reads to an auditable shortlist:
 
 ```bash
 epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
@@ -14,7 +16,32 @@ epicurus run-pipeline --config patient.yaml --output-dir out/PATIENT-001
 tumor WES + normal WES + tumor RNA  ──▶  ranked top-20 vaccine neoantigen portfolio
 ```
 
-## What Epicurus is (and is not)
+## Why Epicurus
+
+Most neoantigen tools stop at a long ranked list. Epicurus treats the actual problem as a constrained
+portfolio decision: every slot is scarce, duplicate routes to the same mutation crowd out coverage,
+and candidates unsupported by the patient's biology should not survive merely because they scored
+well in isolation.
+
+That design has produced concrete wins:
+
+- **8 recognized mutations in 20 slots versus PRIME's 1.** In a frozen, label-blind calibration
+  readout on Hu_315, Epicurus's mutation-diversified portfolio captured 8 of 18 reachable recognized
+  mutations; genuine PRIME captured 1. That is **40% top-20 precision versus 5%**, with no duplicate
+  mutation slots. This is a one-patient development result, not a population-level claim.
+- **75 → 85 validated top-20 hits on IMPROVE.** A predeclared hierarchical reranking policy added
+  10 hits across 70 patients (**+13.3%**) over global Epicurus ranking. The lift survived **100/100
+  randomized bracket assignments**.
+- **A reranker that knows when not to rerank.** The same tournament mechanism reversed direction on
+  Gartner (20 → 17 hits) and the multimer cohort (24 → 23). Epicurus therefore fails closed: the
+  guarded policy activates only for its explicit screened-candidate regime and preserves the global
+  ranking elsewhere (20/20 Gartner hits and 24/24 multimer hits retained).
+
+The takeaway is deliberately narrower—and more useful—than “we solved immunogenicity.” Epicurus's
+edge is **patient-level prioritization**: validity-aware routing, mutation-level diversification, and
+regime-aware abstention that converts strong component scores into a better 20-slot decision.
+
+## How it works
 
 Epicurus **orchestrates a complete pipeline** and owns the final prioritization. It does **not**
 reimplement variant callers or peptide generators — those are established, validated tools that
@@ -31,16 +58,15 @@ Epicurus drives:
 | **prioritize** | **Epicurus** | validity gate → calibrated ranking → ≤20 portfolio |
 | report | Epicurus | portfolio CSV + JSON summary + provenance |
 
-**What Epicurus itself contributes** is the `prioritize` stage: a deterministic biological-validity
-gate (lost-HLA routes and unexpressed genes cannot take a top-20 slot), a transparent evidence
-score combining translation / presentation / recognition / expression evidence, and a
-diversity-constrained portfolio selection with patient-level abstention.
+Epicurus owns the part shown in bold: the `prioritize` stage. It combines a deterministic validity
+gate (lost-HLA routes and unexpressed genes cannot take a slot), a transparent score spanning
+translation, presentation, recognition, and expression evidence, mutation- and gene-level diversity
+constraints, and patient-level abstention. Every run emits both the portfolio and its provenance.
 
-**Honest positioning.** In head-to-head evaluation Epicurus's *ranking* is at parity with strong
-published rerankers (e.g. PRIME); its measured advantage comes from **portfolio diversification and
-full-evidence routing**, not from a novel immunogenicity model. The scores are transparent
-evidence-prioritization scores — **not** validated response probabilities. Neoantigen recognition
-remains an open scientific problem, and this tool does not claim to have solved it.
+The scores are evidence-prioritization scores, **not validated probabilities of vaccine response**.
+Ranking performance is cohort-dependent, and the benchmark results above include development
+evidence. Untouched, multi-patient external validation is still required before making a clinical or
+general superiority claim.
 
 ## Requirements
 
@@ -62,6 +88,7 @@ epicurus doctor --bundle-dir ~/.epicurus/references/GRCh38
 
 ```bash
 # Container (recommended — brings every external tool):
+docker build -t epicurus .
 docker run --rm -v "$PWD":/work epicurus run-pipeline --config /work/patient.yaml --output-dir /work/out
 
 # Or a local bioconda environment on Linux:
@@ -115,11 +142,6 @@ contract, RNA merging, abstention, and the upstream integration boundary.
   resume, `doctor`) are implemented and unit-tested; `pytest` runs green on any machine.
 - The reads-level stages wrap external tools and are validated end-to-end on a Linux host with the
   reference bundle installed — that run is the release-acceptance gate, not a laptop claim.
-
-## Design
-
-The full architecture and scope decisions are documented in
-[`docs/superpowers/specs/2026-07-17-epicurus-v0-full-pipeline-design.md`](docs/superpowers/specs/2026-07-17-epicurus-v0-full-pipeline-design.md).
 
 ## License
 
